@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import NavBar from "@/components/NavBar";
 
@@ -23,7 +24,7 @@ export default function Home() {
 
           <div className="relative mx-auto flex max-w-5xl flex-col items-center text-center">
             <span className="mb-6 inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
-              Research Without Smoke And Mirrors
+            Lab-Grade Standards. Real-World Prices.
             </span>
             <Image
               src="/affordable-peptides-logo-transparent.png"
@@ -38,23 +39,23 @@ export default function Home() {
               transparency, and uncompromising quality.
             </h1>
             <p className="mt-6 max-w-2xl text-balance text-base text-zinc-300 sm:text-lg">
-              Affordable Peptides brings together rigorous science, transparent
+              Affordable Peptides brings together rigorous science, transparent 
               third-party testing, and fair pricing so you can focus on what
               matters most—advancing results that make a difference.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
-              <a
+              <Link
                 href="#mission"
                 className="rounded-full bg-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_35px_rgba(120,48,255,0.35)] transition hover:bg-purple-500 hover:shadow-[0_16px_30px_rgba(120,48,255,0.45)] focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 Learn Our Mission
-              </a>
-              <a
+              </Link>
+              <Link
                 href="#vision"
                 className="rounded-full border border-purple-500/60 px-6 py-3 text-sm font-semibold text-purple-200 transition hover:border-purple-400 hover:text-purple-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 Explore Our Vision
-              </a>
+              </Link>
             </div>
           </div>
         </section>
