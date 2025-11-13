@@ -5,7 +5,29 @@ import { useMemo, useState } from "react";
 
 import MoleculeViewer from "@/components/MoleculeViewer";
 import type { Product, Variant } from "@/lib/products";
-import { getMoleculesForProduct } from "@/lib/molecules";
+import {
+  getMoleculesForProduct,
+  type MoleculeDefinition,
+} from "@/lib/molecules";
+
+const POPULARITY_ORDER: string[] = [
+  "Tirzepatide",
+  "BPC-157",
+  "CJC-1295",
+  "Ipamorelin",
+  "TB-500",
+  "AOD 9604",
+  "GLP-1",
+  "Tesamorelin",
+  "BPC + TB Combo",
+  "IGF-1 LR3",
+  "HGH",
+  "KPV",
+  "MOTS-C",
+  "Retatrutide",
+  "Epithalon",
+  "GHK-CU",
+];
 
 type AddToCartPayload = {
   productName: string;
@@ -44,14 +66,11 @@ type StoreClientProps = {
 
 type ProductCardProps = {
   product: Product;
+  molecules: MoleculeDefinition[];
   onAddToCart: (payload: AddToCartPayload) => void;
 };
 
-function ProductCard({ product, onAddToCart }: ProductCardProps) {
-  const molecules = useMemo(
-    () => getMoleculesForProduct(product.name),
-    [product.name]
-  );
+function ProductCard({ product, molecules, onAddToCart }: ProductCardProps) {
 
   const getFirstValidTierIndex = (variant: Variant) =>
     variant.tiers.findIndex(
@@ -371,6 +390,43 @@ function FloatingCartButton({
 export default function StoreClient({ products }: StoreClientProps) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
+  const productMolecules = useMemo(() => {
+    const map = new Map<string, MoleculeDefinition[]>();
+    for (const product of products) {
+      map.set(product.name, getMoleculesForProduct(product.name));
+    }
+    return map;
+  }, [products]);
+
+  const popularityRank = useMemo(() => {
+    const rankMap = new Map<string, number>();
+    POPULARITY_ORDER.forEach((name, index) => {
+      rankMap.set(name, index);
+    });
+    return rankMap;
+  }, []);
+
+  const originalOrder = useMemo(() => {
+    const map = new Map<string, number>();
+    products.forEach((product, index) => {
+      map.set(product.name, index);
+    });
+    return map;
+  }, [products]);
+
+  const sortedProducts = useMemo(() => {
+    return [...products].sort((a, b) => {
+      const aRank = popularityRank.get(a.name) ?? Infinity;
+      const bRank = popularityRank.get(b.name) ?? Infinity;
+      if (aRank !== bRank) {
+        return aRank - bRank;
+      }
+      const aOriginal = originalOrder.get(a.name) ?? Infinity;
+      const bOriginal = originalOrder.get(b.name) ?? Infinity;
+      return aOriginal - bOriginal;
+    });
+  }, [products, popularityRank, originalOrder]);
+
   const handleAddToCart = ({
     productName,
     variantLabel,
@@ -496,10 +552,11 @@ export default function StoreClient({ products }: StoreClientProps) {
               </p>
             </div>
             <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
-              {products.map((product) => (
+              {sortedProducts.map((product) => (
                 <ProductCard
                   key={product.name}
                   product={product}
+                  molecules={productMolecules.get(product.name) ?? []}
                   onAddToCart={handleAddToCart}
                 />
               ))}
