@@ -3,6 +3,9 @@ import Link from "next/link";
 
 import NavBar from "@/components/NavBar";
 import HeroShowcase from "@/components/home/HeroShowcase";
+import MissionSection from "@/components/home/MissionSection";
+import VisionSection from "@/components/home/VisionSection";
+import ResearchSection from "@/components/home/ResearchSection";
 import {
   featuredProducts,
   peptideProducts,
@@ -108,61 +111,10 @@ export default function Home() {
             <HeroShowcase products={showcaseProducts} />
           </div>
         </section>
+        <ResearchSection />
+        <MissionSection />
+        <VisionSection />
 
-        <section
-          id="mission"
-          className="relative px-6 sm:px-12 lg:px-16"
-          aria-labelledby="mission-heading"
-        >
-          <div className="relative mx-auto max-w-5xl">
-            <div
-              className="absolute inset-0 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#13001f] via-[#080008] to-black shadow-[0_25px_70px_rgba(70,0,110,0.45)]"
-              aria-hidden
-            />
-            <div className="relative space-y-6 px-6 py-14 sm:px-12 sm:py-16">
-              <h2
-                id="mission-heading"
-                className="text-sm font-semibold uppercase tracking-[0.3em] text-purple-300"
-              >
-                Mission Statement
-              </h2>
-              <p className="text-lg leading-8 text-zinc-200 sm:text-xl">
-                Affordable Peptides exists to make high-quality, research-grade
-                peptides accessible without the inflated pricing or industry
-                smoke-and-mirrors. Our mission is to deliver reliable purity,
-                transparent third-party testing, and clear information so
-                customers can make informed decisions with confidence. We
-                combine integrity, science, and responsible practices to raise
-                the standard for the entire peptide space.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section
-          id="vision"
-          className="px-6 sm:px-12 lg:px-16"
-          aria-labelledby="vision-heading"
-        >
-          <div className="mx-auto max-w-5xl space-y-6 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-black via-[#090011] to-[#1d0029] px-6 py-14 shadow-[0_20px_60px_rgba(45,0,95,0.45)] sm:px-12 sm:py-16">
-            <h2
-              id="vision-heading"
-              className="text-sm font-semibold uppercase tracking-[0.3em] text-purple-300"
-            >
-              Vision Statement
-            </h2>
-            <p className="text-lg leading-8 text-zinc-200 sm:text-xl">
-              We aim to become the most trusted name in affordable, high-purity
-              peptides by proving that transparency and quality should never be
-              out of reach. Our vision is a future where anyone seeking to
-              improve their research, wellness, or performance has access to
-              safe, consistent, and responsibly verified products. Affordable
-              Peptides is committed to leading the industry with honesty,
-              innovation, and a straightforward, no-nonsense approach that sets
-              a new bar for trust and reliability.
-            </p>
-          </div>
-        </section>
 
         <section
           id="contact"
