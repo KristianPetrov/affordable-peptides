@@ -5,8 +5,10 @@ import Link from "next/link";
 import { useState } from "react";
 
 const links = [
-  { href: "#mission", label: "Mission" },
-  { href: "#vision", label: "Vision" },
+  { href: "/store", label: "Store" },
+  { href: "/#mission", label: "Mission" },
+  { href: "/#vision", label: "Vision" },
+  { href: "/#contact", label: "Contact" },
 ];
 
 export default function NavBar() {
@@ -48,9 +50,12 @@ export default function NavBar() {
               {link.label}
             </Link>
           ))}
-          <span className="rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-purple-200 shadow-[0_10px_25px_rgba(120,48,255,0.35)]">
-            Store Coming Soon
-          </span>
+          <Link
+            href="tel:9515393821"
+            className="rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-purple-200 shadow-[0_10px_25px_rgba(120,48,255,0.35)] transition hover:border-purple-400 hover:text-white"
+          >
+            Call (951) 539-3821
+          </Link>
         </div>
 
         <button
@@ -105,9 +110,13 @@ export default function NavBar() {
               {link.label}
             </Link>
           ))}
-          <div className="rounded-2xl border border-purple-500/50 bg-purple-500/10 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.25em] text-purple-200">
-            Store coming soon
-          </div>
+          <Link
+            href="tel:9515393821"
+            className="rounded-2xl border border-purple-500/50 bg-purple-500/10 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.25em] text-purple-200 transition hover:border-purple-400 hover:text-white"
+            onClick={closeMenu}
+          >
+            Call (951) 539-3821
+          </Link>
         </div>
       </div>
     </header>
