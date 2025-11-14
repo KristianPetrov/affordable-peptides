@@ -23,57 +23,81 @@ export type MoleculeDefinition = {
     slug: string;
     displayName: string;
     source: MoleculeStructureSource;
+    fallbackSource?: MoleculeStructureSource;
     subtitle?: string;
 };
 
 type MoleculeMap = Record<string, MoleculeDefinition[]>;
 
-const sharedSources = {
-    bpc157: {
-        type: "pubchem",
-        query: "BPC-157",
-        recordType: "2d",
-    },
-    tb500: {
-        type: "pubchem",
-        queryType: "cid",
-        query: "62707662",
-        recordType: "2d",
-    },
-    ghkCu: {
-        type: "pubchem",
-        queryType: "cid",
-        query: "378611",
-        recordType: "2d",
-    },
-    kpv: {
-        type: "pubchem",
-        queryType: "cid",
-        query: "125672",
-    },
-} satisfies Record<string, MoleculeStructureSource>;
+type PubChemOptions = {
+    queryType?: "name" | "cid";
+    recordType?: "auto" | "2d" | "3d";
+};
+
+const localSource = (
+    assetSlug: string,
+    format: "sdf" | "pdb" = "sdf"
+): Extract<MoleculeStructureSource, { type: "url" }> => ({
+    type: "url",
+    url: `/molecules/${assetSlug}.${format}`,
+    format,
+});
+
+const pubchemSource = (
+    query: string,
+    options: PubChemOptions = {}
+): Extract<MoleculeStructureSource, { type: "pubchem" }> => ({
+    type: "pubchem",
+    query,
+    ...(options.queryType ? { queryType: options.queryType } : {}),
+    ...(options.recordType ? { recordType: options.recordType } : {}),
+});
+
+const rcsbSource = (
+    pdbId: string
+): Extract<MoleculeStructureSource, { type: "rcsb" }> => ({
+    type: "rcsb",
+    pdbId,
+});
+
+type LocalMoleculeOptions = {
+    assetSlug?: string;
+    format?: "sdf" | "pdb";
+    fallback: MoleculeStructureSource;
+    subtitle?: string;
+};
+
+const createLocalMoleculeDefinition = (
+    slug: string,
+    displayName: string,
+    options: LocalMoleculeOptions
+): MoleculeDefinition => ({
+    slug,
+    displayName,
+    subtitle: options.subtitle,
+    source: localSource(options.assetSlug ?? slug, options.format ?? "sdf"),
+    fallbackSource: options.fallback,
+});
 
 const canonicalMolecules = {
-    bpc157: {
-        slug: "bpc-157",
-        displayName: "BPC-157",
-        source: sharedSources.bpc157,
-    },
-    tb500: {
-        slug: "tb-500",
-        displayName: "TB-500 (Thymosin β4)",
-        source: sharedSources.tb500,
-    },
-    ghkCu: {
-        slug: "ghk-cu",
-        displayName: "GHK-Cu",
-        source: sharedSources.ghkCu,
-    },
-    kpv: {
-        slug: "kpv",
-        displayName: "KPV (Lys-Pro-Val)",
-        source: sharedSources.kpv,
-    },
+    bpc157: createLocalMoleculeDefinition("bpc-157", "BPC-157", {
+        fallback: pubchemSource("BPC-157", { recordType: "2d" }),
+    }),
+    tb500: createLocalMoleculeDefinition("tb-500", "TB-500 (Thymosin β4)", {
+        fallback: pubchemSource("62707662", {
+            queryType: "cid",
+            recordType: "2d",
+        }),
+    }),
+    ghkCu: createLocalMoleculeDefinition("ghk-cu", "GHK-Cu", {
+        fallback: pubchemSource("378611", {
+            queryType: "cid",
+            recordType: "2d",
+        }),
+    }),
+    kpv: createLocalMoleculeDefinition("kpv", "KPV (Lys-Pro-Val)", {
+        fallback: pubchemSource("125672", { queryType: "cid" }),
+    }),
 } satisfies Record<string, MoleculeDefinition>;
 
 const withMolecule = (
@@ -83,27 +107,30 @@ const withMolecule = (
     ...molecule,
     ...overrides,
     source: overrides.source ?? molecule.source,
+    fallbackSource: overrides.fallbackSource ?? molecule.fallbackSource,
 });
 
 export const moleculesByProduct: MoleculeMap = {
     "AOD 9604": [
-        {
-            slug: "aod-9604",
-            displayName: "AOD-9604 (HGH Fragment 176-191)",
-            source: { type: "pubchem", query: "AOD-9604", recordType: "2d" },
-        },
+        createLocalMoleculeDefinition(
+            "aod-9604",
+            "AOD-9604 (HGH Fragment 176-191)",
+            {
+                fallback: pubchemSource("AOD-9604", { recordType: "2d" }),
+            }
+        ),
     ],
     "Bacteriostatic Water": [
-        {
-            slug: "water",
-            displayName: "Water (H₂O)",
-            source: { type: "pubchem", query: "Water" },
-        },
-        {
-            slug: "benzyl-alcohol",
-            displayName: "Benzyl Alcohol (0.9%)",
-            source: { type: "pubchem", query: "Benzyl alcohol" },
-        },
+        createLocalMoleculeDefinition("water", "Water (H₂O)", {
+            fallback: pubchemSource("Water"),
+        }),
+        createLocalMoleculeDefinition(
+            "benzyl-alcohol",
+            "Benzyl Alcohol (0.9%)",
+            {
+                fallback: pubchemSource("Benzyl alcohol"),
+            }
+        ),
     ],
     "BPC + TB Combo": [
         withMolecule(canonicalMolecules.bpc157, {
@@ -117,18 +144,14 @@ export const moleculesByProduct: MoleculeMap = {
         canonicalMolecules.bpc157,
     ],
     "CJC-1295": [
-        {
-            slug: "cjc-1295",
-            displayName: "CJC-1295",
-            source: { type: "pubchem", query: "CJC-1295", recordType: "2d" },
-        },
+        createLocalMoleculeDefinition("cjc-1295", "CJC-1295", {
+            fallback: pubchemSource("CJC-1295", { recordType: "2d" }),
+        }),
     ],
     Epithalon: [
-        {
-            slug: "epitalon",
-            displayName: "Epitalon",
-            source: { type: "pubchem", query: "Epitalon" },
-        },
+        createLocalMoleculeDefinition("epitalon", "Epitalon", {
+            fallback: pubchemSource("Epitalon"),
+        }),
     ],
     "GHK-CU": [
         withMolecule(canonicalMolecules.ghkCu, {
@@ -136,142 +159,112 @@ export const moleculesByProduct: MoleculeMap = {
         }),
     ],
     "GLP-1": [
-        {
-            slug: "glp-1",
-            displayName: "GLP-1 (7-36) amide",
-            source: { type: "rcsb", pdbId: "1D0R" },
-        },
+        createLocalMoleculeDefinition("glp-1", "GLP-1 (7-36) amide", {
+            format: "pdb",
+            fallback: rcsbSource("1D0R"),
+        }),
     ],
     Glutathione: [
-        {
-            slug: "glutathione",
-            displayName: "Reduced Glutathione",
-            source: { type: "pubchem", query: "Glutathione" },
-        },
+        createLocalMoleculeDefinition(
+            "glutathione",
+            "Reduced Glutathione",
+            {
+                fallback: pubchemSource("Glutathione"),
+            }
+        ),
     ],
     HCG: [
-        {
-            slug: "hcg",
-            displayName: "Human Chorionic Gonadotropin",
-            source: { type: "rcsb", pdbId: "1HCG" },
-        },
+        createLocalMoleculeDefinition(
+            "hcg",
+            "Human Chorionic Gonadotropin",
+            {
+                format: "pdb",
+                fallback: rcsbSource("1HCG"),
+            }
+        ),
     ],
     HGH: [
-        {
-            slug: "hgh",
-            displayName: "Human Growth Hormone",
-            source: { type: "rcsb", pdbId: "1HGU" },
-        },
+        createLocalMoleculeDefinition("hgh", "Human Growth Hormone", {
+            format: "pdb",
+            fallback: rcsbSource("1HGU"),
+        }),
     ],
     "IGF-1 LR3": [
-        {
-            slug: "igf-1",
-            displayName: "IGF-1 Backbone",
+        createLocalMoleculeDefinition("igf-1", "IGF-1 Backbone", {
+            format: "pdb",
+            fallback: rcsbSource("1IGL"),
             subtitle: "LR3 variant shares the same fold",
-            source: { type: "rcsb", pdbId: "1IGL" },
-        },
+        }),
     ],
     Ipamorelin: [
-        {
-            slug: "ipamorelin",
-            displayName: "Ipamorelin",
-            source: { type: "pubchem", query: "Ipamorelin", recordType: "2d" },
-        },
+        createLocalMoleculeDefinition("ipamorelin", "Ipamorelin", {
+            fallback: pubchemSource("Ipamorelin", { recordType: "2d" }),
+        }),
     ],
     KPV: [canonicalMolecules.kpv],
     "L-Carnitine": [
-        {
-            slug: "l-carnitine",
-            displayName: "L-Carnitine",
-            source: { type: "pubchem", query: "L-carnitine" },
-        },
+        createLocalMoleculeDefinition("l-carnitine", "L-Carnitine", {
+            fallback: pubchemSource("L-carnitine"),
+        }),
     ],
     "Lipo-C": [
-        {
-            slug: "methionine",
-            displayName: "Methionine",
-            source: { type: "pubchem", query: "Methionine" },
-        },
-        {
-            slug: "inositol",
-            displayName: "Inositol",
-            source: { type: "pubchem", query: "Inositol" },
-        },
-        {
-            slug: "choline",
-            displayName: "Choline",
-            source: { type: "pubchem", query: "Choline" },
-        },
-        {
-            slug: "b12",
-            displayName: "Cyanocobalamin (B12)",
-            source: { type: "pubchem", query: "Cyanocobalamin" },
-        },
+        createLocalMoleculeDefinition("methionine", "Methionine", {
+            fallback: pubchemSource("Methionine"),
+        }),
+        createLocalMoleculeDefinition("inositol", "Inositol", {
+            fallback: pubchemSource("Inositol"),
+        }),
+        createLocalMoleculeDefinition("choline", "Choline", {
+            fallback: pubchemSource("Choline"),
+        }),
+        createLocalMoleculeDefinition("b12", "Cyanocobalamin (B12)", {
+            fallback: pubchemSource("Cyanocobalamin"),
+        }),
     ],
     "Lipo-C (No B12)": [
-        {
-            slug: "methionine",
-            displayName: "Methionine",
-            source: { type: "pubchem", query: "Methionine" },
-        },
-        {
-            slug: "inositol",
-            displayName: "Inositol",
-            source: { type: "pubchem", query: "Inositol" },
-        },
-        {
-            slug: "choline",
-            displayName: "Choline",
-            source: { type: "pubchem", query: "Choline" },
-        },
+        createLocalMoleculeDefinition("methionine", "Methionine", {
+            fallback: pubchemSource("Methionine"),
+        }),
+        createLocalMoleculeDefinition("inositol", "Inositol", {
+            fallback: pubchemSource("Inositol"),
+        }),
+        createLocalMoleculeDefinition("choline", "Choline", {
+            fallback: pubchemSource("Choline"),
+        }),
     ],
     "MOTS-C": [
-        {
-            slug: "mots-c",
-            displayName: "MOTS-c",
-            source: { type: "pubchem", query: "MOTS-c", recordType: "2d" },
-        },
+        createLocalMoleculeDefinition("mots-c", "MOTS-c", {
+            fallback: pubchemSource("MOTS-c", { recordType: "2d" }),
+        }),
     ],
     "NAD+": [
-        {
-            slug: "nad-plus",
-            displayName: "NAD+",
-            source: { type: "pubchem", query: "NAD+" },
-        },
+        createLocalMoleculeDefinition("nad-plus", "NAD+", {
+            fallback: pubchemSource("NAD+"),
+        }),
     ],
     Retatrutide: [
-        {
-            slug: "retatrutide",
-            displayName: "Retatrutide",
-            source: { type: "pubchem", query: "Retatrutide", recordType: "2d" },
-        },
+        createLocalMoleculeDefinition("retatrutide", "Retatrutide", {
+            fallback: pubchemSource("Retatrutide", { recordType: "2d" }),
+        }),
     ],
     "SLU-PP-332": [
-        {
-            slug: "slu-pp-332",
-            displayName: "SLU-PP-332",
-            source: { type: "pubchem", query: "SLU-PP-332" },
-        },
+        createLocalMoleculeDefinition("slu-pp-332", "SLU-PP-332", {
+            fallback: pubchemSource("SLU-PP-332"),
+        }),
     ],
     "TB-500": [canonicalMolecules.tb500],
     Tesamorelin: [
-        {
-            slug: "tesamorelin",
-            displayName: "Tesamorelin",
-            source: { type: "pubchem", query: "Tesamorelin", recordType: "2d" },
-        },
+        createLocalMoleculeDefinition("tesamorelin", "Tesamorelin", {
+            fallback: pubchemSource("Tesamorelin", { recordType: "2d" }),
+        }),
     ],
     Tirzepatide: [
-        {
-            slug: "tirzepatide",
-            displayName: "Tirzepatide",
-            source: {
-                type: "pubchem",
+        createLocalMoleculeDefinition("tirzepatide", "Tirzepatide", {
+            fallback: pubchemSource("166567236", {
                 queryType: "cid",
-                query: "166567236",
                 recordType: "2d",
-            },
-        },
+            }),
+        }),
     ],
     GLOW: [
         withMolecule(canonicalMolecules.bpc157, {

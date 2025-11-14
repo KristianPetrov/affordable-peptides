@@ -187,7 +187,7 @@ useEffect(() => {
           return;
         }
         const { data, format } = await loadStructureData(
-          activeMolecule.source,
+          activeMolecule,
           abortController.signal
         );
 
@@ -379,61 +379,82 @@ function load3DMolScript(): Promise<ThreeDMolGlobal> {
 }
 
 async function loadStructureData(
-  source: MoleculeStructureSource,
+  molecule: MoleculeDefinition,
   signal: AbortSignal
 ): Promise<LoadedStructure> {
-  const cacheKey = JSON.stringify(source);
+  const cacheKey = JSON.stringify([
+    molecule.slug,
+    molecule.source,
+    molecule.fallbackSource,
+  ]);
   if (structureCache.has(cacheKey)) {
     return structureCache.get(cacheKey)!;
   }
 
-  let result: LoadedStructure;
-  switch (source.type) {
-    case "pubchem": {
-      const queryType = source.queryType ?? "name";
-      const recordPreference = source.recordType ?? "auto";
-      const recordTypes: ("3d" | "2d")[] =
-        recordPreference === "auto"
-          ? ["3d", "2d"]
-          : recordPreference === "3d"
-            ? ["3d"]
-            : ["2d"];
-      const normalizedValue =
-        queryType === "cid"
-          ? source.query
-          : encodeURIComponent(source.query);
-      const querySegment =
-        queryType === "cid" ? `cid/${normalizedValue}` : `name/${normalizedValue}`;
-      let lastError: Error | null = null;
-      for (const recordType of recordTypes) {
-        const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/${querySegment}/SDF?record_type=${recordType}`;
-        try {
-          const response = await fetch(url, { signal });
-          if (!response.ok) {
-            lastError = new Error(
-              `PubChem returned ${response.status} for ${source.query}`
-            );
-            continue;
-          }
-          const text = await response.text();
-          if (text.trim()) {
-            result = { data: text, format: "sdf" };
-            structureCache.set(cacheKey, result);
-            return result;
-          }
-        } catch (error) {
-          if ((error as Error).name === "AbortError") {
-            throw error;
-          }
-          lastError =
-            error instanceof Error ? error : new Error("PubChem request failed");
-        }
-      }
-      throw (
-        lastError ??
-        new Error(`PubChem does not have a 3D record for ${source.query}`)
-      );
+  const primarySource = molecule.source;
+  if (isRelativeLocalSource(primarySource)) {
+    const localResult = await tryLoadLocalSource(primarySource, signal);
+    if (localResult) {
+      structureCache.set(cacheKey, localResult);
+      return localResult;
     }
+  } else if (!molecule.fallbackSource) {
+    const directResult = await fetchStructureFromSource(primarySource, signal);
+    structureCache.set(cacheKey, directResult);
+    return directResult;
+  }
+
+  const remoteSource = !isRelativeLocalSource(primarySource)
+    ? primarySource
+    : molecule.fallbackSource;
+
+  if (!remoteSource) {
+    throw new Error(
+      `Local structure for ${molecule.displayName} is missing and no fallback source is configured.`
+    );
+  }
+
+  const remoteResult = await fetchStructureFromSource(remoteSource, signal);
+  structureCache.set(cacheKey, remoteResult);
+  return remoteResult;
+}
+
+function isRelativeLocalSource(
+  source: MoleculeStructureSource
+): source is Extract<MoleculeStructureSource, { type: "url" }> {
+  return source.type === "url" && source.url.startsWith("/");
+}
+
+async function tryLoadLocalSource(
+  source: Extract<MoleculeStructureSource, { type: "url" }>,
+  signal: AbortSignal
+): Promise<LoadedStructure | null> {
+  try {
+    const response = await fetch(source.url, { signal });
+    if (!response.ok) {
+      return null;
+    }
+    const data = await response.text();
+    return { data, format: source.format };
+  } catch (error) {
+    if ((error as Error).name === "AbortError") {
+      throw error;
+    }
+    console.warn(
+      `Failed to load local molecular structure at ${source.url}`,
+      error
+    );
+    return null;
+  }
+}
+
+async function fetchStructureFromSource(
+  source: MoleculeStructureSource,
+  signal: AbortSignal
+): Promise<LoadedStructure> {
+  switch (source.type) {
+    case "pubchem":
+      return fetchFromPubChem(source, signal);
     case "rcsb": {
       const pdbId = source.pdbId.toUpperCase();
       const url = `https://files.rcsb.org/download/${pdbId}.pdb`;
@@ -442,9 +463,7 @@ async function loadStructureData(
         throw new Error(`RCSB returned ${response.status} for ${pdbId}`);
       }
       const data = await response.text();
-      result = { data, format: "pdb" };
-      structureCache.set(cacheKey, result);
-      return result;
+      return { data, format: "pdb" };
     }
     case "alphafold": {
       const url = `https://alphafold.ebi.ac.uk/files/AF-${source.uniprotId}-F1-model_v4.pdb`;
@@ -455,9 +474,7 @@ async function loadStructureData(
         );
       }
       const data = await response.text();
-      result = { data, format: "pdb" };
-      structureCache.set(cacheKey, result);
-      return result;
+      return { data, format: "pdb" };
     }
     case "url": {
       const response = await fetch(source.url, { signal });
@@ -465,12 +482,55 @@ async function loadStructureData(
         throw new Error(`Request failed with ${response.status}`);
       }
       const data = await response.text();
-      result = { data, format: source.format };
-      structureCache.set(cacheKey, result);
-      return result;
+      return { data, format: source.format };
     }
     default:
       throw new Error("Unsupported structure source");
   }
+}
+
+async function fetchFromPubChem(
+  source: Extract<MoleculeStructureSource, { type: "pubchem" }>,
+  signal: AbortSignal
+): Promise<LoadedStructure> {
+  const queryType = source.queryType ?? "name";
+  const recordPreference = source.recordType ?? "auto";
+  const recordTypes: ("3d" | "2d")[] =
+    recordPreference === "auto"
+      ? ["3d", "2d"]
+      : recordPreference === "3d"
+        ? ["3d"]
+        : ["2d"];
+  const normalizedValue =
+    queryType === "cid" ? source.query : encodeURIComponent(source.query);
+  const querySegment =
+    queryType === "cid" ? `cid/${normalizedValue}` : `name/${normalizedValue}`;
+  let lastError: Error | null = null;
+  for (const recordType of recordTypes) {
+    const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/${querySegment}/SDF?record_type=${recordType}`;
+    try {
+      const response = await fetch(url, { signal });
+      if (!response.ok) {
+        lastError = new Error(
+          `PubChem returned ${response.status} for ${source.query}`
+        );
+        continue;
+      }
+      const text = await response.text();
+      if (text.trim()) {
+        return { data: text, format: "sdf" };
+      }
+    } catch (error) {
+      if ((error as Error).name === "AbortError") {
+        throw error;
+      }
+      lastError =
+        error instanceof Error ? error : new Error("PubChem request failed");
+    }
+  }
+  throw (
+    lastError ??
+    new Error(`PubChem does not have a 3D record for ${source.query}`)
+  );
 }
 
