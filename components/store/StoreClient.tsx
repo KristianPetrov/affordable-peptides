@@ -4,7 +4,18 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import MoleculeViewer from "@/components/MoleculeViewer";
-import type { Product, Variant } from "@/lib/products";
+import {
+  type AddToCartPayload,
+  type CartItem,
+  useStorefront,
+} from "@/components/store/StorefrontContext";
+import {
+  productCategories,
+  type Product,
+  type ProductCategory,
+  type ProductCategoryId,
+  type Variant,
+} from "@/lib/products";
 import {
   getMoleculesForProduct,
   type MoleculeDefinition,
@@ -29,23 +40,9 @@ const POPULARITY_ORDER: string[] = [
   "GHK-CU",
 ];
 
-type AddToCartPayload = {
-  productName: string;
-  variantLabel: string;
-  tierQuantity: number;
-  tierPrice: number;
-  tierPriceDisplay: string;
-};
-
-type CartItem = {
-  key: string;
-  productName: string;
-  variantLabel: string;
-  tierQuantity: number;
-  tierPrice: number;
-  tierPriceDisplay: string;
-  count: number;
-};
+const CATEGORY_LOOKUP = new Map<ProductCategoryId, ProductCategory>(
+  productCategories.map((category) => [category.id, category])
+);
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -64,14 +61,34 @@ type StoreClientProps = {
   products: Product[];
 };
 
+type CategoryTab = {
+  id: "all" | ProductCategoryId;
+  label: string;
+  description: string;
+};
+
 type ProductCardProps = {
   product: Product;
   molecules: MoleculeDefinition[];
   onAddToCart: (payload: AddToCartPayload) => void;
+  defaultExpanded?: boolean;
+  forceExpanded?: boolean;
+  showExpandToggle?: boolean;
+  showModalLink?: boolean;
 };
 
-function ProductCard({ product, molecules, onAddToCart }: ProductCardProps) {
-
+export function ProductCard({
+  product,
+  molecules,
+  onAddToCart,
+  defaultExpanded = false,
+  forceExpanded,
+  showExpandToggle = true,
+  showModalLink = true,
+}: ProductCardProps) {
+  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const expanded = typeof forceExpanded === "boolean" ? forceExpanded : isExpanded;
+  const buyingOptionsId = `product-${product.slug}-buying-options`;
   const getFirstValidTierIndex = (variant: Variant) =>
     variant.tiers.findIndex(
       (tier) => parseQuantity(tier.quantity) > 0 && parsePrice(tier.price) > 0
@@ -102,6 +119,13 @@ function ProductCard({ product, molecules, onAddToCart }: ProductCardProps) {
       ...prev,
       [variantLabel]: tierIndex,
     }));
+  };
+
+  const handleToggleExpansion = () => {
+    if (typeof forceExpanded === "boolean") {
+      return;
+    }
+    setIsExpanded((prev) => !prev);
   };
 
   const handleAddVariantToCart = (variant: Variant) => {
@@ -141,107 +165,160 @@ function ProductCard({ product, molecules, onAddToCart }: ProductCardProps) {
         />
       </div>
       <div className="flex flex-1 flex-col gap-6 p-6">
-        <div className="space-y-2">
+        <div className="space-y-3">
           <h3 className="text-lg font-semibold text-white">{product.name}</h3>
+          <p className="text-sm text-purple-100">{product.researchFocus}</p>
+          <div className="flex flex-wrap gap-2">
+            {product.categories.map((categoryId) => {
+              const category = CATEGORY_LOOKUP.get(categoryId);
+              if (!category) {
+                return null;
+              }
+              return (
+                <span
+                  key={`${product.name}-${categoryId}`}
+                  className="rounded-full border border-purple-500/40 bg-purple-500/10 px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-purple-100"
+                >
+                  {category.label}
+                </span>
+              );
+            })}
+          </div>
           <p className="text-sm text-zinc-400">
             Select the dosage and volume tier that fits your research needs.
           </p>
         </div>
-        <div className="flex flex-1 flex-col gap-4">
-          {product.variants.map((variant) => {
-            const selectedIndex = resolveSelectedIndex(variant);
-            const selectedTier = variant.tiers[selectedIndex];
-            const selectedTierQuantity = selectedTier
-              ? parseQuantity(selectedTier.quantity)
-              : 0;
-            const selectedTierPrice = selectedTier
-              ? parsePrice(selectedTier.price)
-              : 0;
-            const selectedTierDisplay = selectedTier
-              ? selectedTier.price.startsWith("$")
-                ? selectedTier.price
-                : `$${selectedTier.price}`
-              : "";
-            const addDisabled =
-              !selectedTier ||
-              selectedTierQuantity === 0 ||
-              selectedTierPrice === 0;
-
-            return (
-              <div
-                key={`${product.name}-${variant.label}`}
-                className="flex flex-col gap-4 rounded-2xl border border-purple-900/40 bg-black/60 p-4"
+        <div className="flex flex-col gap-4">
+          <div className="flex flex-wrap gap-3">
+            {showExpandToggle && (
+              <button
+                type="button"
+                onClick={handleToggleExpansion}
+                aria-expanded={expanded}
+                aria-controls={buyingOptionsId}
+                className="inline-flex flex-1 items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-purple-100 transition hover:border-purple-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:flex-none"
               >
-                <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-purple-100">
-                  <span className="font-semibold uppercase tracking-wide text-purple-200">
-                    {variant.label}
-                  </span>
-                  <span className="rounded-full border border-purple-500/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
-                    Pricing
-                  </span>
-                </div>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  {variant.tiers.map((tier, index) => {
-                    const tierQuantity = parseQuantity(tier.quantity);
-                    const tierPrice = parsePrice(tier.price);
-                    const tierPriceDisplay = tier.price.startsWith("$")
-                      ? tier.price
-                      : `$${tier.price}`;
-                    const isUnavailable =
-                      tierQuantity === 0 || tierPrice === 0;
-                    const isSelected = index === selectedIndex;
+                {expanded ? "Hide buying options" : "View buying options"}
+              </button>
+            )}
+            {showModalLink && (
+              <Link
+                href={`/store/product/${product.slug}`}
+                scroll={false}
+                className="inline-flex flex-1 items-center justify-center rounded-full border border-purple-500/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-purple-100 transition hover:border-purple-300 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:flex-none"
+              >
+                Open product detail
+              </Link>
+            )}
+          </div>
+          {expanded ? (
+            <>
+              <div
+                id={buyingOptionsId}
+                className="flex flex-1 flex-col gap-4"
+              >
+                {product.variants.map((variant) => {
+                  const selectedIndex = resolveSelectedIndex(variant);
+                  const selectedTier = variant.tiers[selectedIndex];
+                  const selectedTierQuantity = selectedTier
+                    ? parseQuantity(selectedTier.quantity)
+                    : 0;
+                  const selectedTierPrice = selectedTier
+                    ? parsePrice(selectedTier.price)
+                    : 0;
+                  const selectedTierDisplay = selectedTier
+                    ? selectedTier.price.startsWith("$")
+                      ? selectedTier.price
+                      : `$${selectedTier.price}`
+                    : "";
+                  const addDisabled =
+                    !selectedTier ||
+                    selectedTierQuantity === 0 ||
+                    selectedTierPrice === 0;
 
-                    return (
-                      <button
-                        type="button"
-                        key={`${variant.label}-${tier.quantity}`}
-                        aria-pressed={isSelected}
-                        disabled={isUnavailable}
-                        onClick={() =>
-                          handleSelectTier(variant.label, index)
-                        }
-                        className={`flex flex-col items-center justify-center rounded-xl border px-4 py-3 text-center text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
-                          isSelected
-                            ? "border-purple-400 bg-purple-500/20 text-white shadow-[0_0_30px_rgba(120,48,255,0.35)]"
-                            : "border-purple-900/30 bg-zinc-900/70 text-zinc-200 hover:border-purple-400 hover:bg-purple-500/10 hover:text-white"
-                        } ${
-                          isUnavailable
-                            ? "cursor-not-allowed opacity-40 hover:border-purple-900/30 hover:bg-zinc-900/70"
-                            : ""
-                        }`}
-                      >
-                        <span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                          Qty {tier.quantity}
+                  return (
+                    <div
+                      key={`${product.slug}-${variant.label}`}
+                      className="flex flex-col gap-4 rounded-2xl border border-purple-900/40 bg-black/60 p-4"
+                    >
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-purple-100">
+                        <span className="font-semibold uppercase tracking-wide text-purple-200">
+                          {variant.label}
                         </span>
-                        <span className="mt-1 text-sm font-semibold text-white">
-                          {tierPriceDisplay}
+                        <span className="rounded-full border border-purple-500/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
+                          Pricing
                         </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="text-xs text-zinc-400">
-                    {selectedTier && !addDisabled
-                      ? `Selected: Qty ${selectedTier.quantity} • ${selectedTierDisplay}`
-                      : "No available tier selected"}
-                  </div>
-                  <button
-                    type="button"
-                    className="inline-flex items-center justify-center rounded-full bg-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:bg-purple-900/40"
-                    onClick={() => handleAddVariantToCart(variant)}
-                    disabled={addDisabled}
-                  >
-                    Add {variant.label} to Cart
-                  </button>
-                </div>
+                      </div>
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                        {variant.tiers.map((tier, index) => {
+                          const tierQuantity = parseQuantity(tier.quantity);
+                          const tierPrice = parsePrice(tier.price);
+                          const tierPriceDisplay = tier.price.startsWith("$")
+                            ? tier.price
+                            : `$${tier.price}`;
+                          const isUnavailable =
+                            tierQuantity === 0 || tierPrice === 0;
+                          const isSelected = index === selectedIndex;
+
+                          return (
+                            <button
+                              type="button"
+                              key={`${variant.label}-${tier.quantity}`}
+                              aria-pressed={isSelected}
+                              disabled={isUnavailable}
+                              onClick={() =>
+                                handleSelectTier(variant.label, index)
+                              }
+                              className={`flex flex-col items-center justify-center rounded-xl border px-4 py-3 text-center text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+                                isSelected
+                                  ? "border-purple-400 bg-purple-500/20 text-white shadow-[0_0_30px_rgba(120,48,255,0.35)]"
+                                  : "border-purple-900/30 bg-zinc-900/70 text-zinc-200 hover:border-purple-400 hover:bg-purple-500/10 hover:text-white"
+                              } ${
+                                isUnavailable
+                                  ? "cursor-not-allowed opacity-40 hover:border-purple-900/30 hover:bg-zinc-900/70"
+                                  : ""
+                              }`}
+                            >
+                              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                                Qty {tier.quantity}
+                              </span>
+                              <span className="mt-1 text-sm font-semibold text-white">
+                                {tierPriceDisplay}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="text-xs text-zinc-400">
+                          {selectedTier && !addDisabled
+                            ? `Selected: Qty ${selectedTier.quantity} • ${selectedTierDisplay}`
+                            : "No available tier selected"}
+                        </div>
+                        <button
+                          type="button"
+                          className="inline-flex items-center justify-center rounded-full bg-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:bg-purple-900/40"
+                          onClick={() => handleAddVariantToCart(variant)}
+                          disabled={addDisabled}
+                        >
+                          Add {variant.label} to Cart
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
-        </div>
-        <div className="pt-2 text-xs text-zinc-500">
-          Pricing shown for research use only. Contact us for bulk or specialized
-          requests.
+              <div className="pt-2 text-xs text-zinc-500">
+                Pricing shown for research use only. Contact us for bulk or
+                specialized requests.
+              </div>
+            </>
+          ) : (
+            <div className="rounded-2xl border border-purple-900/40 bg-black/60 px-4 py-6 text-center text-sm text-zinc-300">
+              Buying options are hidden. Use "View buying options" to choose a
+              dosage and pricing tier.
+            </div>
+          )}
         </div>
       </div>
     </article>
@@ -373,7 +450,7 @@ function FloatingCartButton({
             </ul>
           ) : (
             <p className="mt-4 text-sm text-zinc-400">
-              Browse the catalog and add peptides using the “Add to Cart” button
+              Browse the catalog and add peptides using the "Add to Cart" button
               on each product.
             </p>
           )}
@@ -388,7 +465,34 @@ function FloatingCartButton({
 }
 
 export default function StoreClient({ products }: StoreClientProps) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const {
+    cartItems,
+    subtotal,
+    totalUnits,
+    addToCart,
+    incrementItem,
+    decrementItem,
+    removeItem,
+  } = useStorefront();
+  const [activeCategory, setActiveCategory] = useState<CategoryTab["id"]>(
+    productCategories[0]?.id ?? "all"
+  );
+
+  const categoryTabs = useMemo<CategoryTab[]>(() => {
+    return [
+      ...productCategories,
+      {
+        id: "all",
+        label: "All Products",
+        description: "View the entire catalog sorted by popularity.",
+      },
+    ];
+  }, []);
+
+  const activeCategoryMeta = useMemo(
+    () => categoryTabs.find((tab) => tab.id === activeCategory),
+    [categoryTabs, activeCategory]
+  );
 
   const productMolecules = useMemo(() => {
     const map = new Map<string, MoleculeDefinition[]>();
@@ -427,76 +531,14 @@ export default function StoreClient({ products }: StoreClientProps) {
     });
   }, [products, popularityRank, originalOrder]);
 
-  const handleAddToCart = ({
-    productName,
-    variantLabel,
-    tierQuantity,
-    tierPrice,
-    tierPriceDisplay,
-  }: AddToCartPayload) => {
-    if (!tierQuantity || !tierPrice) {
-      return;
+  const filteredProducts = useMemo(() => {
+    if (activeCategory === "all") {
+      return sortedProducts;
     }
-
-    const key = `${productName}|${variantLabel}|${tierQuantity}`;
-    setCartItems((prev) => {
-      const index = prev.findIndex((item) => item.key === key);
-      if (index !== -1) {
-        const updated = [...prev];
-        updated[index] = {
-          ...updated[index],
-          count: updated[index].count + 1,
-        };
-        return updated;
-      }
-
-      return [
-        ...prev,
-        {
-          key,
-          productName,
-          variantLabel,
-          tierQuantity,
-          tierPrice,
-          tierPriceDisplay,
-          count: 1,
-        },
-      ];
-    });
-  };
-
-  const handleUpdateCartCount = (key: string, delta: number) => {
-    setCartItems((prev) =>
-      prev.reduce<CartItem[]>((acc, item) => {
-        if (item.key !== key) {
-          acc.push(item);
-          return acc;
-        }
-
-        const nextCount = item.count + delta;
-        if (nextCount <= 0) {
-          return acc;
-        }
-
-        acc.push({ ...item, count: nextCount });
-        return acc;
-      }, [])
+    return sortedProducts.filter((product) =>
+      product.categories.includes(activeCategory)
     );
-  };
-
-  const handleRemoveFromCart = (key: string) => {
-    setCartItems((prev) => prev.filter((item) => item.key !== key));
-  };
-
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.tierPrice * item.count,
-    0
-  );
-
-  const totalUnits = cartItems.reduce(
-    (sum, item) => sum + item.tierQuantity * item.count,
-    0
-  );
+  }, [sortedProducts, activeCategory]);
 
   return (
     <>
@@ -551,15 +593,55 @@ export default function StoreClient({ products }: StoreClientProps) {
                 volumes.
               </p>
             </div>
-            <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
-              {sortedProducts.map((product) => (
-                <ProductCard
-                  key={product.name}
-                  product={product}
-                  molecules={productMolecules.get(product.name) ?? []}
-                  onAddToCart={handleAddToCart}
-                />
-              ))}
+            <div className="space-y-8">
+              <div className="space-y-4">
+                <div
+                  role="tablist"
+                  aria-label="Product categories"
+                  className="flex flex-wrap justify-center gap-3"
+                >
+                  {categoryTabs.map((tab) => {
+                    const isActive = tab.id === activeCategory;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        role="tab"
+                        aria-selected={isActive}
+                        className={`rounded-full border px-4 py-2 text-[0.6rem] font-semibold uppercase tracking-[0.35em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+                          isActive
+                            ? "border-purple-400 bg-purple-500/30 text-white shadow-[0_0_30px_rgba(120,48,255,0.35)]"
+                            : "border-purple-900/50 bg-black/60 text-purple-200 hover:border-purple-400 hover:text-white"
+                        }`}
+                        onClick={() => setActiveCategory(tab.id)}
+                      >
+                        {tab.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-center text-xs text-zinc-400">
+                  {activeCategoryMeta?.description ??
+                    "View the entire catalog of peptides sorted by popularity."}
+                </p>
+              </div>
+              {filteredProducts.length > 0 ? (
+                <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
+                  {filteredProducts.map((product) => (
+                    <ProductCard
+                      key={product.slug}
+                      product={product}
+                      molecules={productMolecules.get(product.name) ?? []}
+                      onAddToCart={addToCart}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-3xl border border-purple-900/50 bg-black/60 p-8 text-center text-sm text-zinc-400">
+                  No peptides match this category yet. Check another tab or contact us
+                  for sourcing.
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -569,9 +651,9 @@ export default function StoreClient({ products }: StoreClientProps) {
         subtotal={subtotal}
         totalUnits={totalUnits}
         cartItems={cartItems}
-        onIncrement={(key) => handleUpdateCartCount(key, 1)}
-        onDecrement={(key) => handleUpdateCartCount(key, -1)}
-        onRemove={handleRemoveFromCart}
+        onIncrement={incrementItem}
+        onDecrement={decrementItem}
+        onRemove={removeItem}
       />
     </>
   );

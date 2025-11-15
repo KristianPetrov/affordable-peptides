@@ -107,7 +107,7 @@ export default function HeroShowcase({ products }: HeroShowcaseProps) {
                 )}
               </div>
               <Link
-                href="/store"
+                href={`/store/product/${product.slug}`}
                 className="inline-flex items-center justify-center rounded-full border border-purple-500/60 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-purple-200 transition hover:border-purple-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 View in Store
