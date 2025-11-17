@@ -44,75 +44,22 @@ export default function Home() {
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <a
-                href="#mission"
+                href="#contact"
                 className="rounded-full bg-purple-600 px-6 py-3 text-sm font-semibold text-white shadow-[0_18px_35px_rgba(120,48,255,0.35)] transition hover:bg-purple-500 hover:shadow-[0_16px_30px_rgba(120,48,255,0.45)] focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
-                Learn Our Mission
+                Contact Us
               </a>
               <a
                 href="#vision"
                 className="rounded-full border border-purple-500/60 px-6 py-3 text-sm font-semibold text-purple-200 transition hover:border-purple-400 hover:text-purple-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
-                Explore Our Vision
+                Coming Soon
               </a>
             </div>
           </div>
         </section>
 
-        <section
-          id="mission"
-          className="relative px-6 sm:px-12 lg:px-16"
-          aria-labelledby="mission-heading"
-        >
-          <div className="relative mx-auto max-w-5xl">
-            <div
-              className="absolute inset-0 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#13001f] via-[#080008] to-black shadow-[0_25px_70px_rgba(70,0,110,0.45)]"
-              aria-hidden
-            />
-            <div className="relative space-y-6 px-6 py-14 sm:px-12 sm:py-16">
-              <h2
-                id="mission-heading"
-                className="text-sm font-semibold uppercase tracking-[0.3em] text-purple-300"
-              >
-                Mission Statement
-              </h2>
-              <p className="text-lg leading-8 text-zinc-200 sm:text-xl">
-                Affordable Peptides exists to make high-quality, research-grade
-                peptides accessible without the inflated pricing or industry
-                smoke-and-mirrors. Our mission is to deliver reliable purity,
-                transparent third-party testing, and clear information so
-                customers can make informed decisions with confidence. We
-                combine integrity, science, and responsible practices to raise
-                the standard for the entire peptide space.
-              </p>
-            </div>
-          </div>
-        </section>
 
-        <section
-          id="vision"
-          className="px-6 sm:px-12 lg:px-16"
-          aria-labelledby="vision-heading"
-        >
-          <div className="mx-auto max-w-5xl space-y-6 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-black via-[#090011] to-[#1d0029] px-6 py-14 shadow-[0_20px_60px_rgba(45,0,95,0.45)] sm:px-12 sm:py-16">
-            <h2
-              id="vision-heading"
-              className="text-sm font-semibold uppercase tracking-[0.3em] text-purple-300"
-            >
-              Vision Statement
-            </h2>
-            <p className="text-lg leading-8 text-zinc-200 sm:text-xl">
-              We aim to become the most trusted name in affordable, high-purity
-              peptides by proving that transparency and quality should never be
-              out of reach. Our vision is a future where anyone seeking to
-              improve their research, wellness, or performance has access to
-              safe, consistent, and responsibly verified products. Affordable
-              Peptides is committed to leading the industry with honesty,
-              innovation, and a straightforward, no-nonsense approach that sets
-              a new bar for trust and reliability.
-            </p>
-          </div>
-        </section>
         <section
           id="contact"
           className="relative px-6 sm:px-12 lg:px-16"
@@ -134,8 +81,7 @@ export default function Home() {
                 Talk With Affordable Peptides
               </h2>
               <p className="mx-auto max-w-2xl text-balance text-base text-zinc-300 sm:text-lg">
-                Have a question about sourcing, availability, or lab partnership
-                opportunities? Reach out anytime and we&apos;ll get back to you
+              Until store is developed please text for product list and pricing. Reach out anytime and we&apos;ll get back to you
                 quickly.
               </p>
               <div className="mx-auto flex max-w-md flex-col items-center gap-3 rounded-2xl border border-purple-900/60 bg-black/60 p-6">
@@ -149,8 +95,7 @@ export default function Home() {
                   (951) 539-3821
                 </a>
                 <p className="text-xs text-zinc-500">
-                  Available daily 9am–7pm PST. Leave a message after hours and
-                  we&apos;ll return your call.
+                  Available daily 6am–9pm PST.
                 </p>
               </div>
             </div>
