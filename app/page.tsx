@@ -113,6 +113,49 @@ export default function Home() {
             </p>
           </div>
         </section>
+        <section
+          id="contact"
+          className="relative px-6 sm:px-12 lg:px-16"
+          aria-labelledby="contact-heading"
+        >
+          <div className="relative mx-auto max-w-4xl">
+            <div
+              className="absolute inset-0 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black shadow-[0_25px_70px_rgba(70,0,110,0.45)]"
+              aria-hidden
+            />
+            <div className="relative space-y-6 px-6 py-14 text-center sm:px-12 sm:py-16">
+              <span className="inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
+                Contact
+              </span>
+              <h2
+                id="contact-heading"
+                className="text-3xl font-semibold text-white sm:text-4xl"
+              >
+                Talk With Affordable Peptides
+              </h2>
+              <p className="mx-auto max-w-2xl text-balance text-base text-zinc-300 sm:text-lg">
+                Have a question about sourcing, availability, or lab partnership
+                opportunities? Reach out anytime and we&apos;ll get back to you
+                quickly.
+              </p>
+              <div className="mx-auto flex max-w-md flex-col items-center gap-3 rounded-2xl border border-purple-900/60 bg-black/60 p-6">
+                <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
+                  Phone
+                </span>
+                <a
+                  href="tel:9515393821"
+                  className="text-2xl font-semibold text-white transition hover:text-purple-200"
+                >
+                  (951) 539-3821
+                </a>
+                <p className="text-xs text-zinc-500">
+                  Available daily 9am–7pm PST. Leave a message after hours and
+                  we&apos;ll return your call.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
       </main>
     </div>
   );
