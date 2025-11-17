@@ -23,7 +23,7 @@ export default function Home() {
 
           <div className="relative mx-auto flex max-w-5xl flex-col items-center text-center">
             <span className="mb-6 inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
-              Research Without Smoke And Mirrors
+              Store Coming Soon!
             </span>
             <Image
               src="/affordable-peptides-logo-transparent.png"
