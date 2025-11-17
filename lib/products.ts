@@ -6,6 +6,7 @@ export type Tier = {
 export type Variant = {
   label: string;
   tiers: Tier[];
+  mockupLabel?: string;
 };
 
 export type ProductCategoryId =
@@ -61,7 +62,7 @@ export const productCategories: ProductCategory[] = [
 const formatPrice = (value: number): string =>
 {
   const formatted = Number.isInteger(value) ? value.toString() : value.toFixed(2);
-  return `$${formatted}`;
+  return `$${formatted}`;/////////////////////
 };
 
 const createStandardTiers = (singlePrice: number): Tier[] => [
@@ -70,9 +71,14 @@ const createStandardTiers = (singlePrice: number): Tier[] => [
   { quantity: "10", price: formatPrice(singlePrice * 7) },
 ];
 
-const createVariant = (label: string, singlePrice: number): Variant => ({
+const createVariant = (
+  label: string,
+  singlePrice: number,
+  mockupLabel?: string
+): Variant => ({
   label,
   tiers: createStandardTiers(singlePrice),
+  mockupLabel,
 });
 
 const slugify = (value: string): string =>
@@ -114,7 +120,11 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
       createVariant("5mg each", 50),
-      createVariant("10mg each", 80),
+      createVariant(
+        "10mg each",
+        80,
+        "/products/label-bpc157-tb-500-20mg-3ml.png"
+      ),
     ],
   },
   {
@@ -124,7 +134,7 @@ const productDefinitions: ProductDefinition[] = [
     isFeatured: true,
     variants: [
       createVariant("5mg", 40),
-      createVariant("10mg", 70),
+      createVariant("10mg", 70, "/products/label-bpc157-10mg-3ml.png"),
     ],
   },
   {
@@ -132,10 +142,18 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Long-acting GHRH analog that sustains GH and IGF-1 release for lean mass.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("No DAC + IPA (10mg)", 70),
+      createVariant(
+        "No DAC + IPA (10mg)",
+        70,
+        "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png"
+      ),
       createVariant("With DAC (5mg)", 50),
       createVariant("Without DAC (5mg)", 40),
-      createVariant("Without DAC (10mg)", 70),
+      createVariant(
+        "Without DAC (10mg)",
+        70,
+        "/products/label-cjc-1295-wo-dac-10mg-3ml.png"
+      ),
     ],
   },
   {
@@ -152,8 +170,8 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Copper tripeptide that promotes collagen synthesis, skin quality, and wound care.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [
-      createVariant("50mg", 40),
-      createVariant("100mg", 70),
+      createVariant("50mg", 40, "/products/label-ghk-cu-50mg-3ml.png"),
+      createVariant("100mg", 70, "/products/label-ghk-cu-100mg-3ml.png"),
     ],
   },
   {
@@ -161,7 +179,7 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "BPC/TB/GHK blend tailored for regenerative aesthetics and total-body recovery.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [
-      createVariant("70mg", 90),
+      createVariant("70mg", 90, "/products/label-glow-70mg-3ml.png"),
     ],
   },
   {
@@ -177,7 +195,11 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Master antioxidant that bolsters detoxification and redox balance.",
     categories: ["longevity-wellness"],
     variants: [
-      createVariant("1500mg", 50),
+      createVariant(
+        "1500mg",
+        50,
+        "/products/label-glutathione-1500mg-10ml.png"
+      ),
     ],
   },
   {
@@ -185,7 +207,7 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Gonadotropin that helps preserve endogenous testosterone during protocols.",
     categories: ["hormone-growth", "support-essentials"],
     variants: [
-      createVariant("10,000 IU", 60),
+      createVariant("10,000 IU", 60, "/products/label-hcg-10k-iu-3ml.png"),
     ],
   },
   {
@@ -202,7 +224,7 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Extended IGF signaling that supports muscle hyperplasia investigations.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("1mg", 70),
+      createVariant("1mg", 70, "/products/label-igf-1-lr3-1mg-3ml.png"),
     ],
   },
   {
@@ -210,8 +232,8 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Selective GHRP with minimal cortisol impact for pulsatile GH release.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("5mg", 30),
-      createVariant("10mg", 50),
+      createVariant("5mg", 30, "/products/label-ipamorelin-5mg-3ml.png"),
+      createVariant("10mg", 50, "/products/label-ipamorelin-10mg-3ml.png"),
     ],
   },
   {
@@ -219,7 +241,7 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "GHK/KPV/BPC/TB blend that targets skin glow, inflammation control, and joint comfort.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [
-      createVariant("80mg", 100),
+      createVariant("80mg", 100, "/products/label-klow-80mg-3ml.png"),
     ],
   },
   {
@@ -228,7 +250,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
       createVariant("5mg", 40),
-      createVariant("10mg", 70),
+      createVariant("10mg", 70, "/products/label-kpv-10mg-3ml.png"),
     ],
   },
   {
@@ -236,7 +258,11 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Transports fatty acids into mitochondria to elevate beta-oxidation.",
     categories: ["weight-metabolic"],
     variants: [
-      createVariant("10ml (600mg/ml)", 60),
+      createVariant(
+        "10ml (600mg/ml)",
+        60,
+        "/products/label-l-carnatine-600mg-10ml.png"
+      ),
     ],
   },
   {
@@ -260,8 +286,8 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Mitochondrial peptide improving insulin sensitivity and performance endurance.",
     categories: ["weight-metabolic", "longevity-wellness"],
     variants: [
-      createVariant("10mg", 40),
-      createVariant("40mg", 100),
+      createVariant("10mg", 40, "/products/label-mots-c-10mg-3ml.png"),
+      createVariant("40mg", 100, "/products/label-mots-c-40mg-3ml.png"),
     ],
   },
   {
@@ -269,8 +295,8 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Coenzyme precursor that sustains cellular energy and sirtuin activity.",
     categories: ["longevity-wellness", "weight-metabolic"],
     variants: [
-      createVariant("500mg", 60),
-      createVariant("1000mg", 100),
+      createVariant("500mg", 60, "/products/label-nad-500mg-10ml.png"),
+      createVariant("1000mg", 100, "/products/label-nad-1000mg-10ml.png"),
     ],
   },
   {
@@ -278,9 +304,9 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Triple agonist driving exceptional weight and glycemic control.",
     categories: ["weight-metabolic"],
     variants: [
-      createVariant("10mg", 100),
-      createVariant("20mg", 160),
-      createVariant("30mg", 200),
+      createVariant("10mg", 100, "/products/label-retatrutide-10mg-3ml.png"),
+      createVariant("20mg", 160, "/products/label-retatrutide-20mg-3ml.png"),
+      createVariant("30mg", 200, "/products/label-retatrutide-30mg-3ml.png"),
     ],
   },
   {
@@ -305,8 +331,8 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "FDA-backed GHRH analog proven to reduce visceral adipose tissue.",
     categories: ["hormone-growth", "weight-metabolic"],
     variants: [
-      createVariant("10mg", 60),
-      createVariant("20mg", 100),
+      createVariant("10mg", 60, "/products/label-tesamorelin-10mg-3ml.png"),
+      createVariant("20mg", 100, "/products/label-tesamorelin-20mg-3ml.png"),
     ],
   },
   {
@@ -315,9 +341,9 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["weight-metabolic"],
     isFeatured: true,
     variants: [
-      createVariant("10mg", 80),
-      createVariant("20mg", 140),
-      createVariant("30mg", 180),
+      createVariant("10mg", 80, "/products/label-tirzepatide-10mg-3ml.png"),
+      createVariant("20mg", 140, "/products/label-tirzepatide-20mg-3ml.png"),
+      createVariant("30mg", 180, "/products/label-tirzepatide-30mg-3ml.png"),
     ],
   },
 ];

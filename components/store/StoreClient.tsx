@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 import MoleculeViewer from "@/components/MoleculeViewer";
+import ProductMockup from "@/components/ProductMockup";
 import {
   type AddToCartPayload,
   type CartItem,
@@ -241,6 +242,15 @@ export function ProductCard({
                       key={`${product.slug}-${variant.label}`}
                       className="flex flex-col gap-4 rounded-2xl border border-purple-900/40 bg-black/60 p-4"
                     >
+                  {variant.mockupLabel ? (
+                    <div className="flex justify-center rounded-2xl border border-purple-900/30 bg-gradient-to-b from-[#1b0924] via-[#0b0014] to-black p-4">
+                      <ProductMockup
+                        labelSrc={variant.mockupLabel}
+                        productName={`${product.name} ${variant.label}`}
+                        size="md"
+                      />
+                    </div>
+                  ) : null}
                       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-purple-100">
                         <span className="font-semibold uppercase tracking-wide text-purple-200">
                           {variant.label}
@@ -315,8 +325,8 @@ export function ProductCard({
             </>
           ) : (
             <div className="rounded-2xl border border-purple-900/40 bg-black/60 px-4 py-6 text-center text-sm text-zinc-300">
-              Buying options are hidden. Use "View buying options" to choose a
-              dosage and pricing tier.
+              Buying options are hidden. Use &quot;View buying options&quot; to
+              choose a dosage and pricing tier.
             </div>
           )}
         </div>
@@ -450,8 +460,8 @@ function FloatingCartButton({
             </ul>
           ) : (
             <p className="mt-4 text-sm text-zinc-400">
-              Browse the catalog and add peptides using the "Add to Cart" button
-              on each product.
+              Browse the catalog and add peptides using the &quot;Add to
+              Cart&quot; button on each product.
             </p>
           )}
           <div className="mt-5 rounded-2xl border border-purple-900/40 bg-purple-500/10 px-4 py-3 text-xs text-purple-200">
