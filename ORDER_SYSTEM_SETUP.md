@@ -27,6 +27,10 @@ ADMIN_EMAIL=your-email@example.com
 # Optional: Email-to-SMS gateway for instant text alerts
 # Example: 5551234567@txt.att.net
 ADMIN_SMS_EMAIL=your-sms-gateway@example.com
+
+# Optional: Rate limiting for order submissions (defaults shown)
+ORDER_RATE_LIMIT_MAX_REQUESTS=5
+ORDER_RATE_LIMIT_WINDOW_MS=900000 # 15 minutes
 ```
 
 ### 2. Email Configuration (Optional)
@@ -159,7 +163,7 @@ app/
 
 - Admin page uses simple password protection via query parameter
 - For production, implement proper authentication (NextAuth.js, etc.)
-- Consider rate limiting on order API endpoint
+- Built-in per-IP + per-email rate limiting guards order creation (defaults: 5 attempts every 15 minutes – override with `ORDER_RATE_LIMIT_MAX_REQUESTS` and `ORDER_RATE_LIMIT_WINDOW_MS`)
 - Validate and sanitize all user inputs
 - Use HTTPS in production
 

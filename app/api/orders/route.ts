@@ -17,12 +17,19 @@ export async function POST (request: NextRequest)
                 orderId: result.orderId,
                 orderNumber: result.orderNumber,
             });
-        } else {
-            return NextResponse.json(
-                { error: result.error },
-                { status: 400 }
-            );
         }
+
+        const responseInit: ResponseInit = {
+            status: result.errorCode === "RATE_LIMITED" ? 429 : 400,
+        };
+
+        if (result.errorCode === "RATE_LIMITED" && result.retryAfterSeconds) {
+            responseInit.headers = {
+                "Retry-After": String(result.retryAfterSeconds),
+            };
+        }
+
+        return NextResponse.json({ error: result.error }, responseInit);
     } catch (error) {
         console.error("Error creating order:", error);
         return NextResponse.json(

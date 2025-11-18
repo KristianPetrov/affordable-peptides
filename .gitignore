@@ -12,8 +12,7 @@
 
 # testing
 /coverage
-# development data
-*.md
+
 # next.js
 /.next/
 /out/
@@ -43,3 +42,7 @@ next-env.d.ts
 
 # database
 /data
+# development data
+ORDER_SYSTEM_SETUP.md
+SERVER_SIDE_IMPLEMENTATION.md
+AUTH_SETUP.md
