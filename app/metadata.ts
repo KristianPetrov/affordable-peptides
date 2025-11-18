@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     description,
     type: "website",
     locale: "en_US",
-    url: "https://affordablepeptides.com",
+    url: "https://affordablepeptides.life",
     siteName: "Affordable Peptides",
     images: [
       {

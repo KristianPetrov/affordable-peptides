@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import NavBar from "@/components/NavBar";
+import Disclaimer from "@/components/Disclaimer";
 import HeroShowcase from "@/components/home/HeroShowcase";
 import MissionSection from "@/components/home/MissionSection";
 import VisionSection from "@/components/home/VisionSection";
@@ -157,6 +158,12 @@ export default function Home() {
                 </p>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="px-6 sm:px-12 lg:px-16">
+          <div className="mx-auto max-w-6xl">
+            <Disclaimer />
           </div>
         </section>
       </main>

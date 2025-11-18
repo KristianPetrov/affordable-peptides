@@ -1,10 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 
 import MoleculeViewer from "@/components/MoleculeViewer";
 import ProductMockup from "@/components/ProductMockup";
+import Disclaimer from "@/components/Disclaimer";
 import {
   type AddToCartPayload,
   type CartItem,
@@ -63,7 +65,7 @@ type StoreClientProps = {
 };
 
 type CategoryTab = {
-  id: "all" | ProductCategoryId;
+  id: "all" | "featured" | ProductCategoryId;
   label: string;
   description: string;
 };
@@ -88,8 +90,10 @@ export function ProductCard({
   showModalLink = true,
 }: ProductCardProps) {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const expanded = typeof forceExpanded === "boolean" ? forceExpanded : isExpanded;
   const buyingOptionsId = `product-${product.slug}-buying-options`;
+  const descriptionId = `product-${product.slug}-description`;
   const getFirstValidTierIndex = (variant: Variant) =>
     variant.tiers.findIndex(
       (tier) => parseQuantity(tier.quantity) > 0 && parsePrice(tier.price) > 0
@@ -168,7 +172,52 @@ export function ProductCard({
       <div className="flex flex-1 flex-col gap-6 p-6">
         <div className="space-y-3">
           <h3 className="text-lg font-semibold text-white">{product.name}</h3>
-          <p className="text-sm text-purple-100">{product.researchFocus}</p>
+          {product.detailedDescription ? (
+            <div className="space-y-2">
+              <button
+                type="button"
+                onClick={() => setIsDescriptionExpanded((prev) => !prev)}
+                aria-expanded={isDescriptionExpanded}
+                aria-controls={descriptionId}
+                className="group w-full text-left"
+              >
+                <div className="flex items-start gap-2">
+                  <p
+                    className={`text-sm text-purple-100 transition-colors group-hover:text-purple-50 ${
+                      isDescriptionExpanded ? "text-purple-200" : ""
+                    }`}
+                  >
+                    {isDescriptionExpanded
+                      ? product.detailedDescription
+                      : product.researchFocus}
+                  </p>
+                  <svg
+                    className={`mt-0.5 h-4 w-4 flex-shrink-0 text-purple-300 transition-transform ${
+                      isDescriptionExpanded ? "rotate-180" : ""
+                    }`}
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    aria-hidden="true"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </button>
+              <p className="text-xs text-zinc-500">
+                {isDescriptionExpanded
+                  ? "Click to show brief description"
+                  : "Click to expand for detailed description"}
+              </p>
+            </div>
+          ) : (
+            <p className="text-sm text-purple-100">{product.researchFocus}</p>
+          )}
           <div className="flex flex-wrap gap-2">
             {product.categories.map((categoryId) => {
               const category = CATEGORY_LOOKUP.get(categoryId);
@@ -352,6 +401,7 @@ function FloatingCartButton({
   onDecrement,
   onRemove,
 }: FloatingCartButtonProps) {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -468,6 +518,18 @@ function FloatingCartButton({
             Pricing displayed is for research use only. Reach out for bulk,
             custom, or specialty sourcing.
           </div>
+          {cartItems.length > 0 && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsOpen(false);
+                router.push("/checkout");
+              }}
+              className="mt-4 block w-full rounded-full bg-purple-600 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+            >
+              Place Order (Pay Manually)
+            </button>
+          )}
         </div>
       )}
     </div>
@@ -485,11 +547,16 @@ export default function StoreClient({ products }: StoreClientProps) {
     removeItem,
   } = useStorefront();
   const [activeCategory, setActiveCategory] = useState<CategoryTab["id"]>(
-    productCategories[0]?.id ?? "all"
+    "featured"
   );
 
   const categoryTabs = useMemo<CategoryTab[]>(() => {
     return [
+      {
+        id: "featured",
+        label: "Featured",
+        description: "Our most requested products, curated for their purity, reliability, and results.",
+      },
       ...productCategories,
       {
         id: "all",
@@ -544,6 +611,9 @@ export default function StoreClient({ products }: StoreClientProps) {
   const filteredProducts = useMemo(() => {
     if (activeCategory === "all") {
       return sortedProducts;
+    }
+    if (activeCategory === "featured") {
+      return sortedProducts.filter((product) => product.isFeatured);
     }
     return sortedProducts.filter((product) =>
       product.categories.includes(activeCategory)
@@ -653,6 +723,12 @@ export default function StoreClient({ products }: StoreClientProps) {
                 </div>
               )}
             </div>
+          </div>
+        </section>
+
+        <section className="px-6 sm:px-12 lg:px-16">
+          <div className="mx-auto max-w-6xl">
+            <Disclaimer />
           </div>
         </section>
       </main>

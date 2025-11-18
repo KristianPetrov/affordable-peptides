@@ -4,6 +4,7 @@ import type { Product } from "@/lib/products";
 import type { MoleculeDefinition } from "@/lib/molecules";
 
 import { ProductCard } from "@/components/store/StoreClient";
+import Disclaimer from "@/components/Disclaimer";
 import { useStorefront } from "@/components/store/StorefrontContext";
 
 type ProductDetailStandaloneProps = {
@@ -18,7 +19,7 @@ export default function ProductDetailStandalone({
   const { addToCart } = useStorefront();
 
   return (
-    <div className="mx-auto max-w-5xl px-6 py-12">
+    <div className="mx-auto max-w-5xl px-6 py-12 space-y-8">
       <ProductCard
         product={product}
         molecules={molecules}
@@ -28,6 +29,7 @@ export default function ProductDetailStandalone({
         showExpandToggle={false}
         showModalLink={false}
       />
+      <Disclaimer />
     </div>
   );
 }

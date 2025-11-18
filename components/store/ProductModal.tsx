@@ -7,6 +7,7 @@ import type { Product } from "@/lib/products";
 import type { MoleculeDefinition } from "@/lib/molecules";
 
 import { ProductCard } from "@/components/store/StoreClient";
+import Disclaimer from "@/components/Disclaimer";
 import { useStorefront } from "@/components/store/StorefrontContext";
 
 type ProductModalProps = {
@@ -52,7 +53,7 @@ export default function ProductModal({ product, molecules }: ProductModalProps) 
           Close
         </button>
         <div className="max-h-[80vh] overflow-hidden rounded-3xl border border-purple-900/60 bg-black/60">
-          <div className="max-h-[80vh] overflow-y-auto px-4 py-6 pt-10">
+          <div className="max-h-[80vh] overflow-y-auto px-4 py-6 pt-10 space-y-6">
             <ProductCard
               product={product}
               molecules={molecules}
@@ -62,6 +63,7 @@ export default function ProductModal({ product, molecules }: ProductModalProps) 
               showExpandToggle={false}
               showModalLink={false}
             />
+            <Disclaimer variant="compact" />
           </div>
         </div>
       </div>
