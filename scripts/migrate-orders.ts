@@ -5,7 +5,8 @@ import type { Order } from "@/lib/orders";
 
 const ORDERS_FILE = join(process.cwd(), "data", "orders.json");
 
-async function migrateOrders() {
+async function migrateOrders ()
+{
   try {
     console.log("Reading orders from data/orders.json...");
     const ordersData = await readFile(ORDERS_FILE, "utf-8");
@@ -33,8 +34,13 @@ async function migrateOrders() {
         await createOrder(order);
         console.log(`✓ Migrated order ${order.orderNumber}`);
         successCount++;
-      } catch (error: any) {
-        console.error(`✗ Failed to migrate order ${order.orderNumber}:`, error.message);
+      } catch (error: unknown) {
+        const message =
+          error instanceof Error ? error.message : "Unknown error";
+        console.error(
+          `✗ Failed to migrate order ${order.orderNumber}:`,
+          message
+        );
         errorCount++;
       }
     }
@@ -42,8 +48,13 @@ async function migrateOrders() {
     console.log("\nMigration complete!");
     console.log(`Successfully migrated: ${successCount}`);
     console.log(`Errors: ${errorCount}`);
-  } catch (error: any) {
-    if (error.code === "ENOENT") {
+  } catch (error: unknown) {
+    if (
+      error &&
+      typeof error === "object" &&
+      "code" in error &&
+      (error as { code?: string }).code === "ENOENT"
+    ) {
       console.log("No orders.json file found. Nothing to migrate.");
     } else {
       console.error("Error during migration:", error);
@@ -54,11 +65,13 @@ async function migrateOrders() {
 
 // Run migration
 migrateOrders()
-  .then(() => {
+  .then(() =>
+  {
     console.log("Migration script completed.");
     process.exit(0);
   })
-  .catch((error) => {
+  .catch((error) =>
+  {
     console.error("Fatal error:", error);
     process.exit(1);
   });

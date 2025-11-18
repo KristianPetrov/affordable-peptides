@@ -255,7 +255,7 @@ export function ProductCard({
               <Link
                 href={`/store/product/${product.slug}`}
                 scroll={false}
-                className="inline-flex flex-1 items-center justify-center rounded-full border border-purple-500/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-purple-100 transition hover:border-purple-300 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:flex-none"
+                className="inline-flex flex-1 items-center justify-center rounded-full border border-purple-500/40 px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.25em] text-purple-100 transition hover:border-purple-300 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:flex-none"
               >
                 Open product detail
               </Link>
@@ -393,7 +393,7 @@ type FloatingCartButtonProps = {
   onRemove: (key: string) => void;
 };
 
-function FloatingCartButton({
+export function FloatingCartButton({
   subtotal,
   totalUnits,
   cartItems,

@@ -114,7 +114,7 @@ export default async function AdminPage() {
       <NavBar />
       <main className="px-6 py-12 sm:px-12 lg:px-16">
         <div className="mx-auto max-w-7xl">
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-3xl font-semibold text-white sm:text-4xl">
                 Order Management
@@ -128,7 +128,7 @@ export default async function AdminPage() {
                 </p>
               )}
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3 sm:flex-nowrap">
               <Link
                 href="/store"
                 className="rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200 transition hover:border-purple-400 hover:text-white"

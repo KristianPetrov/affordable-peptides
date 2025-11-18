@@ -89,8 +89,7 @@ export default async function LoginPage({
             </button>
           </form>
           <p className="mt-4 text-xs text-zinc-400">
-            Set ADMIN_EMAIL and ADMIN_PASSWORD environment variables to secure
-            this page.
+            Page is protected by NextAuth.
           </p>
         </div>
       </main>

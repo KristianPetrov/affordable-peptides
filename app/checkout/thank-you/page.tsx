@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useEffect, useState, Suspense } from "react";
+import { useMemo, Suspense } from "react";
 
 import NavBar from "@/components/NavBar";
 
@@ -12,20 +12,17 @@ function ThankYouContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("orderNumber");
   const orderId = searchParams.get("orderId");
-  const [formattedOrderNumber, setFormattedOrderNumber] = useState<string>("");
-
-  useEffect(() => {
-    if (orderNumber) {
-      // Format AP-12345678 to AP-12345-678
-      const parts = orderNumber.split("-");
-      if (parts.length === 2 && parts[1].length === 11) {
-        setFormattedOrderNumber(
-          `${parts[0]}-${parts[1].slice(0, 5)}-${parts[1].slice(5)}`
-        );
-      } else {
-        setFormattedOrderNumber(orderNumber);
-      }
+  const formattedOrderNumber = useMemo(() => {
+    if (!orderNumber) {
+      return "";
     }
+
+    const parts = orderNumber.split("-");
+    if (parts.length === 2 && parts[1].length === 11) {
+      return `${parts[0]}-${parts[1].slice(0, 5)}-${parts[1].slice(5)}`;
+    }
+
+    return orderNumber;
   }, [orderNumber]);
 
   if (!orderNumber || !orderId) {
