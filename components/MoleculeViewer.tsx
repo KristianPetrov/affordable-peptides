@@ -50,11 +50,11 @@ type LoadedStructure = {
   format: "pdb" | "sdf";
 };
 
-const scriptUrl = "https://3dmol.org/build/3Dmol-min.js";
-const scriptState: { promise: Promise<ThreeDMolGlobal> | null } = {
+const moduleState: { promise: Promise<ThreeDMolGlobal> | null } = {
   promise: null,
 };
 const structureCache = new Map<string, LoadedStructure>();
+type ThreeDMolModule = ThreeDMolGlobal & { default?: ThreeDMolGlobal };
 
 const variantConfig: Record<
   ViewerVariant,
@@ -101,6 +101,7 @@ export default function MoleculeViewer({
   const [reloadToken, setReloadToken] = useState(0);
   const [isInView, setIsInView] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
+  const [hasRenderableArea, setHasRenderableArea] = useState(false);
 
   useEffect(() => {
     if (isInView) {
@@ -132,6 +133,33 @@ export default function MoleculeViewer({
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof ResizeObserver === "undefined") {
+      setHasRenderableArea(true);
+      return;
+    }
+
+    const target = canvasRef.current;
+    if (!target) {
+      return;
+    }
+
+    const updateSize = () =>
+    {
+      const rect = target.getBoundingClientRect();
+      setHasRenderableArea(rect.width > 0 && rect.height > 0);
+    };
+
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(target);
+    updateSize();
+
+    return () =>
+    {
+      observer.disconnect();
+    };
+  }, []);
+
 useEffect(() => {
   const viewer = viewerRef.current;
   if (!viewer) {
@@ -155,7 +183,12 @@ useEffect(() => {
   const activeMolecule = molecules.length ? molecules[clampedIndex] : null;
 
   useEffect(() => {
-    if (!isInView || !activeMolecule || typeof window === "undefined") {
+    if (
+      !isInView ||
+      !activeMolecule ||
+      typeof window === "undefined" ||
+      !hasRenderableArea
+    ) {
       return;
     }
 
@@ -166,7 +199,7 @@ useEffect(() => {
       setStatus("loading");
       setErrorMessage(null);
       try {
-        const $3Dmol = await load3DMolScript();
+        const $3Dmol = await load3DMol();
         if (!isMounted || !canvasRef.current) {
           return;
         }
@@ -199,7 +232,7 @@ useEffect(() => {
           {},
           {
             stick: {
-              radius: 0.2,
+              radius: 0.20,
               colorscheme: "Jmol",
             },
             sphere: {
@@ -242,7 +275,7 @@ useEffect(() => {
       isMounted = false;
       abortController.abort();
     };
-  }, [activeMolecule, isInView, reloadToken, prefersReducedMotion]);
+  }, [activeMolecule, isInView, reloadToken, prefersReducedMotion, hasRenderableArea]);
 
   const effectiveStatus: ViewerStatus = molecules.length ? status : "missing";
 
@@ -345,7 +378,7 @@ useEffect(() => {
   );
 }
 
-function load3DMolScript(): Promise<ThreeDMolGlobal> {
+function load3DMol(): Promise<ThreeDMolGlobal> {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("3Dmol requires a browser environment"));
   }
@@ -354,28 +387,23 @@ function load3DMolScript(): Promise<ThreeDMolGlobal> {
     return Promise.resolve(window.$3Dmol);
   }
 
-  if (!scriptState.promise) {
-    scriptState.promise = new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src = scriptUrl;
-      script.async = true;
-      script.onload = () => {
-        if (window.$3Dmol) {
-          resolve(window.$3Dmol);
-        } else {
-          scriptState.promise = null;
-          reject(new Error("3Dmol failed to initialize"));
-        }
-      };
-      script.onerror = () => {
-        scriptState.promise = null;
-        reject(new Error("Unable to load 3Dmol script"));
-      };
-      document.head.appendChild(script);
-    });
+  if (!moduleState.promise) {
+    moduleState.promise = import("3dmol")
+      .then((module) => {
+        const hydratedModule = module as unknown as ThreeDMolModule;
+        const threeDMol = hydratedModule.default ?? hydratedModule;
+        window.$3Dmol = threeDMol;
+        return threeDMol;
+      })
+      .catch((error) => {
+        moduleState.promise = null;
+        throw (error instanceof Error
+          ? error
+          : new Error("Unable to load 3Dmol module"));
+      });
   }
 
-  return scriptState.promise;
+  return moduleState.promise;
 }
 
 async function loadStructureData(
