@@ -1,0 +1,7 @@
+RESEND_API_KEY=re_HKxJnA6h_2iE8TXyTc9BG8ZNQx589yQec
+ADMIN_EMAIL=petrovkristianpishka@gmail.com
+RESEND_FROM_EMAIL=onboarding@resend.dev
+ADMIN_PASSWORD=lordofpeptides222
+DATABASE_URL=postgresql://neondb_owner:npg_zo6N4CDWPMrL@ep-wandering-truth-adrmsxxk-pooler.c-2.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require
+AUTH_SECRET='HZcKdDfjeTYNk+MHNDpTx/+EIevQj7i3tP/VlkcJpms='
+ADMIN_SMS_EMAIL=9515393821@tmomail.com
