@@ -12,7 +12,11 @@ export default async function LoginPage({
 
   // Redirect if already logged in
   if (session) {
-    redirect(params.callbackUrl || "/admin");
+    if (session.user.role === "ADMIN") {
+      redirect(params.callbackUrl || "/admin");
+    }
+
+    redirect("/account");
   }
 
   return (

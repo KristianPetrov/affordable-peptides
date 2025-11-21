@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { SessionProvider } from "next-auth/react";
 
 import { StorefrontProvider } from "@/components/store/StorefrontContext";
 
@@ -9,8 +10,14 @@ type ProvidersProps = {
 };
 
 export function Providers({ children }: ProvidersProps) {
-  return <StorefrontProvider>{children}</StorefrontProvider>;
+  return (
+    <SessionProvider>
+      <StorefrontProvider>{children}</StorefrontProvider>
+    </SessionProvider>
+  );
 }
+
+
 
 
 

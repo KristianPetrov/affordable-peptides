@@ -14,6 +14,8 @@ import
     verificationTokens,
   } from "@/lib/db/schema";
 
+export type UserRole = "ADMIN" | "CUSTOMER";
+
 const rawAdminEmail = process.env.ADMIN_EMAIL?.trim();
 const rawAdminPassword = process.env.ADMIN_PASSWORD;
 const adminName = process.env.ADMIN_NAME?.trim() || "Admin";
@@ -75,6 +77,7 @@ async function ensureAdminUser (password: string)
         .set({
           password: hashedPassword,
           name: existingUser.name ?? adminName,
+          role: "ADMIN",
           updatedAt: new Date(),
         })
         .where(eq(users.id, existingUser.id))
@@ -94,6 +97,7 @@ async function ensureAdminUser (password: string)
       email: normalizedAdminEmail,
       name: adminName,
       password: hashedPassword,
+      role: "ADMIN",
     })
     .returning();
 
@@ -145,6 +149,7 @@ export const authConfig = {
             id: adminUser.id,
             email: adminUser.email,
             name: adminUser.name ?? adminName,
+            role: adminUser.role ?? "ADMIN",
           };
         }
 
@@ -167,6 +172,7 @@ export const authConfig = {
           id: user.id,
           email: user.email,
           name: user.name ?? undefined,
+          role: user.role ?? "CUSTOMER",
         };
       },
     }),
@@ -177,6 +183,7 @@ export const authConfig = {
       if (user) {
         token.id = user.id;
         token.email = user.email;
+        token.role = (user as { role?: UserRole }).role ?? token.role;
       }
 
       return token;
@@ -187,6 +194,8 @@ export const authConfig = {
         session.user.id = (token.id as string) ?? session.user.id;
         session.user.email =
           (token.email as string) ?? session.user.email ?? "";
+        session.user.role =
+          (token.role as UserRole) ?? session.user.role ?? "CUSTOMER";
       }
 
       return session;

@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { db as drizzleDb, orders } from "./db/index";
+import { db as drizzleDb, orders, customerProfiles } from "./db/index";
 import type { Order } from "./orders";
 
 export const db = drizzleDb;
@@ -10,6 +10,7 @@ function dbRowToOrder(row: typeof orders.$inferSelect): Order {
     id: row.id,
     orderNumber: row.orderNumber,
     status: row.status,
+    userId: row.userId,
     customerName: row.customerName,
     customerEmail: row.customerEmail,
     customerPhone: row.customerPhone,
@@ -29,6 +30,7 @@ function orderToDbRow(order: Order): typeof orders.$inferInsert {
     id: order.id,
     orderNumber: order.orderNumber,
     status: order.status,
+    userId: order.userId ?? null,
     customerName: order.customerName,
     customerEmail: order.customerEmail,
     customerPhone: order.customerPhone,
@@ -91,4 +93,113 @@ export async function updateOrderStatus(
     .returning();
 
   return updated ? dbRowToOrder(updated) : null;
+}
+
+export async function getOrdersForUser(userId: string): Promise<Order[]> {
+  if (!userId) {
+    return [];
+  }
+
+  const rows = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.userId, userId));
+
+  return rows.map(dbRowToOrder);
+}
+
+export type CustomerProfile = {
+  userId: string;
+  fullName: string | null;
+  phone: string | null;
+  shippingStreet: string | null;
+  shippingCity: string | null;
+  shippingState: string | null;
+  shippingZipCode: string | null;
+  shippingCountry: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type CustomerProfileUpdate = Partial<
+  Pick<
+    CustomerProfile,
+    | "fullName"
+    | "phone"
+    | "shippingStreet"
+    | "shippingCity"
+    | "shippingState"
+    | "shippingZipCode"
+    | "shippingCountry"
+  >
+>;
+
+function dbRowToCustomerProfile(
+  row: typeof customerProfiles.$inferSelect
+): CustomerProfile {
+  return {
+    userId: row.userId,
+    fullName: row.fullName ?? null,
+    phone: row.phone ?? null,
+    shippingStreet: row.shippingStreet ?? null,
+    shippingCity: row.shippingCity ?? null,
+    shippingState: row.shippingState ?? null,
+    shippingZipCode: row.shippingZipCode ?? null,
+    shippingCountry: row.shippingCountry ?? null,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+export async function getCustomerProfile(
+  userId: string
+): Promise<CustomerProfile | null> {
+  if (!userId) {
+    return null;
+  }
+
+  const [row] = await db
+    .select()
+    .from(customerProfiles)
+    .where(eq(customerProfiles.userId, userId))
+    .limit(1);
+
+  return row ? dbRowToCustomerProfile(row) : null;
+}
+
+export async function upsertCustomerProfile(
+  userId: string,
+  profile: CustomerProfileUpdate
+): Promise<CustomerProfile> {
+  const existing = await getCustomerProfile(userId);
+  const data = {
+    fullName: profile.fullName ?? null,
+    phone: profile.phone ?? null,
+    shippingStreet: profile.shippingStreet ?? null,
+    shippingCity: profile.shippingCity ?? null,
+    shippingState: profile.shippingState ?? null,
+    shippingZipCode: profile.shippingZipCode ?? null,
+    shippingCountry: profile.shippingCountry ?? null,
+    updatedAt: new Date(),
+  };
+
+  if (existing) {
+    const [updated] = await db
+      .update(customerProfiles)
+      .set(data)
+      .where(eq(customerProfiles.userId, userId))
+      .returning();
+    return dbRowToCustomerProfile(updated);
+  }
+
+  const [created] = await db
+    .insert(customerProfiles)
+    .values({
+      userId,
+      ...data,
+      createdAt: new Date(),
+    })
+    .returning();
+
+  return dbRowToCustomerProfile(created);
 }

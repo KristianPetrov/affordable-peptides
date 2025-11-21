@@ -2,7 +2,7 @@
 
 import { headers } from "next/headers";
 
-import { createOrder } from "@/lib/db";
+import { createOrder, upsertCustomerProfile } from "@/lib/db";
 import { sendOrderEmail } from "@/lib/email";
 import { generateOrderNumber } from "@/lib/orders";
 import type { CartItem } from "@/components/store/StorefrontContext";
@@ -13,6 +13,7 @@ import
   extractClientIp,
   orderCreationRateLimiter,
 } from "@/lib/rate-limit";
+import { auth } from "@/lib/auth";
 
 type CreateOrderInput = {
   items: CartItem[];
@@ -26,6 +27,7 @@ type CreateOrderInput = {
   shippingState: string;
   shippingZipCode: string;
   shippingCountry: string;
+  saveProfile?: boolean;
 };
 
 export type CreateOrderResult =
@@ -168,6 +170,15 @@ export async function createOrderAction (
       };
     }
 
+    let session = null;
+
+    try {
+      session = await auth();
+    } catch {
+      session = null;
+    }
+
+    const userId = session?.user?.id ?? null;
     const orderNumber = generateOrderNumber();
     const now = new Date().toISOString();
 
@@ -175,6 +186,7 @@ export async function createOrderAction (
       id: randomUUID(),
       orderNumber,
       status: "PENDING_PAYMENT",
+      userId,
       customerName: input.customerName.trim(),
       customerEmail: input.customerEmail.trim(),
       customerPhone: input.customerPhone.trim(),
@@ -201,6 +213,23 @@ export async function createOrderAction (
 
     // Revalidate admin page to show new order
     revalidatePath("/admin");
+    revalidatePath("/account");
+    revalidatePath("/account/orders");
+
+    if (userId && input.saveProfile) {
+      await upsertCustomerProfile(userId, {
+        fullName: input.customerName.trim(),
+        phone: input.customerPhone.trim(),
+        shippingStreet: input.shippingStreet.trim(),
+        shippingCity: input.shippingCity.trim(),
+        shippingState: input.shippingState.trim(),
+        shippingZipCode: input.shippingZipCode.trim(),
+        shippingCountry: input.shippingCountry.trim(),
+      });
+
+      revalidatePath("/account/profile");
+      revalidatePath("/checkout");
+    }
 
     return {
       success: true,

@@ -156,6 +156,30 @@ function ThankYouContent() {
                 </p>
               </div>
 
+              <div className="rounded-2xl border border-purple-900/40 bg-black/40 p-6">
+                <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
+                  Track Your Orders
+                </h3>
+                <p className="text-sm text-zinc-300">
+                  Sign in to your account to review this order anytime or create
+                  an account to save your details for faster checkout.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-3">
+                  <Link
+                    href="/account"
+                    className="rounded-full border border-purple-500/60 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200 transition hover:border-purple-400 hover:text-white"
+                  >
+                    Go to Account
+                  </Link>
+                  <Link
+                    href="/account/register"
+                    className="rounded-full bg-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500"
+                  >
+                    Create Account
+                  </Link>
+                </div>
+              </div>
+
               <div className="flex flex-wrap justify-center gap-4 pt-4">
                 <Link
                   href="/store"

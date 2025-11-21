@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 
 const links = [
   { href: "/store", label: "Store" },
@@ -13,6 +14,13 @@ const links = [
 
 export default function NavBar() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { data: session } = useSession();
+
+  const accountLink = session?.user
+    ? session.user.role === "ADMIN"
+      ? { href: "/admin", label: "Admin" }
+      : { href: "/account", label: "Account" }
+    : { href: "/account/login", label: "Login" };
 
   const toggleMenu = () => setMenuOpen((prev) => !prev);
   const closeMenu = () => setMenuOpen(false);
@@ -50,6 +58,12 @@ export default function NavBar() {
               {link.label}
             </Link>
           ))}
+          <Link
+            href={accountLink.href}
+            className="text-sm font-medium text-zinc-200 transition hover:text-white"
+          >
+            {accountLink.label}
+          </Link>
           <Link
             href="tel:9515393821"
             className="rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-purple-200 shadow-[0_10px_25px_rgba(120,48,255,0.35)] transition hover:border-purple-400 hover:text-white"
@@ -110,6 +124,13 @@ export default function NavBar() {
               {link.label}
             </Link>
           ))}
+          <Link
+            href={accountLink.href}
+            className="rounded-full border border-purple-500/50 px-4 py-2 text-center transition hover:border-purple-400 hover:text-white"
+            onClick={closeMenu}
+          >
+            {accountLink.label}
+          </Link>
           <Link
             href="tel:9515393821"
             className="rounded-2xl border border-purple-500/50 bg-purple-500/10 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.25em] text-purple-200 transition hover:border-purple-400 hover:text-white"

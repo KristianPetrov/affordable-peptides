@@ -3,13 +3,21 @@
 import { updateOrderStatus } from "@/lib/db";
 import type { OrderStatus } from "@/lib/orders";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/lib/auth";
 
-export async function updateOrderStatusAction(
+export async function updateOrderStatusAction (
   orderId: string,
   status: OrderStatus,
   notes?: string
-): Promise<{ success: boolean; error?: string }> {
+): Promise<{ success: boolean; error?: string }>
+{
   try {
+    const session = await auth();
+
+    if (!session || session.user.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized" };
+    }
+
     if (!orderId || !status) {
       return { success: false, error: "Missing required fields" };
     }
@@ -43,6 +51,8 @@ export async function updateOrderStatusAction(
     };
   }
 }
+
+
 
 
 

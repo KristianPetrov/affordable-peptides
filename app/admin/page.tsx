@@ -95,6 +95,10 @@ export default async function AdminPage() {
     redirect("/admin/login");
   }
 
+  if (session.user.role !== "ADMIN") {
+    redirect("/account");
+  }
+
   const orders = await getAllOrders();
   const sortedOrders = [...orders].sort(
     (a, b) =>

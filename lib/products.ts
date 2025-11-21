@@ -103,8 +103,8 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["weight-metabolic"],
     isFeatured: true,
     variants: [
-      createVariant("5mg", 50),
-      createVariant("10mg", 80),
+      createVariant("5mg", 50,"/products/label-aod9604-5mg-3ml.png"),
+      createVariant("10mg", 80,"/products/label-aod9604-10mg-3ml.png"),
     ],
   },
   {
@@ -113,8 +113,8 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Bacteriostatic Water is a sterile water-for-injection with benzyl alcohol, used in research settings to safely reconstitute multi-dose vials. It helps maintain vial integrity over repeated draws when proper aseptic technique is followed.",
     categories: ["support-essentials"],
     variants: [
-      createVariant("3ml", 2),
-      createVariant("10ml", 4),
+      createVariant("3ml", 2, "/products/label-bacteriostatic-water-3ml.png"),
+      createVariant("10ml", 4, "/products/label-bacteriostatic-water-10ml.png"),
     ],
   },
   {
@@ -123,7 +123,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "This combo pairs BPC-157 and TB-500, two peptides widely explored for connective tissue, tendon, and muscle support in preclinical models. Researchers value the stack for its potential to accelerate tissue repair, angiogenesis, and overall recovery signaling.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("5mg each", 50),
+      createVariant("5mg each", 50,"/products/label-bpc157-tb-500-10mg-3ml.png"),
       createVariant(
         "10mg each",
         80,
@@ -138,7 +138,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["recovery-performance", "longevity-wellness"],
     isFeatured: true,
     variants: [
-      createVariant("5mg", 40),
+      createVariant("5mg", 40,"/products/label-bpc157-5mg-3ml.png"),
       createVariant("10mg", 70, "/products/label-bpc157-10mg-3ml.png"),
     ],
   },
@@ -153,8 +153,8 @@ const productDefinitions: ProductDefinition[] = [
         70,
         "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png"
       ),
-      createVariant("With DAC (5mg)", 50),
-      createVariant("Without DAC (5mg)", 40),
+      createVariant("With DAC (5mg)", 50,"/products/label-cjc-1295-dac-5mg-3ml.png"),
+      createVariant("Without DAC (5mg)", 40,"/products/label-cjc-1295-wo-dac-5mg-3ml.png"),
       createVariant(
         "Without DAC (10mg)",
         70,
@@ -168,8 +168,8 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Epithalon (Epitalon) is a synthetic peptide explored in aging research for its effects on telomerase activity, circadian rhythm, and oxidative stress. Studies have positioned it as a potential tool for longevity and cellular health investigations.",
     categories: ["longevity-wellness"],
     variants: [
-      createVariant("10mg", 30),
-      createVariant("50mg", 80),
+      createVariant("10mg", 30,"/products/label-epithalon-10mg-3ml.png"),
+      createVariant("50mg", 80,"/products/label-epithalon-50mg-3ml.png"),
     ],
   },
   {
@@ -197,7 +197,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "GLP-1 receptor agonists are incretin-based peptides researched for their effects on satiety, glucose regulation, and body-weight reduction. These compounds are central to modern metabolic and cardiometabolic studies.",
     categories: ["weight-metabolic"],
     variants: [
-      createVariant("5mg", 40),
+      createVariant("5mg", 40,"/products/label-glp1-5mg-3ml.png"),
     ],
   },
   {
@@ -266,7 +266,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "KPV is an anti-inflammatory tripeptide derived from the α-MSH sequence and studied for its effects on gut lining support and immune modulation. Research models highlight its potential to help calm excessive inflammatory responses in barrier tissues.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("5mg", 40),
+      createVariant("5mg", 40, "/products/label-kpv-5mg-3ml.png"),
       createVariant("10mg", 70, "/products/label-kpv-10mg-3ml.png"),
     ],
   },
@@ -289,7 +289,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Lipo-C combines methionine, inositol, choline (MIC), and vitamin B12, and is often used in research on liver fat metabolism and methylation support. It's a popular option in weight-management–oriented protocols in laboratory and clinical research settings.",
     categories: ["weight-metabolic"],
     variants: [
-      createVariant("10ml", 60),
+      createVariant("10ml", 60,"/products/label-lipo-c-10ml.png"),
     ],
   },
   {
@@ -298,7 +298,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "This Lipo-C variant provides methionine, inositol, and choline only, omitting B12 for researchers working with subjects who avoid methyl donors or B vitamins. It targets the same liver-fat and methylation pathways while allowing more protocol flexibility.",
     categories: ["weight-metabolic"],
     variants: [
-      createVariant("10ml", 60),
+      createVariant("10ml", 60,"/products/label-lipo-c-10ml.png"),
     ],
   },
   {
@@ -338,7 +338,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "SLU-PP-332 is a PPAR/ERR-pathway modulator explored as a potential \"exercise mimetic.\" Animal studies suggest benefits for muscular endurance, fat oxidation, and cardiometabolic health, positioning it at the cutting edge of performance and longevity research.",
     categories: ["weight-metabolic", "recovery-performance"],
     variants: [
-      createVariant("5mg", 80),
+      createVariant("5mg", 80,"/products/label-slupp332-5mg-3ml.png"),
     ],
   },
   {
@@ -347,8 +347,8 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "TB-500 is a synthetic fragment of thymosin β4 studied for its impact on angiogenesis, cell migration, and tissue repair. It's frequently used in preclinical research on joint health, soft-tissue recovery, and post-injury remodeling.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("5mg", 40),
-      createVariant("10mg", 70),
+      createVariant("5mg", 40,"/products/label-tb500-5mg-3ml.png"),
+      createVariant("10mg", 70,"/products/label-tb500-10mg-3ml.png"),
     ],
   },
   {

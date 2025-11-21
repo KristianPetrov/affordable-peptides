@@ -6,6 +6,7 @@ export type Order = {
   id: string;
   orderNumber: string;
   status: OrderStatus;
+  userId?: string | null;
   customerName: string;
   customerEmail: string;
   customerPhone: string;

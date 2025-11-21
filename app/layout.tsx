@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 
+import { AgeGateProvider } from "@/components/AgeGateProvider";
 import { Providers } from "@/components/Providers";
 
 import "./globals.css";
@@ -21,10 +22,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <Providers>{children}</Providers>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <AgeGateProvider>
+          <Providers>{children}</Providers>
+        </AgeGateProvider>
       </body>
     </html>
   );
