@@ -2,6 +2,7 @@ import { type DefaultSession } from "next-auth";
 import type { UserRole } from "@/auth.config";
 import "next-auth";
 import "next-auth/jwt";
+import "@auth/core/adapters";
 
 declare module "next-auth" {
   interface Session extends DefaultSession {
@@ -26,6 +27,12 @@ declare module "next-auth/jwt" {
     id?: string;
     email?: string;
     role?: UserRole;
+  }
+}
+
+declare module "@auth/core/adapters" {
+  interface AdapterUser {
+    role: UserRole;
   }
 }
 
