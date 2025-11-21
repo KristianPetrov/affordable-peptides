@@ -20,10 +20,11 @@ export type AgeGateAction = (
 
 const oneMonthInSeconds = 60 * 60 * 24 * 30;
 
-export async function submitAgeVerification(
+export async function submitAgeVerification (
   _prevState: AgeGateFormState,
   formData: FormData
-): Promise<AgeGateFormState> {
+): Promise<AgeGateFormState>
+{
   "use server";
   const decision = formData.get("decision");
   const rememberSelection = formData.get("remember");
