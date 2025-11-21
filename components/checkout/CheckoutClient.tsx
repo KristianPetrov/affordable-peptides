@@ -20,7 +20,7 @@ type SessionUser = {
   id: string;
   email: string;
   name?: string | null;
-  role: string;
+  role?: string;
 } | null;
 
 type CheckoutClientProps = {

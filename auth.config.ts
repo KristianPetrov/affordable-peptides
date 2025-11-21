@@ -7,12 +7,12 @@ import type { NextAuthConfig } from "next-auth";
 
 import { db } from "@/lib/db";
 import
-  {
-    users,
-    accounts,
-    sessions,
-    verificationTokens,
-  } from "@/lib/db/schema";
+{
+  users,
+  accounts,
+  sessions,
+  verificationTokens,
+} from "@/lib/db/schema";
 
 export type UserRole = "ADMIN" | "CUSTOMER";
 
@@ -149,7 +149,7 @@ export const authConfig = {
             id: adminUser.id,
             email: adminUser.email,
             name: adminUser.name ?? adminName,
-            role: adminUser.role ?? "ADMIN",
+            role: (adminUser.role ?? "ADMIN") as UserRole,
           };
         }
 
@@ -172,7 +172,7 @@ export const authConfig = {
           id: user.id,
           email: user.email,
           name: user.name ?? undefined,
-          role: user.role ?? "CUSTOMER",
+          role: (user.role ?? "CUSTOMER") as UserRole,
         };
       },
     }),
