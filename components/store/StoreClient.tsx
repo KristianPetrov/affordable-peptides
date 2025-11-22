@@ -60,6 +60,30 @@ const parsePrice = (value: string) => Number(value.replace(/[^0-9.]/g, "")) || 0
 const parseQuantity = (value: string) =>
   Number(value.replace(/[^0-9.]/g, "")) || 0;
 
+const getBaseUnitPrice = (variant: Variant) => {
+  let bestUnitPrice: number | null = null;
+  let bestQuantity = Infinity;
+
+  for (const tier of variant.tiers) {
+    const tierQuantity = parseQuantity(tier.quantity);
+    const tierPrice = parsePrice(tier.price);
+    if (!tierQuantity || !tierPrice) {
+      continue;
+    }
+
+    const unitPrice = tierPrice / tierQuantity;
+    if (tierQuantity < bestQuantity) {
+      bestQuantity = tierQuantity;
+      bestUnitPrice = unitPrice;
+    } else if (tierQuantity === bestQuantity) {
+      bestUnitPrice =
+        bestUnitPrice === null ? unitPrice : Math.min(bestUnitPrice, unitPrice);
+    }
+  }
+
+  return bestUnitPrice ?? 0;
+};
+
 type StoreClientProps = {
   products: Product[];
 };
@@ -147,6 +171,21 @@ export function ProductCard({
       return;
     }
 
+    const pricingTiers = variant.tiers
+      .map((tier) => ({
+        quantity: parseQuantity(tier.quantity),
+        price: parsePrice(tier.price),
+      }))
+      .filter((tier) => tier.quantity > 0 && tier.price > 0)
+      .sort((a, b) => a.quantity - b.quantity);
+
+    if (pricingTiers.length === 0) {
+      pricingTiers.push({
+        quantity: tierQuantity,
+        price: tierPrice,
+      });
+    }
+
     const tierPriceDisplay = selectedTier.price.startsWith("$")
       ? selectedTier.price
       : `$${selectedTier.price}`;
@@ -157,6 +196,7 @@ export function ProductCard({
       tierQuantity,
       tierPrice,
       tierPriceDisplay,
+      pricingTiers,
     });
   };
 
@@ -300,6 +340,7 @@ export function ProductCard({
                 className="flex flex-1 flex-col gap-4"
               >
                 {product.variants.map((variant) => {
+                  const baseUnitPrice = getBaseUnitPrice(variant);
                   const selectedIndex = resolveSelectedIndex(variant);
                   const selectedTier = variant.tiers[selectedIndex];
                   const selectedTierQuantity = selectedTier
@@ -350,6 +391,16 @@ export function ProductCard({
                           const isUnavailable =
                             tierQuantity === 0 || tierPrice === 0;
                           const isSelected = index === selectedIndex;
+                          const perUnitPrice =
+                            tierQuantity > 0 ? tierPrice / tierQuantity : 0;
+                          const savingsPercent =
+                            baseUnitPrice > 0 && perUnitPrice > 0
+                              ? Math.round(
+                                  ((baseUnitPrice - perUnitPrice) /
+                                    baseUnitPrice) *
+                                    100
+                                )
+                              : 0;
 
                           return (
                             <button
@@ -376,6 +427,11 @@ export function ProductCard({
                               <span className="mt-1 text-sm font-semibold text-white">
                                 {tierPriceDisplay}
                               </span>
+                              {savingsPercent > 0 && (
+                                <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-green-300">
+                                  Save {savingsPercent}%
+                                </span>
+                              )}
                             </button>
                           );
                         })}
@@ -420,6 +476,7 @@ type FloatingCartButtonProps = {
   subtotal: number;
   totalUnits: number;
   cartItems: CartItem[];
+  lineItemTotals: Record<string, number>;
   onIncrement: (key: string) => void;
   onDecrement: (key: string) => void;
   onRemove: (key: string) => void;
@@ -429,6 +486,7 @@ export function FloatingCartButton({
   subtotal,
   totalUnits,
   cartItems,
+  lineItemTotals,
   onIncrement,
   onDecrement,
   onRemove,
@@ -483,6 +541,12 @@ export function FloatingCartButton({
               {totalUnits} unit{totalUnits === 1 ? "" : "s"} selected
             </div>
           )}
+          {cartItems.length > 0 && (
+            <div className="mt-1 text-[11px] text-purple-200">
+              Volume discounts apply automatically after 5 and 10 bottles per
+              product.
+            </div>
+          )}
 
           {cartItems.length > 0 ? (
             <ul className="mt-4 space-y-4">
@@ -503,7 +567,9 @@ export function FloatingCartButton({
                       {item.tierPriceDisplay}
                     </div>
                     <div className="text-sm font-semibold text-white">
-                      {formatCurrency(item.tierPrice * item.count)}
+                      {formatCurrency(
+                        lineItemTotals[item.key] ?? item.tierPrice * item.count
+                      )}
                     </div>
                   </div>
                   <div className="mt-3 flex items-center justify-between">
@@ -573,6 +639,7 @@ export default function StoreClient({ products }: StoreClientProps) {
     cartItems,
     subtotal,
     totalUnits,
+    lineItemTotals,
     addToCart,
     incrementItem,
     decrementItem,
@@ -769,6 +836,7 @@ export default function StoreClient({ products }: StoreClientProps) {
         subtotal={subtotal}
         totalUnits={totalUnits}
         cartItems={cartItems}
+        lineItemTotals={lineItemTotals}
         onIncrement={incrementItem}
         onDecrement={decrementItem}
         onRemove={removeItem}

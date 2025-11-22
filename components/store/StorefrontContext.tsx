@@ -8,6 +8,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import {
+  calculateVolumePricing,
+  type PricingTier,
+} from "@/lib/cart-pricing";
 
 export type AddToCartPayload = {
   productName: string;
@@ -15,6 +19,7 @@ export type AddToCartPayload = {
   tierQuantity: number;
   tierPrice: number;
   tierPriceDisplay: string;
+  pricingTiers: PricingTier[];
 };
 
 export type CartItem = {
@@ -24,6 +29,7 @@ export type CartItem = {
   tierQuantity: number;
   tierPrice: number;
   tierPriceDisplay: string;
+  pricingTiers: PricingTier[];
   count: number;
 };
 
@@ -31,6 +37,7 @@ type StorefrontContextValue = {
   cartItems: CartItem[];
   subtotal: number;
   totalUnits: number;
+  lineItemTotals: Record<string, number>;
   addToCart: (payload: AddToCartPayload) => void;
   incrementItem: (key: string) => void;
   decrementItem: (key: string) => void;
@@ -43,7 +50,14 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   const addToCart = useCallback((payload: AddToCartPayload) => {
-    const { productName, variantLabel, tierQuantity, tierPrice, tierPriceDisplay } = payload;
+    const {
+      productName,
+      variantLabel,
+      tierQuantity,
+      tierPrice,
+      tierPriceDisplay,
+      pricingTiers,
+    } = payload;
     if (!tierQuantity || !tierPrice) {
       return;
     }
@@ -67,6 +81,7 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
           tierQuantity,
           tierPrice,
           tierPriceDisplay,
+          pricingTiers,
           count: 1,
         },
       ];
@@ -106,8 +121,8 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
     [updateCartCount]
   );
 
-  const subtotal = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.tierPrice * item.count, 0),
+  const { subtotal, lineItemTotals } = useMemo(
+    () => calculateVolumePricing(cartItems),
     [cartItems]
   );
 
@@ -121,12 +136,22 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
       cartItems,
       subtotal,
       totalUnits,
+      lineItemTotals,
       addToCart,
       incrementItem,
       decrementItem,
       removeItem,
     }),
-    [cartItems, subtotal, totalUnits, addToCart, incrementItem, decrementItem, removeItem]
+    [
+      cartItems,
+      subtotal,
+      totalUnits,
+      lineItemTotals,
+      addToCart,
+      incrementItem,
+      decrementItem,
+      removeItem,
+    ]
   );
 
   return (

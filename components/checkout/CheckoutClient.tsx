@@ -30,7 +30,7 @@ type CheckoutClientProps = {
 
 export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
   const router = useRouter();
-  const { cartItems, subtotal, totalUnits } = useStorefront();
+  const { cartItems, subtotal, totalUnits, lineItemTotals } = useStorefront();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saveProfile, setSaveProfile] = useState(Boolean(sessionUser));
@@ -348,7 +348,10 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
                     </div>
                     <div className="text-right">
                       <div className="font-medium text-white">
-                        {formatCurrency(item.tierPrice * item.count)}
+                        {formatCurrency(
+                          lineItemTotals[item.key] ??
+                            item.tierPrice * item.count
+                        )}
                       </div>
                     </div>
                   </div>

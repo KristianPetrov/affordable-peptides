@@ -13,6 +13,7 @@ import
   extractClientIp,
   orderCreationRateLimiter,
 } from "@/lib/rate-limit";
+import { calculateVolumePricing } from "@/lib/cart-pricing";
 import { auth } from "@/lib/auth";
 
 type CreateOrderInput = {
@@ -127,10 +128,7 @@ export async function createOrderAction (
     }
 
     // Validate subtotal matches items
-    const calculatedSubtotal = input.items.reduce(
-      (sum, item) => sum + item.tierPrice * item.count,
-      0
-    );
+    const calculatedSubtotal = calculateVolumePricing(input.items).subtotal;
     if (Math.abs(calculatedSubtotal - input.subtotal) > 0.01) {
       return {
         success: false,

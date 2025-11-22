@@ -7,6 +7,7 @@ import { formatOrderNumber } from "@/lib/orders";
 import { updateOrderStatusAction } from "@/app/actions/admin";
 import { auth, signOut } from "@/lib/auth";
 import type { OrderStatus } from "@/lib/orders";
+import { calculateVolumePricing } from "@/lib/cart-pricing";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -177,6 +178,7 @@ export default async function AdminPage() {
               </div>
             ) : (
               sortedOrders.map((order) => {
+                const pricing = calculateVolumePricing(order.items);
                 const formattedOrderNumber = formatOrderNumber(order.orderNumber);
                 const formattedDate = new Date(
                   order.createdAt
@@ -250,7 +252,10 @@ export default async function AdminPage() {
                               <li key={idx}>
                                 {item.productName} ({item.variantLabel}) -{" "}
                                 {item.count}× Qty {item.tierQuantity} ={" "}
-                                {formatCurrency(item.tierPrice * item.count)}
+                                {formatCurrency(
+                                  pricing.lineItemTotals[item.key] ??
+                                    item.tierPrice * item.count
+                                )}
                               </li>
                             ))}
                           </ul>

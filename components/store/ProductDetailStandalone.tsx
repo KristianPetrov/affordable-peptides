@@ -27,6 +27,7 @@ export default function ProductDetailStandalone({
     incrementItem,
     decrementItem,
     removeItem,
+    lineItemTotals,
   } = useStorefront();
 
   return (
@@ -47,6 +48,7 @@ export default function ProductDetailStandalone({
         subtotal={subtotal}
         totalUnits={totalUnits}
         cartItems={cartItems}
+        lineItemTotals={lineItemTotals}
         onIncrement={incrementItem}
         onDecrement={decrementItem}
         onRemove={removeItem}

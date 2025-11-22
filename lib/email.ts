@@ -1,6 +1,7 @@
 import type { Order } from "./orders";
 import { formatOrderNumber } from "./orders";
 import { Resend } from 'resend'
+import { calculateVolumePricing } from "./cart-pricing";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -8,32 +9,33 @@ const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@affordablepeptides.life";
 const ADMIN_SMS_EMAIL = process.env.ADMIN_SMS_EMAIL;
 
 export function formatOrderEmail (order: Order):
-    {
-        subject: string;
-        html: string;
-        text: string;
-    }
+  {
+    subject: string;
+    html: string;
+    text: string;
+  }
 {
-    const orderNumber = formatOrderNumber(order.orderNumber);
-    const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
-        dateStyle: "long",
-        timeStyle: "short",
-    });
+  const orderNumber = formatOrderNumber(order.orderNumber);
+  const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
+  const pricing = calculateVolumePricing(order.items);
 
-    const itemsHtml = order.items
-        .map(
-            (item) => `
+  const itemsHtml = order.items
+    .map(
+      (item) => `
     <tr>
       <td style="padding: 8px; border-bottom: 1px solid #333;">${item.productName}</td>
       <td style="padding: 8px; border-bottom: 1px solid #333;">${item.variantLabel}</td>
       <td style="padding: 8px; border-bottom: 1px solid #333;">${item.count} × Qty ${item.tierQuantity}</td>
-      <td style="padding: 8px; border-bottom: 1px solid #333; text-align: right;">$${(item.tierPrice * item.count).toFixed(2)}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #333; text-align: right;">$${(pricing.lineItemTotals[item.key] ?? item.tierPrice * item.count).toFixed(2)}</td>
     </tr>
   `
-        )
-        .join("");
+    )
+    .join("");
 
-    const html = `
+  const html = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -104,7 +106,7 @@ export function formatOrderEmail (order: Order):
 </html>
   `;
 
-    const text = `
+  const text = `
 New Order Received
 
 Order ${orderNumber}
@@ -122,11 +124,11 @@ ${order.shippingAddress.country}
 
 Order Items:
 ${order.items
-            .map(
-                (item) =>
-                    `- ${item.productName} (${item.variantLabel}): ${item.count} × Qty ${item.tierQuantity} = $${(item.tierPrice * item.count).toFixed(2)}`
-            )
-            .join("\n")}
+      .map(
+        (item) =>
+          `- ${item.productName} (${item.variantLabel}): ${item.count} × Qty ${item.tierQuantity} = $${(pricing.lineItemTotals[item.key] ?? item.tierPrice * item.count).toFixed(2)}`
+      )
+      .join("\n")}
 
 Total: $${order.subtotal.toFixed(2)}
 Total Units: ${order.totalUnits}
@@ -134,84 +136,84 @@ Total Units: ${order.totalUnits}
 Action Required: Customer will text payment confirmation. Please verify payment and update order status in the admin panel.
   `;
 
-    return {
-        subject: `New Order: ${orderNumber} - ${order.customerName}`,
-        html,
-        text,
-    };
+  return {
+    subject: `New Order: ${orderNumber} - ${order.customerName}`,
+    html,
+    text,
+  };
 }
 
 function formatOrderSms (order: Order): string
 {
-    const orderNumber = formatOrderNumber(order.orderNumber);
-    const shipping = order.shippingAddress;
-    const itemsSummary = order.items
-        .map(
-            (item) =>
-                `${item.productName} (${item.variantLabel}) ×${item.count}`
-        )
-        .join("; ");
+  const orderNumber = formatOrderNumber(order.orderNumber);
+  const shipping = order.shippingAddress;
+  const itemsSummary = order.items
+    .map(
+      (item) =>
+        `${item.productName} (${item.variantLabel}) ×${item.count}`
+    )
+    .join("; ");
 
-    return [
-        `New Order ${orderNumber}`,
-        `${order.customerName} | ${order.customerPhone}`,
-        `${shipping.city}, ${shipping.state} ${shipping.zipCode}`,
-        `Total $${order.subtotal.toFixed(2)} | Units ${order.totalUnits}`,
-        itemsSummary ? `Items: ${itemsSummary}` : "",
-    ]
-        .filter(Boolean)
-        .join("\n");
+  return [
+    `New Order ${orderNumber}`,
+    `${order.customerName} | ${order.customerPhone}`,
+    `${shipping.city}, ${shipping.state} ${shipping.zipCode}`,
+    `Total $${order.subtotal.toFixed(2)} | Units ${order.totalUnits}`,
+    itemsSummary ? `Items: ${itemsSummary}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
 }
 
 export async function sendOrderEmail (order: Order): Promise<void>
 {
-    const emailContent = formatOrderEmail(order);
-    const smsContent = ADMIN_SMS_EMAIL ? formatOrderSms(order) : null;
+  const emailContent = formatOrderEmail(order);
+  const smsContent = ADMIN_SMS_EMAIL ? formatOrderSms(order) : null;
 
-    // Only send email if Resend API key is configured
-    if (!process.env.RESEND_API_KEY) {
-        console.warn("RESEND_API_KEY not configured. Email not sent.");
-        console.log("=".repeat(60));
-        console.log("EMAIL TO:", ADMIN_EMAIL);
-        console.log("SUBJECT:", emailContent.subject);
-        console.log("=".repeat(60));
-        console.log(emailContent.text);
-        console.log("=".repeat(60));
-        if (ADMIN_SMS_EMAIL && smsContent) {
-            console.log("SMS EMAIL TO:", ADMIN_SMS_EMAIL);
-            console.log("-".repeat(60));
-            console.log(smsContent);
-            console.log("-".repeat(60));
-        }
-        return;
+  // Only send email if Resend API key is configured
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not configured. Email not sent.");
+    console.log("=".repeat(60));
+    console.log("EMAIL TO:", ADMIN_EMAIL);
+    console.log("SUBJECT:", emailContent.subject);
+    console.log("=".repeat(60));
+    console.log(emailContent.text);
+    console.log("=".repeat(60));
+    if (ADMIN_SMS_EMAIL && smsContent) {
+      console.log("SMS EMAIL TO:", ADMIN_SMS_EMAIL);
+      console.log("-".repeat(60));
+      console.log(smsContent);
+      console.log("-".repeat(60));
+    }
+    return;
+  }
+
+  try {
+    const sendOperations = [
+      resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+        to: ADMIN_EMAIL,
+        subject: emailContent.subject,
+        html: emailContent.html,
+        text: emailContent.text,
+      }),
+    ];
+
+    if (ADMIN_SMS_EMAIL && smsContent) {
+      sendOperations.push(
+        resend.emails.send({
+          from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+          to: ADMIN_SMS_EMAIL,
+          subject: `New Order SMS: ${formatOrderNumber(order.orderNumber)}`,
+          text: smsContent,
+        })
+      );
     }
 
-    try {
-        const sendOperations = [
-            resend.emails.send({
-                from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
-                to: ADMIN_EMAIL,
-                subject: emailContent.subject,
-                html: emailContent.html,
-                text: emailContent.text,
-            }),
-        ];
-
-        if (ADMIN_SMS_EMAIL && smsContent) {
-            sendOperations.push(
-                resend.emails.send({
-                    from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
-                    to: ADMIN_SMS_EMAIL,
-                    subject: `New Order SMS: ${formatOrderNumber(order.orderNumber)}`,
-                    text: smsContent,
-                })
-            );
-        }
-
-        await Promise.all(sendOperations);
-    } catch (error) {
-        console.error("Failed to send email via Resend:", error);
-        throw error;
-    }
+    await Promise.all(sendOperations);
+  } catch (error) {
+    console.error("Failed to send email via Resend:", error);
+    throw error;
+  }
 }
 
