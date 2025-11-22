@@ -30,6 +30,7 @@ export type Product = {
   detailedDescription?: string;
   categories: ProductCategoryId[];
   isFeatured?: boolean;
+  testResultUrl?: string;
 };
 
 export const productCategories: ProductCategory[] = [
@@ -103,9 +104,10 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["weight-metabolic"],
     isFeatured: true,
     variants: [
-      createVariant("5mg", 50,"/products/label-aod9604-5mg-3ml.png"),
-      createVariant("10mg", 80,"/products/label-aod9604-10mg-3ml.png"),
+      createVariant("5mg", 50, "/products/label-aod9604-5mg-3ml.png"),
+      createVariant("10mg", 80, "/products/label-aod9604-10mg-3ml.png"),
     ],
+    testResultUrl: "https://chromate.org/verify?c=29337_AFFORD2WY8BJ",
   },
   {
     name: "Bacteriostatic Water",
@@ -123,7 +125,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "This combo pairs BPC-157 and TB-500, two peptides widely explored for connective tissue, tendon, and muscle support in preclinical models. Researchers value the stack for its potential to accelerate tissue repair, angiogenesis, and overall recovery signaling.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("5mg each", 50,"/products/label-bpc157-tb-500-10mg-3ml.png"),
+      createVariant("5mg each", 50, "/products/label-bpc157-tb-500-10mg-3ml.png"),
       createVariant(
         "10mg each",
         80,
@@ -138,9 +140,10 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["recovery-performance", "longevity-wellness"],
     isFeatured: true,
     variants: [
-      createVariant("5mg", 40,"/products/label-bpc157-5mg-3ml.png"),
+      createVariant("5mg", 40, "/products/label-bpc157-5mg-3ml.png"),
       createVariant("10mg", 70, "/products/label-bpc157-10mg-3ml.png"),
     ],
+    testResultUrl: "https://chromate.org/verify?c=29115_AFFORDX493E7",
   },
   {
     name: "CJC-1295",
@@ -153,8 +156,8 @@ const productDefinitions: ProductDefinition[] = [
         70,
         "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png"
       ),
-      createVariant("With DAC (5mg)", 50,"/products/label-cjc-1295-dac-5mg-3ml.png"),
-      createVariant("Without DAC (5mg)", 40,"/products/label-cjc-1295-wo-dac-5mg-3ml.png"),
+      createVariant("With DAC (5mg)", 50, "/products/label-cjc-1295-dac-5mg-3ml.png"),
+      createVariant("Without DAC (5mg)", 40, "/products/label-cjc-1295-wo-dac-5mg-3ml.png"),
       createVariant(
         "Without DAC (10mg)",
         70,
@@ -168,8 +171,8 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Epithalon (Epitalon) is a synthetic peptide explored in aging research for its effects on telomerase activity, circadian rhythm, and oxidative stress. Studies have positioned it as a potential tool for longevity and cellular health investigations.",
     categories: ["longevity-wellness"],
     variants: [
-      createVariant("10mg", 30,"/products/label-epithalon-10mg-3ml.png"),
-      createVariant("50mg", 80,"/products/label-epithalon-50mg-3ml.png"),
+      createVariant("10mg", 30, "/products/label-epithalon-10mg-3ml.png"),
+      createVariant("50mg", 80, "/products/label-epithalon-50mg-3ml.png"),
     ],
   },
   {
@@ -190,6 +193,7 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant("70mg", 90, "/products/label-glow-70mg-3ml.png"),
     ],
+    testResultUrl: "https://chromate.org/verify?c=29438_AFFORD4N2GYT",
   },
   {
     name: "GLP-1",
@@ -197,7 +201,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "GLP-1 receptor agonists are incretin-based peptides researched for their effects on satiety, glucose regulation, and body-weight reduction. These compounds are central to modern metabolic and cardiometabolic studies.",
     categories: ["weight-metabolic"],
     variants: [
-      createVariant("5mg", 40,"/products/label-glp1-5mg-3ml.png"),
+      createVariant("5mg", 40, "/products/label-glp1-5mg-3ml.png"),
     ],
   },
   {
@@ -289,7 +293,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Lipo-C combines methionine, inositol, choline (MIC), and vitamin B12, and is often used in research on liver fat metabolism and methylation support. It's a popular option in weight-management–oriented protocols in laboratory and clinical research settings.",
     categories: ["weight-metabolic"],
     variants: [
-      createVariant("10ml", 60,"/products/label-lipo-c-10ml.png"),
+      createVariant("10ml", 60, "/products/label-lipo-c-10ml.png"),
     ],
   },
   {
@@ -298,7 +302,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "This Lipo-C variant provides methionine, inositol, and choline only, omitting B12 for researchers working with subjects who avoid methyl donors or B vitamins. It targets the same liver-fat and methylation pathways while allowing more protocol flexibility.",
     categories: ["weight-metabolic"],
     variants: [
-      createVariant("10ml", 60,"/products/label-lipo-c-10ml.png"),
+      createVariant("10ml", 60, "/products/label-lipo-c-10ml.png"),
     ],
   },
   {
@@ -320,6 +324,7 @@ const productDefinitions: ProductDefinition[] = [
       createVariant("500mg", 60, "/products/label-nad-500mg-10ml.png"),
       createVariant("1000mg", 100, "/products/label-nad-1000mg-10ml.png"),
     ],
+    testResultUrl: "https://chromate.org/verify?c=29420_AFFORDFJF486",
   },
   {
     name: "Retatrutide",
@@ -331,6 +336,7 @@ const productDefinitions: ProductDefinition[] = [
       createVariant("20mg", 160, "/products/label-retatrutide-20mg-3ml.png"),
       createVariant("30mg", 200, "/products/label-retatrutide-30mg-3ml.png"),
     ],
+    testResultUrl: "https://chromate.org/verify?c=29097_AFFORD16FRWY",
   },
   {
     name: "SLU-PP-332",
@@ -338,7 +344,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "SLU-PP-332 is a PPAR/ERR-pathway modulator explored as a potential \"exercise mimetic.\" Animal studies suggest benefits for muscular endurance, fat oxidation, and cardiometabolic health, positioning it at the cutting edge of performance and longevity research.",
     categories: ["weight-metabolic", "recovery-performance"],
     variants: [
-      createVariant("5mg", 80,"/products/label-slupp332-5mg-3ml.png"),
+      createVariant("5mg", 80, "/products/label-slupp332-5mg-3ml.png"),
     ],
   },
   {
@@ -347,9 +353,10 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "TB-500 is a synthetic fragment of thymosin β4 studied for its impact on angiogenesis, cell migration, and tissue repair. It's frequently used in preclinical research on joint health, soft-tissue recovery, and post-injury remodeling.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("5mg", 40,"/products/label-tb500-5mg-3ml.png"),
-      createVariant("10mg", 70,"/products/label-tb500-10mg-3ml.png"),
+      createVariant("5mg", 40, "/products/label-tb500-5mg-3ml.png"),
+      createVariant("10mg", 70, "/products/label-tb500-10mg-3ml.png"),
     ],
+    testResultUrl: "https://chromate.org/verify?c=29113_AFFORD2NQWKZ",
   },
   {
     name: "Tesamorelin",
@@ -360,6 +367,7 @@ const productDefinitions: ProductDefinition[] = [
       createVariant("10mg", 60, "/products/label-tesamorelin-10mg-3ml.png"),
       createVariant("20mg", 100, "/products/label-tesamorelin-20mg-3ml.png"),
     ],
+    testResultUrl: "https://chromate.org/verify?c=29111_AFFORDX6932D",
   },
   {
     name: "Tirzepatide",
@@ -372,6 +380,7 @@ const productDefinitions: ProductDefinition[] = [
       createVariant("20mg", 140, "/products/label-tirzepatide-20mg-3ml.png"),
       createVariant("30mg", 180, "/products/label-tirzepatide-30mg-3ml.png"),
     ],
+    testResultUrl: "https://chromate.org/verify?c=29099_AFFORD4CK48N",
   },
 ];
 

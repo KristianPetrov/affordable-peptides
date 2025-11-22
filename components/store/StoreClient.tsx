@@ -237,6 +237,38 @@ export function ProductCard({
           <p className="text-sm text-zinc-400">
             Select the dosage and volume tier that fits your research needs.
           </p>
+          <div className="rounded-2xl border border-purple-900/40 bg-black/60 p-4">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
+              Analytical Testing
+            </p>
+            {product.testResultUrl ? (
+              <a
+                href={product.testResultUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
+              >
+                View verified Chromate report
+                <svg
+                  className="h-3.5 w-3.5"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M7 17L17 7" />
+                  <path d="M8 7h9v9" />
+                </svg>
+              </a>
+            ) : (
+              <p className="mt-2 text-sm text-zinc-400">
+                Test results coming soon.
+              </p>
+            )}
+          </div>
         </div>
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap gap-3">
