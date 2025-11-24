@@ -64,13 +64,19 @@ export const productCategories: ProductCategory[] = [
 const formatPrice = (value: number): string =>
 {
   const formatted = Number.isInteger(value) ? value.toString() : value.toFixed(2);
-  return `$${formatted}`;/////////////////////
+  return `$${formatted}`;
 };
 
 const createStandardTiers = (singlePrice: number): Tier[] => [
   { quantity: "1", price: formatPrice(singlePrice) },
   { quantity: "5", price: formatPrice(singlePrice * 4) },
   { quantity: "10", price: formatPrice(singlePrice * 7) },
+];
+
+const createFlatTiers = (singlePrice: number): Tier[] => [
+  { quantity: "1", price: formatPrice(singlePrice) },
+  { quantity: "5", price: formatPrice(singlePrice * 5) },
+  { quantity: "10", price: formatPrice(singlePrice * 10) },
 ];
 
 const createVariant = (
@@ -115,8 +121,16 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Bacteriostatic Water is a sterile water-for-injection with benzyl alcohol, used in research settings to safely reconstitute multi-dose vials. It helps maintain vial integrity over repeated draws when proper aseptic technique is followed.",
     categories: ["support-essentials"],
     variants: [
-      createVariant("3ml", 2, "/products/label-bacteriostatic-water-3ml.png"),
-      createVariant("10ml", 4, "/products/label-bacteriostatic-water-10ml.png"),
+      {
+        label: "3ml",
+        tiers: createFlatTiers(2),
+        mockupLabel: "/products/label-bacteriostatic-water-3ml.png",
+      },
+      {
+        label: "10ml",
+        tiers: createFlatTiers(4),
+        mockupLabel: "/products/label-bacteriostatic-water-10ml.png",
+      },
     ],
   },
   {
@@ -302,7 +316,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "This Lipo-C variant provides methionine, inositol, and choline only, omitting B12 for researchers working with subjects who avoid methyl donors or B vitamins. It targets the same liver-fat and methylation pathways while allowing more protocol flexibility.",
     categories: ["weight-metabolic"],
     variants: [
-      createVariant("10ml", 60, "/products/label-lipo-c-10ml.png"),
+      createVariant("10ml", 60, "/products/label-lipo-c-wo-b12-10ml.png"),
     ],
   },
   {

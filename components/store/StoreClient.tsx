@@ -508,7 +508,7 @@ export function FloatingCartButton({
         </span>
       </button>
       {isOpen && (
-        <div className="w-[320px] max-w-[90vw] rounded-3xl border border-purple-900/60 bg-black/95 p-5 shadow-[0_25px_80px_rgba(45,0,95,0.55)] backdrop-blur">
+        <div className="flex w-[320px] max-w-[90vw] flex-col rounded-3xl border border-purple-900/60 bg-black/95 p-5 shadow-[0_25px_80px_rgba(45,0,95,0.55)] backdrop-blur max-h-[calc(100vh-3rem)] overflow-hidden">
           <div className="flex items-baseline justify-between">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-purple-200">
@@ -528,106 +528,113 @@ export function FloatingCartButton({
               Close
             </button>
           </div>
-          <div className="mt-4 flex items-center justify-between rounded-2xl border border-purple-900/40 bg-purple-500/10 px-4 py-3 text-xs">
-            <div className="uppercase tracking-[0.3em] text-purple-200">
-              Subtotal
-            </div>
-            <div className="text-sm font-semibold text-white">
-              {formatCurrency(subtotal)}
-            </div>
-          </div>
-          {totalUnits > 0 && (
-            <div className="mt-2 text-xs text-zinc-500">
-              {totalUnits} unit{totalUnits === 1 ? "" : "s"} selected
-            </div>
-          )}
-          {cartItems.length > 0 && (
-            <div className="mt-1 text-[11px] text-purple-200">
-              Volume discounts apply automatically after 5 and 10 bottles per
-              product.
-            </div>
-          )}
+          <div className="mt-4 flex min-h-0 flex-1 flex-col overflow-y-auto pr-1">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between rounded-2xl border border-purple-900/40 bg-purple-500/10 px-4 py-3 text-xs">
+                <div className="uppercase tracking-[0.3em] text-purple-200">
+                  Subtotal
+                </div>
+                <div className="text-sm font-semibold text-white">
+                  {formatCurrency(subtotal)}
+                </div>
+              </div>
+              <div className="space-y-1 text-xs">
+                {totalUnits > 0 && (
+                  <div className="text-zinc-500">
+                    {totalUnits} unit{totalUnits === 1 ? "" : "s"} selected
+                  </div>
+                )}
+                {cartItems.length > 0 && (
+                  <div className="text-[11px] text-purple-200">
+                    Volume discounts apply automatically after 5 and 10 bottles
+                    per product.
+                  </div>
+                )}
+              </div>
 
-          {cartItems.length > 0 ? (
-            <ul className="mt-4 space-y-4">
-              {cartItems.map((item) => (
-                <li
-                  key={item.key}
-                  className="rounded-2xl border border-purple-900/40 bg-zinc-950/80 p-4"
-                >
-                  <div className="space-y-1">
-                    <div className="text-sm font-semibold text-white">
-                      {item.productName}
-                    </div>
-                    <div className="text-xs uppercase tracking-[0.2em] text-purple-200">
-                      {item.variantLabel}
-                    </div>
-                    <div className="text-xs text-zinc-400">
-                      Qty {item.tierQuantity} • {item.count}×{" "}
-                      {item.tierPriceDisplay}
-                    </div>
-                    <div className="text-sm font-semibold text-white">
-                      {formatCurrency(
-                        lineItemTotals[item.key] ?? item.tierPrice * item.count
-                      )}
-                    </div>
-                  </div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <div className="inline-flex items-center gap-1 rounded-full border border-purple-500/60 bg-black/60 px-2 py-1">
-                      <button
-                        type="button"
-                        className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-purple-900/60"
-                        onClick={() => onDecrement(item.key)}
-                        disabled={item.count === 1}
-                        aria-label={`Decrease ${item.productName} ${item.variantLabel} quantity`}
-                      >
-                        -
-                      </button>
-                      <span className="px-2 text-sm font-semibold text-white">
-                        {item.count}
-                      </span>
-                      <button
-                        type="button"
-                        className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white"
-                        onClick={() => onIncrement(item.key)}
-                        aria-label={`Increase ${item.productName} ${item.variantLabel} quantity`}
-                      >
-                        +
-                      </button>
-                    </div>
-                    <button
-                      type="button"
-                      className="text-xs font-semibold uppercase tracking-[0.2em] text-purple-200 transition hover:text-white"
-                      onClick={() => onRemove(item.key)}
+              {cartItems.length > 0 ? (
+                <ul className="space-y-4">
+                  {cartItems.map((item) => (
+                    <li
+                      key={item.key}
+                      className="rounded-2xl border border-purple-900/40 bg-zinc-950/80 p-4"
                     >
-                      Remove
-                    </button>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-4 text-sm text-zinc-400">
-              Browse the catalog and add peptides using the &quot;Add to
-              Cart&quot; button on each product.
-            </p>
-          )}
-          <div className="mt-5 rounded-2xl border border-purple-900/40 bg-purple-500/10 px-4 py-3 text-xs text-purple-200">
-            Pricing displayed is for research use only. Reach out for bulk,
-            custom, or specialty sourcing.
+                      <div className="space-y-1">
+                        <div className="text-sm font-semibold text-white">
+                          {item.productName}
+                        </div>
+                        <div className="text-xs uppercase tracking-[0.2em] text-purple-200">
+                          {item.variantLabel}
+                        </div>
+                        <div className="text-xs text-zinc-400">
+                          Qty {item.tierQuantity} • {item.count}×{" "}
+                          {item.tierPriceDisplay}
+                        </div>
+                        <div className="text-sm font-semibold text-white">
+                          {formatCurrency(
+                            lineItemTotals[item.key] ??
+                              item.tierPrice * item.count
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between">
+                        <div className="inline-flex items-center gap-1 rounded-full border border-purple-500/60 bg-black/60 px-2 py-1">
+                          <button
+                            type="button"
+                            className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-purple-900/60"
+                            onClick={() => onDecrement(item.key)}
+                            disabled={item.count === 1}
+                            aria-label={`Decrease ${item.productName} ${item.variantLabel} quantity`}
+                          >
+                            -
+                          </button>
+                          <span className="px-2 text-sm font-semibold text-white">
+                            {item.count}
+                          </span>
+                          <button
+                            type="button"
+                            className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white"
+                            onClick={() => onIncrement(item.key)}
+                            aria-label={`Increase ${item.productName} ${item.variantLabel} quantity`}
+                          >
+                            +
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          className="text-xs font-semibold uppercase tracking-[0.2em] text-purple-200 transition hover:text-white"
+                          onClick={() => onRemove(item.key)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-zinc-400">
+                  Browse the catalog and add peptides using the &quot;Add to
+                  Cart&quot; button on each product.
+                </p>
+              )}
+              <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 px-4 py-3 text-xs text-purple-200">
+                Pricing displayed is for research use only. Reach out for bulk,
+                custom, or specialty sourcing.
+              </div>
+              {cartItems.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    router.push("/checkout");
+                  }}
+                  className="block w-full rounded-full bg-purple-600 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                >
+                  Place Order (Pay Manually)
+                </button>
+              )}
+            </div>
           </div>
-          {cartItems.length > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                setIsOpen(false);
-                router.push("/checkout");
-              }}
-              className="mt-4 block w-full rounded-full bg-purple-600 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-            >
-              Place Order (Pay Manually)
-            </button>
-          )}
         </div>
       )}
     </div>

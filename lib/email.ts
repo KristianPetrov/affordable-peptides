@@ -8,6 +8,53 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@affordablepeptides.life";
 const ADMIN_SMS_EMAIL = process.env.ADMIN_SMS_EMAIL;
 
+const FALLBACK_SITE_URL = "http://localhost:3000";
+
+function normalizeBaseUrl (input: string): string
+{
+  const trimmed = input.trim();
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+  return withProtocol.replace(/\/$/, "");
+}
+
+const SITE_BASE_URL = (() =>
+{
+  const candidates = [
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.APP_URL,
+    process.env.APP_BASE_URL,
+    process.env.VERCEL_URL,
+  ].filter(Boolean) as string[];
+
+  return normalizeBaseUrl(candidates[0] ?? FALLBACK_SITE_URL);
+})();
+
+function buildOrderLookupUrl (order: Order): string
+{
+  const url = new URL("/order-lookup", SITE_BASE_URL);
+  url.searchParams.set("orderNumber", order.orderNumber);
+  url.searchParams.set("email", order.customerEmail);
+  return url.toString();
+}
+
+function logEmailPreview (
+  to: string,
+  content: {
+    subject: string;
+    text: string;
+  }
+): void
+{
+  console.log("=".repeat(60));
+  console.log("EMAIL TO:", to);
+  console.log("SUBJECT:", content.subject);
+  console.log("=".repeat(60));
+  console.log(content.text);
+  console.log("=".repeat(60));
+}
+
 export function formatOrderEmail (order: Order):
   {
     subject: string;
@@ -143,6 +190,147 @@ Action Required: Customer will text payment confirmation. Please verify payment 
   };
 }
 
+function formatCustomerReceiptEmail (
+  order: Order,
+  receiptUrl: string
+):
+  {
+    subject: string;
+    html: string;
+    text: string;
+  }
+{
+  const orderNumber = formatOrderNumber(order.orderNumber);
+  const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
+  const pricing = calculateVolumePricing(order.items);
+  const itemsHtml = order.items
+    .map(
+      (item) => `
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.productName}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.variantLabel}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.count} × Qty ${item.tierQuantity}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${(pricing.lineItemTotals[item.key] ?? item.tierPrice * item.count).toFixed(2)}</td>
+    </tr>
+  `
+    )
+    .join("");
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; background: #f3f4f6; margin: 0; padding: 0; }
+    .container { max-width: 640px; margin: 0 auto; padding: 24px; }
+    .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(146, 64, 214, 0.15); }
+    .header { background: linear-gradient(135deg, #7c3aed, #9333ea); color: white; padding: 32px; }
+    .header h1 { margin: 0 0 12px 0; font-size: 28px; }
+    .content { padding: 28px; }
+    .cta { display: inline-block; margin: 16px 0; padding: 14px 28px; border-radius: 9999px; background: #7c3aed; color: white; text-decoration: none; font-weight: bold; }
+    .info-block { background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid #ede9fe; }
+    table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
+    th { text-align: left; background: #f3f4f6; padding: 12px; font-size: 13px; color: #4b5563; letter-spacing: 0.08em; text-transform: uppercase; }
+    .total { font-size: 20px; font-weight: bold; text-align: right; padding: 16px; }
+    .footer { font-size: 13px; color: #6b7280; text-align: center; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1>You're all set!</h1>
+        <p style="margin: 0; font-size: 16px;">Order ${orderNumber} • Placed ${formattedDate}</p>
+      </div>
+      <div class="content">
+        <p>Thanks for choosing Affordable Peptides. Save this email for your records. You can review order details or upload payment confirmation anytime.</p>
+        <a class="cta" href="${receiptUrl}" target="_blank" rel="noopener noreferrer">View Your Order</a>
+
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
+          <ol style="margin: 0; padding-left: 18px;">
+            <li>Send payment via CashApp, Zelle, or your preferred method.</li>
+            <li>Text (951) 539-3821 with your name, order number (${orderNumber}), and payment screenshot.</li>
+            <li>We’ll confirm manually and follow up with shipping details.</li>
+          </ol>
+        </div>
+
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 8px;">Shipping to</h3>
+          <p style="margin: 0;">
+            ${order.customerName}<br />
+            ${order.shippingAddress.street}<br />
+            ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}<br />
+            ${order.shippingAddress.country}
+          </p>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Variant</th>
+              <th>Quantity</th>
+              <th style="text-align: right;">Price</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${itemsHtml}
+          </tbody>
+        </table>
+        <div class="total">
+          Total: $${order.subtotal.toFixed(2)}<br />
+          <small style="font-weight: normal; color: #6b7280;">${order.totalUnits} total unit${order.totalUnits === 1 ? "" : "s"}</small>
+        </div>
+
+        <p style="margin-top: 24px;">Need anything? Reply to this email or call (951) 539-3821 and reference your order number.</p>
+      </div>
+    </div>
+    <p class="footer">Affordable Peptides • View your order anytime: <a href="${receiptUrl}" style="color: #7c3aed;">${receiptUrl}</a></p>
+  </div>
+</body>
+</html>
+  `;
+
+  const text = [
+    `Thanks for your order!`,
+    ``,
+    `Order ${orderNumber}`,
+    `Placed ${formattedDate}`,
+    ``,
+    `View your order: ${receiptUrl}`,
+    ``,
+    `Shipping To:`,
+    `${order.customerName}`,
+    `${order.shippingAddress.street}`,
+    `${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}`,
+    `${order.shippingAddress.country}`,
+    ``,
+    `Items:`,
+    ...order.items.map(
+      (item) =>
+        `- ${item.productName} (${item.variantLabel}) • ${item.count} × Qty ${item.tierQuantity} = $${(pricing.lineItemTotals[item.key] ?? item.tierPrice * item.count).toFixed(2)}`
+    ),
+    ``,
+    `Total: $${order.subtotal.toFixed(2)} • ${order.totalUnits} units`,
+    ``,
+    `Next Steps:`,
+    `1. Send payment via CashApp, Zelle, or your preferred method.`,
+    `2. Text (951) 539-3821 with your name, Order ${orderNumber}, and payment screenshot.`,
+    `3. We'll confirm manually and update you once your order ships.`,
+  ].join("\n");
+
+  return {
+    subject: `Receipt for Order ${orderNumber}`,
+    html,
+    text,
+  };
+}
+
 function formatOrderSms (order: Order): string
 {
   const orderNumber = formatOrderNumber(order.orderNumber);
@@ -167,18 +355,18 @@ function formatOrderSms (order: Order): string
 
 export async function sendOrderEmail (order: Order): Promise<void>
 {
-  const emailContent = formatOrderEmail(order);
+  const adminEmailContent = formatOrderEmail(order);
+  const customerEmailContent = formatCustomerReceiptEmail(
+    order,
+    buildOrderLookupUrl(order)
+  );
   const smsContent = ADMIN_SMS_EMAIL ? formatOrderSms(order) : null;
 
   // Only send email if Resend API key is configured
   if (!process.env.RESEND_API_KEY) {
     console.warn("RESEND_API_KEY not configured. Email not sent.");
-    console.log("=".repeat(60));
-    console.log("EMAIL TO:", ADMIN_EMAIL);
-    console.log("SUBJECT:", emailContent.subject);
-    console.log("=".repeat(60));
-    console.log(emailContent.text);
-    console.log("=".repeat(60));
+    logEmailPreview(ADMIN_EMAIL, adminEmailContent);
+    logEmailPreview(order.customerEmail, customerEmailContent);
     if (ADMIN_SMS_EMAIL && smsContent) {
       console.log("SMS EMAIL TO:", ADMIN_SMS_EMAIL);
       console.log("-".repeat(60));
@@ -193,9 +381,16 @@ export async function sendOrderEmail (order: Order): Promise<void>
       resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
         to: ADMIN_EMAIL,
-        subject: emailContent.subject,
-        html: emailContent.html,
-        text: emailContent.text,
+        subject: adminEmailContent.subject,
+        html: adminEmailContent.html,
+        text: adminEmailContent.text,
+      }),
+      resend.emails.send({
+        from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+        to: order.customerEmail,
+        subject: customerEmailContent.subject,
+        html: customerEmailContent.html,
+        text: customerEmailContent.text,
       }),
     ];
 
@@ -210,7 +405,15 @@ export async function sendOrderEmail (order: Order): Promise<void>
       );
     }
 
-    await Promise.all(sendOperations);
+    await Promise.all(sendOperations).then((results) =>
+    {
+      console.log("Email sent successfully");
+      console.log(JSON.stringify(results));
+    }).catch((error) =>
+    {
+      console.error("Failed to send email via Resend:", error);
+      throw error;
+    });
   } catch (error) {
     console.error("Failed to send email via Resend:", error);
     throw error;

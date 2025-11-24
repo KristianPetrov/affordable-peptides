@@ -2,9 +2,10 @@
 
 import { headers } from "next/headers";
 
-import { createOrder, upsertCustomerProfile } from "@/lib/db";
+import { createOrder, getOrderByOrderNumber, upsertCustomerProfile } from "@/lib/db";
 import { sendOrderEmail } from "@/lib/email";
-import { generateOrderNumber } from "@/lib/orders";
+import { generateOrderNumber, normalizeOrderNumberInput } from "@/lib/orders";
+import type { Order } from "@/lib/orders";
 import type { CartItem } from "@/components/store/StorefrontContext";
 import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
@@ -241,6 +242,54 @@ export async function createOrderAction (
       error:
         error instanceof Error ? error.message : "Failed to create order",
       errorCode: "UNKNOWN",
+    };
+  }
+}
+
+export type LookupOrderResult =
+  | { success: true; order: Order }
+  | { success: false; error: string };
+
+export async function lookupOrderAction(input: {
+  orderNumber: string;
+  customerEmail?: string;
+}): Promise<LookupOrderResult> {
+  const normalizedOrderNumber = normalizeOrderNumberInput(input.orderNumber);
+
+  if (!normalizedOrderNumber) {
+    return {
+      success: false,
+      error: "Enter a valid order number (example: AP-12345-678).",
+    };
+  }
+
+  try {
+    const order = await getOrderByOrderNumber(normalizedOrderNumber);
+
+    if (!order) {
+      return {
+        success: false,
+        error: "We couldn't find an order with that number.",
+      };
+    }
+
+    const suppliedEmail = input.customerEmail?.trim().toLowerCase();
+    if (suppliedEmail && order.customerEmail.toLowerCase() !== suppliedEmail) {
+      return {
+        success: false,
+        error: "That email doesn't match the order on file.",
+      };
+    }
+
+    return {
+      success: true,
+      order,
+    };
+  } catch (error) {
+    console.error("Error looking up order:", error);
+    return {
+      success: false,
+      error: "Something went wrong while looking up your order.",
     };
   }
 }

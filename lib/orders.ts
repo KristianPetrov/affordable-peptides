@@ -43,4 +43,27 @@ export function formatOrderNumber(orderNumber: string): string {
   return orderNumber;
 }
 
+export function normalizeOrderNumberInput(input: string | null | undefined): string | null {
+  if (!input) {
+    return null;
+  }
+
+  const trimmed = input.trim().toUpperCase();
+  if (!trimmed) {
+    return null;
+  }
+
+  const alphanumeric = trimmed.replace(/[^A-Z0-9]/g, "");
+  if (!alphanumeric.startsWith("AP")) {
+    return null;
+  }
+
+  const suffix = alphanumeric.slice(2);
+  if (suffix.length !== 11 || /\D/.test(suffix)) {
+    return null;
+  }
+
+  return `AP-${suffix}`;
+}
+
 
