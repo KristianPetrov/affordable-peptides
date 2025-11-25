@@ -95,7 +95,9 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
 
       if (result.success) {
         router.push(
-          `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}`
+          `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${subtotal.toFixed(
+            2
+          )}`
         );
         return;
       }

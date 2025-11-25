@@ -5,6 +5,12 @@ import Link from "next/link";
 import { useMemo, Suspense } from "react";
 
 import NavBar from "@/components/NavBar";
+import {
+  buildCashAppLink,
+  buildVenmoLink,
+  ZELLE_EMAIL,
+  ZELLE_RECIPIENT_NAME,
+} from "@/lib/payment-links";
 
 const PHONE_NUMBER = "(951) 539-3821";
 
@@ -12,6 +18,17 @@ function ThankYouContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("orderNumber");
   const orderId = searchParams.get("orderId");
+  const orderAmountParam = searchParams.get("orderAmount");
+  const orderAmount = useMemo(() => {
+    if (!orderAmountParam) {
+      return null;
+    }
+    const parsed = Number(orderAmountParam);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed;
+    }
+    return null;
+  }, [orderAmountParam]);
   const formattedOrderNumber = useMemo(() => {
     if (!orderNumber) {
       return "";
@@ -24,6 +41,19 @@ function ThankYouContent() {
 
     return orderNumber;
   }, [orderNumber]);
+  const orderReference = formattedOrderNumber || orderNumber;
+  const venmoNote = `Order ${orderReference}`;
+  const cashAppLink = useMemo(
+    () => buildCashAppLink(orderAmount),
+    [orderAmount]
+  );
+  const venmoLink = useMemo(
+    () => buildVenmoLink({ amount: orderAmount, note: venmoNote }),
+    [orderAmount, venmoNote]
+  );
+  const paymentAmountDisplay = orderAmount
+    ? `$${orderAmount.toFixed(2)}`
+    : null;
 
   if (!orderNumber || !orderId) {
     return (
@@ -91,12 +121,12 @@ function ThankYouContent() {
                     </span>
                     <div>
                       <p className="font-medium text-white">
-                        Send your payment via CashApp, Zelle, or your preferred
-                        method.
+                        Send your payment via Cash App, Venmo, or Zelle using
+                        the quick links below.
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
-                        Payment details will be provided separately or contact us
-                        for payment instructions.
+                        Include your order number in the payment note so we can
+                        match it instantly.
                       </p>
                     </div>
                   </li>
@@ -107,12 +137,12 @@ function ThankYouContent() {
                     <div>
                       <p className="font-medium text-white">
                         Text{" "}
-                        <a
+                        <Link
                           href={`tel:${PHONE_NUMBER.replace(/\D/g, "")}`}
                           className="text-purple-200 underline hover:text-purple-100"
                         >
                           {PHONE_NUMBER}
-                        </a>{" "}
+                        </Link>{" "}
                         with:
                       </p>
                       <ul className="mt-2 space-y-1 text-sm text-zinc-400">
@@ -141,17 +171,59 @@ function ThankYouContent() {
 
               <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 p-6">
                 <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
+                  Instant Payment Links
+                </h3>
+                <p className="text-sm text-zinc-300">
+                  Amount due:{" "}
+                  <span className="font-semibold text-white">
+                    {paymentAmountDisplay ?? "Use the total shown above"}
+                  </span>
+                </p>
+                <div className="mt-4 flex flex-col gap-3 md:flex-row">
+                  <Link
+                    href={cashAppLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 rounded-full bg-emerald-500 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-400"
+                  >
+                    Pay via Cash App
+                  </Link>
+                  <Link
+                    href={venmoLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 rounded-full bg-blue-600 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-blue-500"
+                  >
+                    Pay via Venmo
+                  </Link>
+                </div>
+                <p className="mt-4 text-sm text-zinc-300">
+                  Prefer Zelle? Send{" "}
+                  {paymentAmountDisplay ?? "your total"} to{" "}
+                  <span className="font-semibold text-white">
+                    {ZELLE_EMAIL}
+                  </span>{" "}
+                  (recipient name:{" "}
+                  <span className="font-semibold text-white">
+                    {ZELLE_RECIPIENT_NAME}
+                  </span>
+                  ).
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 p-6">
+                <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
                   Need Help?
                 </h3>
                 <p className="text-sm text-zinc-300">
                   If you have any questions about your order, please contact us
                   at{" "}
-                  <a
+                  <Link
                     href={`tel:${PHONE_NUMBER.replace(/\D/g, "")}`}
                     className="text-purple-200 underline hover:text-purple-100"
                   >
                     {PHONE_NUMBER}
-                  </a>{" "}
+                  </Link>{" "}
                   or reference your Order ID when reaching out.
                 </p>
               </div>

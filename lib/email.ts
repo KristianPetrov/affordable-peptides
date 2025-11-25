@@ -2,6 +2,13 @@ import type { Order } from "./orders";
 import { formatOrderNumber } from "./orders";
 import { Resend } from 'resend'
 import { calculateVolumePricing } from "./cart-pricing";
+import
+{
+  buildCashAppLink,
+  buildVenmoLink,
+  ZELLE_EMAIL,
+  ZELLE_RECIPIENT_NAME,
+} from "./payment-links";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -206,6 +213,12 @@ function formatCustomerReceiptEmail (
     timeStyle: "short",
   });
   const pricing = calculateVolumePricing(order.items);
+  const amountDisplay = order.subtotal.toFixed(2);
+  const cashAppLink = buildCashAppLink(order.subtotal);
+  const venmoLink = buildVenmoLink({
+    amount: order.subtotal,
+    note: `Order ${orderNumber}`,
+  });
   const itemsHtml = order.items
     .map(
       (item) => `
@@ -248,15 +261,34 @@ function formatCustomerReceiptEmail (
       </div>
       <div class="content">
         <p>Thanks for choosing Affordable Peptides. Save this email for your records. You can review order details or upload payment confirmation anytime.</p>
-        <a class="cta" href="${receiptUrl}" target="_blank" rel="noopener noreferrer">View Your Order</a>
+        <a class="cta" style="color: #ffffff !important;" href="${receiptUrl}" target="_blank" rel="noopener noreferrer">View Your Order</a>
 
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
           <ol style="margin: 0; padding-left: 18px;">
-            <li>Send payment via CashApp, Zelle, or your preferred method.</li>
+            <li>Send payment via Cash App, Venmo, or Zelle using the options below.</li>
             <li>Text (951) 539-3821 with your name, order number (${orderNumber}), and payment screenshot.</li>
             <li>We’ll confirm manually and follow up with shipping details.</li>
           </ol>
+        </div>
+
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 12px;">Payment options</h3>
+          <div style="display: flex; flex-direction: column; gap: 12px;">
+            <a href="${cashAppLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;">
+              <div style="border-radius: 9999px; background: #059669; color: white; text-align: center; padding: 12px 24px; font-weight: bold;">
+                Pay $${amountDisplay} via Cash App
+              </div>
+            </a>
+            <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;">
+              <div style="border-radius: 9999px; background: #2563eb; color: white; text-align: center; padding: 12px 24px; font-weight: bold;">
+                Pay $${amountDisplay} via Venmo
+              </div>
+            </a>
+            <div style="font-size: 14px; color: #374151;">
+              Prefer Zelle? Send $${amountDisplay} to <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>).
+            </div>
+          </div>
         </div>
 
         <div class="info-block">
@@ -304,6 +336,11 @@ function formatCustomerReceiptEmail (
     ``,
     `View your order: ${receiptUrl}`,
     ``,
+    `Payment options for $${amountDisplay}:`,
+    `- Cash App: ${cashAppLink}`,
+    `- Venmo: ${venmoLink}`,
+    `- Zelle: ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
+    ``,
     `Shipping To:`,
     `${order.customerName}`,
     `${order.shippingAddress.street}`,
@@ -319,7 +356,7 @@ function formatCustomerReceiptEmail (
     `Total: $${order.subtotal.toFixed(2)} • ${order.totalUnits} units`,
     ``,
     `Next Steps:`,
-    `1. Send payment via CashApp, Zelle, or your preferred method.`,
+    `1. Send payment via Cash App, Venmo, or Zelle.`,
     `2. Text (951) 539-3821 with your name, Order ${orderNumber}, and payment screenshot.`,
     `3. We'll confirm manually and update you once your order ships.`,
   ].join("\n");
