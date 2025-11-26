@@ -8,6 +8,8 @@ import NavBar from "@/components/NavBar";
 import {
   buildCashAppLink,
   buildVenmoLink,
+  calculateCashAppTotal,
+  calculateVenmoTotal,
   ZELLE_EMAIL,
   ZELLE_RECIPIENT_NAME,
 } from "@/lib/payment-links";
@@ -43,17 +45,35 @@ function ThankYouContent() {
   }, [orderNumber]);
   const orderReference = formattedOrderNumber || orderNumber;
   const venmoNote = `Order ${orderReference}`;
-  const cashAppLink = useMemo(
-    () => buildCashAppLink(orderAmount),
+  const cashAppCharge = useMemo(
+    () => (orderAmount ? calculateCashAppTotal(orderAmount) : null),
     [orderAmount]
   );
+  const venmoCharge = useMemo(
+    () => (orderAmount ? calculateVenmoTotal(orderAmount) : null),
+    [orderAmount]
+  );
+  const cashAppLink = useMemo(
+    () => buildCashAppLink(cashAppCharge ?? orderAmount ?? undefined),
+    [cashAppCharge, orderAmount]
+  );
   const venmoLink = useMemo(
-    () => buildVenmoLink({ amount: orderAmount, note: venmoNote }),
-    [orderAmount, venmoNote]
+    () =>
+      buildVenmoLink({
+        amount: venmoCharge ?? orderAmount ?? undefined,
+        note: venmoNote,
+      }),
+    [venmoCharge, orderAmount, venmoNote]
   );
   const paymentAmountDisplay = orderAmount
     ? `$${orderAmount.toFixed(2)}`
     : null;
+  const cashAppLabel = cashAppCharge
+    ? `Pay via Cash App ($${cashAppCharge.toFixed(2)})`
+    : "Pay via Cash App";
+  const venmoLabel = venmoCharge
+    ? `Pay via Venmo ($${venmoCharge.toFixed(2)})`
+    : "Pay via Venmo";
 
   if (!orderNumber || !orderId) {
     return (
@@ -186,7 +206,7 @@ function ThankYouContent() {
                     rel="noopener noreferrer"
                     className="flex-1 rounded-full bg-emerald-500 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-400"
                   >
-                    Pay via Cash App
+                    {cashAppLabel}
                   </Link>
                   <Link
                     href={venmoLink}
@@ -194,21 +214,27 @@ function ThankYouContent() {
                     rel="noopener noreferrer"
                     className="flex-1 rounded-full bg-blue-600 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-blue-500"
                   >
-                    Pay via Venmo
+                    {venmoLabel}
                   </Link>
                 </div>
-                <p className="mt-4 text-sm text-zinc-300">
-                  Prefer Zelle? Send{" "}
-                  {paymentAmountDisplay ?? "your total"} to{" "}
-                  <span className="font-semibold text-white">
-                    {ZELLE_EMAIL}
-                  </span>{" "}
-                  (recipient name:{" "}
-                  <span className="font-semibold text-white">
-                    {ZELLE_RECIPIENT_NAME}
-                  </span>
-                  ).
-                </p>
+                <ul className="mt-4 space-y-1 text-sm text-zinc-300">
+                  <li>
+                    Cash App includes a 2.6% + $0.15 processing fee; Venmo
+                    includes a 1.9% + $0.10 fee.
+                  </li>
+                  <li>
+                    Prefer Zelle? It&apos;s free and our preferred option. Send{" "}
+                    {paymentAmountDisplay ?? "your total"} to{" "}
+                    <span className="font-semibold text-white">
+                      {ZELLE_EMAIL}
+                    </span>{" "}
+                    (recipient name:{" "}
+                    <span className="font-semibold text-white">
+                      {ZELLE_RECIPIENT_NAME}
+                    </span>
+                    ).
+                  </li>
+                </ul>
               </div>
 
               <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 p-6">

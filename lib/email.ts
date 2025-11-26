@@ -6,6 +6,8 @@ import
 {
   buildCashAppLink,
   buildVenmoLink,
+  calculateCashAppTotal,
+  calculateVenmoTotal,
   ZELLE_EMAIL,
   ZELLE_RECIPIENT_NAME,
 } from "./payment-links";
@@ -214,9 +216,13 @@ function formatCustomerReceiptEmail (
   });
   const pricing = calculateVolumePricing(order.items);
   const amountDisplay = order.subtotal.toFixed(2);
-  const cashAppLink = buildCashAppLink(order.subtotal);
+  const cashAppTotal = calculateCashAppTotal(order.subtotal) || order.subtotal;
+  const venmoTotal = calculateVenmoTotal(order.subtotal) || order.subtotal;
+  const cashAppDisplay = cashAppTotal.toFixed(2);
+  const venmoDisplay = venmoTotal.toFixed(2);
+  const cashAppLink = buildCashAppLink(cashAppTotal);
   const venmoLink = buildVenmoLink({
-    amount: order.subtotal,
+    amount: venmoTotal,
     note: `Order ${orderNumber}`,
   });
   const itemsHtml = order.items
@@ -277,16 +283,19 @@ function formatCustomerReceiptEmail (
           <div style="display: flex; flex-direction: column; gap: 12px;">
             <a href="${cashAppLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;">
               <div style="border-radius: 9999px; background: #059669; color: white; text-align: center; padding: 12px 24px; font-weight: bold;">
-                Pay $${amountDisplay} via Cash App
+                Pay $${cashAppDisplay} via Cash App
               </div>
             </a>
+            <p style="margin: 0 0 8px 0; color: #4b5563; font-size: 13px;">Includes 2.6% + $0.15 processing fee.</p>
             <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;">
               <div style="border-radius: 9999px; background: #2563eb; color: white; text-align: center; padding: 12px 24px; font-weight: bold;">
-                Pay $${amountDisplay} via Venmo
+                Pay $${venmoDisplay} via Venmo
               </div>
             </a>
+            <p style="margin: 0 0 8px 0; color: #4b5563; font-size: 13px;">Includes 1.9% + $0.10 processing fee.</p>
             <div style="font-size: 14px; color: #374151;">
-              Prefer Zelle? Send $${amountDisplay} to <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>).
+              Prefer Zelle? It&apos;s free and our preferred option. Send $${amountDisplay} to
+              <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>).
             </div>
           </div>
         </div>
@@ -336,10 +345,10 @@ function formatCustomerReceiptEmail (
     ``,
     `View your order: ${receiptUrl}`,
     ``,
-    `Payment options for $${amountDisplay}:`,
-    `- Cash App: ${cashAppLink}`,
-    `- Venmo: ${venmoLink}`,
-    `- Zelle: ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
+    `Payment options:`,
+    `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
+    `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
+    `- Zelle (preferred, no fee): ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
     ``,
     `Shipping To:`,
     `${order.customerName}`,

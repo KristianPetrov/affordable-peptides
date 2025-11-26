@@ -5,6 +5,32 @@ const VENMO_URL = `https://venmo.com/u/${VENMO_USER}`;
 const ZELLE_EMAIL = "payaffordablepeptides@gmail.com";
 const ZELLE_RECIPIENT_NAME = "Vincent Thayer";
 
+
+
+const CASH_APP_PERCENT_FEE = 0.026;
+const CASH_APP_FLAT_FEE = 0.15;
+const VENMO_PERCENT_FEE = 0.019;
+const VENMO_FLAT_FEE = 0.1;
+
+const roundToCents = (amount: number): number =>
+    Math.round(amount * 100) / 100;
+
+export function calculateCashAppTotal (amount: number): number
+{
+    if (!amount || amount <= 0) {
+        return 0;
+    }
+    return roundToCents(amount * (1 + CASH_APP_PERCENT_FEE) + CASH_APP_FLAT_FEE);
+}
+
+export function calculateVenmoTotal (amount: number): number
+{
+    if (!amount || amount <= 0) {
+        return 0;
+    }
+    return roundToCents(amount * (1 + VENMO_PERCENT_FEE) + VENMO_FLAT_FEE);
+}
+
 const formatPathAmount = (amount: number): string =>
     Number.isInteger(amount) ? String(amount) : amount.toFixed(2);
 
@@ -46,5 +72,9 @@ export
     ZELLE_RECIPIENT_NAME,
     CASH_APP_TAG,
     VENMO_USER,
+    CASH_APP_PERCENT_FEE,
+    CASH_APP_FLAT_FEE,
+    VENMO_PERCENT_FEE,
+    VENMO_FLAT_FEE,
 };
 
