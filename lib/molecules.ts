@@ -111,7 +111,7 @@ const withMolecule = (
 });
 
 export const moleculesByProduct: MoleculeMap = {
-    "5 Amino 1 Q": [
+    "5-Amino-1MQ": [
 
         createLocalMoleculeDefinition(
             "5-amino-1q-iodide",

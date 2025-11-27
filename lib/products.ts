@@ -107,13 +107,13 @@ const defineProduct = (definition: ProductDefinition): Product => ({
 
 const productDefinitions: ProductDefinition[] = [
   {
-    name: "5 Amino 1 Q",
+    name: "5-Amino-1MQ",
     researchFocus:
       "Inspired by 5-Amino-1MQ to target NNMT activity, insulin sensitivity, and visceral fat.",
     detailedDescription:
       "5 Amino 1 Q mirrors the small-molecule peptide 5-Amino-1MQ, which is researched for inhibiting nicotinamide N-methyltransferase (NNMT). Scientists leverage it in metabolic studies aimed at improving insulin sensitivity, mobilizing stubborn adipose tissue, and pairing with incretin or mitochondrial-boosting stacks.",
     categories: ["weight-metabolic", "longevity-wellness"],
-    variants: [createVariant("10mg", 50), createVariant("50mg", 150)],
+    variants: [createVariant("10mg", 50, "/products/label-5amino1q-10mg-3ml.png"), createVariant("50mg", 150, "/products/label-5amino1q-50mg-3ml.png")],
   },
   {
     name: "AOD 9604",
@@ -154,7 +154,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["support-essentials", "longevity-wellness"],
     variants: [
       createVariant("10ml (1mg/mL)", 90, "/products/label-b12-10mg-10ml.png"),
-     
+
     ],
   },
   {
@@ -164,7 +164,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
       createVariant(
-        "10mg each",
+        "20mg total (10mg each)",
         80,
         "/products/label-bpc157-tb-500-20mg-3ml.png"
       ),
