@@ -1,3 +1,5 @@
+import { getAllProductInventory } from "./db";
+
 export type Tier = {
   quantity: string;
   price: string;
@@ -7,6 +9,7 @@ export type Variant = {
   label: string;
   tiers: Tier[];
   mockupLabel?: string;
+  stockQuantity?: number | null;
 };
 
 export type ProductCategoryId =
@@ -104,6 +107,15 @@ const defineProduct = (definition: ProductDefinition): Product => ({
 
 const productDefinitions: ProductDefinition[] = [
   {
+    name: "5 Amino 1 Q",
+    researchFocus:
+      "Inspired by 5-Amino-1MQ to target NNMT activity, insulin sensitivity, and visceral fat.",
+    detailedDescription:
+      "5 Amino 1 Q mirrors the small-molecule peptide 5-Amino-1MQ, which is researched for inhibiting nicotinamide N-methyltransferase (NNMT). Scientists leverage it in metabolic studies aimed at improving insulin sensitivity, mobilizing stubborn adipose tissue, and pairing with incretin or mitochondrial-boosting stacks.",
+    categories: ["weight-metabolic", "longevity-wellness"],
+    variants: [createVariant("10mg", 50), createVariant("50mg", 150)],
+  },
+  {
     name: "AOD 9604",
     researchFocus: "Targets stubborn adipose tissue by mimicking the fat-metabolizing fragment of HGH.",
     detailedDescription: "AOD 9604 is a fragment of human growth hormone (HGH) researched for its role in supporting fat metabolism and targeting stubborn adipose tissue without the broader endocrine activity of full-length HGH. It's a go-to peptide in studies focused on body-composition and metabolic pathways.",
@@ -134,12 +146,23 @@ const productDefinitions: ProductDefinition[] = [
     ],
   },
   {
+    name: "Vitamin B12 1mg/mL - 10ml Bottle",
+    researchFocus:
+      "High-potency methyl support for injectable B12 research and compounders.",
+    detailedDescription:
+      "This multidose vial delivers cyanocobalamin at 1mg/mL across a 10mL volume, giving labs a reliable source of injectable vitamin B12. It's commonly paired with metabolic, energy, liver-support, or methylation protocols where repeated sterile draws are required.",
+    categories: ["support-essentials", "longevity-wellness"],
+    variants: [
+      createVariant("10ml (1mg/mL)", 90, "/products/label-b12-10mg-10ml.png"),
+     
+    ],
+  },
+  {
     name: "BPC + TB Combo",
     researchFocus: "Pairs BPC-157 and TB-500 to fast-track connective tissue and tendon repair.",
     detailedDescription: "This combo pairs BPC-157 and TB-500, two peptides widely explored for connective tissue, tendon, and muscle support in preclinical models. Researchers value the stack for its potential to accelerate tissue repair, angiogenesis, and overall recovery signaling.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("5mg each", 50, "/products/label-bpc157-tb-500-10mg-3ml.png"),
       createVariant(
         "10mg each",
         80,
@@ -154,7 +177,6 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["recovery-performance", "longevity-wellness"],
     isFeatured: true,
     variants: [
-      createVariant("5mg", 40, "/products/label-bpc157-5mg-3ml.png"),
       createVariant("10mg", 70, "/products/label-bpc157-10mg-3ml.png"),
     ],
     testResultUrl: "https://chromate.org/verify?c=29115_AFFORDX493E7",
@@ -353,6 +375,24 @@ const productDefinitions: ProductDefinition[] = [
     testResultUrl: "https://chromate.org/verify?c=29097_AFFORD16FRWY",
   },
   {
+    name: "Selank",
+    researchFocus:
+      "Calming neuropeptide analog researched for stress resilience and immune balance.",
+    detailedDescription:
+      "Selank is a tuftsin-derived heptapeptide explored for its anxiolytic, nootropic, and immunomodulatory characteristics. Researchers deploy it in studies centered on focus, mood regulation, and helping the nervous and immune systems stay balanced under stress without sedative drawbacks.",
+    categories: ["longevity-wellness", "recovery-performance"],
+    variants: [createVariant("10mg", 30, "/products/label-selank-10mg-3ml.png")],
+  },
+  {
+    name: "Semax",
+    researchFocus:
+      "BDNF-promoting melanocortin analog studied for cognition, neuroprotection, and recovery.",
+    detailedDescription:
+      "Semax traces back to melanocortin fragments that elevate BDNF and other neurotrophins in experimental models. It's widely investigated for sharpening attention, supporting post-stroke recovery, and buffering oxidative stress within brain-focused research protocols.",
+    categories: ["longevity-wellness", "recovery-performance"],
+    variants: [createVariant("10mg", 30, "/products/label-semax-10mg-3ml.png")],
+  },
+  {
     name: "SLU-PP-332",
     researchFocus: "PPARδ modulator explored for muscular endurance and fat oxidation.",
     detailedDescription: "SLU-PP-332 is a PPAR/ERR-pathway modulator explored as a potential \"exercise mimetic.\" Animal studies suggest benefits for muscular endurance, fat oxidation, and cardiometabolic health, positioning it at the cutting edge of performance and longevity research.",
@@ -367,7 +407,6 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "TB-500 is a synthetic fragment of thymosin β4 studied for its impact on angiogenesis, cell migration, and tissue repair. It's frequently used in preclinical research on joint health, soft-tissue recovery, and post-injury remodeling.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("5mg", 40, "/products/label-tb500-5mg-3ml.png"),
       createVariant("10mg", 70, "/products/label-tb500-10mg-3ml.png"),
     ],
     testResultUrl: "https://chromate.org/verify?c=29113_AFFORD2NQWKZ",
@@ -393,6 +432,7 @@ const productDefinitions: ProductDefinition[] = [
       createVariant("10mg", 80, "/products/label-tirzepatide-10mg-3ml.png"),
       createVariant("20mg", 140, "/products/label-tirzepatide-20mg-3ml.png"),
       createVariant("30mg", 180, "/products/label-tirzepatide-30mg-3ml.png"),
+      createVariant("40mg", 200, "/products/label-tirzepatide-40mg-3ml.png")
     ],
     testResultUrl: "https://chromate.org/verify?c=29099_AFFORD4CK48N",
   },
@@ -401,9 +441,10 @@ const productDefinitions: ProductDefinition[] = [
 export const peptideProducts: Product[] = productDefinitions.map(defineProduct);
 
 const productBySlug = new Map<string, Product>();
-peptideProducts.forEach((product) =>
-{
+const productSlugByName = new Map<string, string>();
+peptideProducts.forEach((product) => {
   productBySlug.set(product.slug, product);
+  productSlugByName.set(product.name.toLowerCase(), product.slug);
 });
 
 export const featuredProducts = peptideProducts.filter(
@@ -412,3 +453,9 @@ export const featuredProducts = peptideProducts.filter(
 
 export const getProductBySlug = (slug: string): Product | undefined =>
   productBySlug.get(slug);
+
+export const getProductSlugByName = (name: string): string | undefined =>
+  productSlugByName.get(name.toLowerCase());
+
+export const getInventoryKey = (productSlug: string, variantLabel: string) =>
+  `${productSlug}::${variantLabel.toLowerCase()}`;

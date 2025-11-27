@@ -2,7 +2,12 @@
 
 import { headers } from "next/headers";
 
-import { createOrder, getOrderByOrderNumber, upsertCustomerProfile } from "@/lib/db";
+import
+{
+  createOrder,
+  getOrderByOrderNumber,
+  upsertCustomerProfile,
+} from "@/lib/db";
 import { sendOrderEmail } from "@/lib/email";
 import { generateOrderNumber, normalizeOrderNumberInput } from "@/lib/orders";
 import type { Order } from "@/lib/orders";
@@ -16,6 +21,12 @@ import
 } from "@/lib/rate-limit";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
 import { auth } from "@/lib/auth";
+import
+{
+  applyInventoryAdjustments,
+  loadInventoryMap,
+  prepareInventoryAdjustments,
+} from "@/lib/inventory";
 
 type CreateOrderInput = {
   items: CartItem[];
@@ -181,6 +192,21 @@ export async function createOrderAction (
     const orderNumber = generateOrderNumber();
     const now = new Date().toISOString();
 
+    const inventoryMap = await loadInventoryMap();
+    const reservation = prepareInventoryAdjustments(
+      input.items,
+      inventoryMap,
+      "reserve"
+    );
+
+    if (!reservation.success) {
+      return {
+        success: false,
+        error: reservation.error,
+        errorCode: "VALIDATION_ERROR",
+      };
+    }
+
     const order = await createOrder({
       id: randomUUID(),
       orderNumber,
@@ -202,6 +228,8 @@ export async function createOrderAction (
       createdAt: now,
       updatedAt: now,
     });
+
+    await applyInventoryAdjustments(reservation.adjustments);
 
     // Send email notification (non-blocking, don't fail order if email fails)
     sendOrderEmail(order).catch((error) =>
@@ -250,10 +278,11 @@ export type LookupOrderResult =
   | { success: true; order: Order }
   | { success: false; error: string };
 
-export async function lookupOrderAction(input: {
+export async function lookupOrderAction (input: {
   orderNumber: string;
   customerEmail?: string;
-}): Promise<LookupOrderResult> {
+}): Promise<LookupOrderResult>
+{
   const normalizedOrderNumber = normalizeOrderNumberInput(input.orderNumber);
 
   if (!normalizedOrderNumber) {

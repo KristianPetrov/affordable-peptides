@@ -17,7 +17,7 @@ type ProductModalProps = {
 
 export default function ProductModal({ product, molecules }: ProductModalProps) {
   const router = useRouter();
-  const { addToCart } = useStorefront();
+  const { addToCart, cartItems } = useStorefront();
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -57,6 +57,7 @@ export default function ProductModal({ product, molecules }: ProductModalProps) 
             <ProductCard
               product={product}
               molecules={molecules}
+              cartItems={cartItems}
               onAddToCart={addToCart}
               defaultExpanded
               forceExpanded

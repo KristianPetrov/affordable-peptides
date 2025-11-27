@@ -6,6 +6,7 @@ import NavBar from "@/components/NavBar";
 import ProductDetailStandalone from "@/components/store/ProductDetailStandalone";
 import { getMoleculesForProduct } from "@/lib/molecules";
 import { getProductBySlug, peptideProducts } from "@/lib/products";
+import { getProductBySlugWithInventory } from "@/lib/products.server";
 
 type ProductPageProps = {
   params: Promise<{
@@ -13,9 +14,11 @@ type ProductPageProps = {
   }>;
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = getProductBySlug(slug);
+  const product = await getProductBySlugWithInventory(slug);
   if (!product) {
     notFound();
   }

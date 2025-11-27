@@ -1,11 +1,13 @@
-import { eq } from "drizzle-orm";
-import { db as drizzleDb, orders, customerProfiles } from "./db/index";
+import { eq, and } from "drizzle-orm";
+import { randomUUID } from "crypto";
+import { db as drizzleDb, orders, customerProfiles, productInventory } from "./db/index";
 import type { Order } from "./orders";
 
 export const db = drizzleDb;
 
 // Convert database row to Order type
-function dbRowToOrder(row: typeof orders.$inferSelect): Order {
+function dbRowToOrder (row: typeof orders.$inferSelect): Order
+{
   return {
     id: row.id,
     orderNumber: row.orderNumber,
@@ -25,7 +27,8 @@ function dbRowToOrder(row: typeof orders.$inferSelect): Order {
 }
 
 // Convert Order type to database row
-function orderToDbRow(order: Order): typeof orders.$inferInsert {
+function orderToDbRow (order: Order): typeof orders.$inferInsert
+{
   return {
     id: order.id,
     orderNumber: order.orderNumber,
@@ -44,13 +47,15 @@ function orderToDbRow(order: Order): typeof orders.$inferInsert {
   };
 }
 
-export async function createOrder(order: Order): Promise<Order> {
+export async function createOrder (order: Order): Promise<Order>
+{
   const dbRow = orderToDbRow(order);
   const [inserted] = await db.insert(orders).values(dbRow).returning();
   return dbRowToOrder(inserted);
 }
 
-export async function getOrderById(id: string): Promise<Order | null> {
+export async function getOrderById (id: string): Promise<Order | null>
+{
   const [order] = await db
     .select()
     .from(orders)
@@ -60,9 +65,10 @@ export async function getOrderById(id: string): Promise<Order | null> {
   return order ? dbRowToOrder(order) : null;
 }
 
-export async function getOrderByOrderNumber(
+export async function getOrderByOrderNumber (
   orderNumber: string
-): Promise<Order | null> {
+): Promise<Order | null>
+{
   const [order] = await db
     .select()
     .from(orders)
@@ -72,16 +78,18 @@ export async function getOrderByOrderNumber(
   return order ? dbRowToOrder(order) : null;
 }
 
-export async function getAllOrders(): Promise<Order[]> {
+export async function getAllOrders (): Promise<Order[]>
+{
   const allOrders = await db.select().from(orders);
   return allOrders.map(dbRowToOrder);
 }
 
-export async function updateOrderStatus(
+export async function updateOrderStatus (
   id: string,
   status: Order["status"],
   notes?: string
-): Promise<Order | null> {
+): Promise<Order | null>
+{
   const [updated] = await db
     .update(orders)
     .set({
@@ -95,7 +103,8 @@ export async function updateOrderStatus(
   return updated ? dbRowToOrder(updated) : null;
 }
 
-export async function getOrdersForUser(userId: string): Promise<Order[]> {
+export async function getOrdersForUser (userId: string): Promise<Order[]>
+{
   if (!userId) {
     return [];
   }
@@ -134,9 +143,10 @@ export type CustomerProfileUpdate = Partial<
   >
 >;
 
-function dbRowToCustomerProfile(
+function dbRowToCustomerProfile (
   row: typeof customerProfiles.$inferSelect
-): CustomerProfile {
+): CustomerProfile
+{
   return {
     userId: row.userId,
     fullName: row.fullName ?? null,
@@ -151,9 +161,10 @@ function dbRowToCustomerProfile(
   };
 }
 
-export async function getCustomerProfile(
+export async function getCustomerProfile (
   userId: string
-): Promise<CustomerProfile | null> {
+): Promise<CustomerProfile | null>
+{
   if (!userId) {
     return null;
   }
@@ -167,10 +178,11 @@ export async function getCustomerProfile(
   return row ? dbRowToCustomerProfile(row) : null;
 }
 
-export async function upsertCustomerProfile(
+export async function upsertCustomerProfile (
   userId: string,
   profile: CustomerProfileUpdate
-): Promise<CustomerProfile> {
+): Promise<CustomerProfile>
+{
   const existing = await getCustomerProfile(userId);
   const data = {
     fullName: profile.fullName ?? null,
@@ -202,4 +214,83 @@ export async function upsertCustomerProfile(
     .returning();
 
   return dbRowToCustomerProfile(created);
+}
+
+export type ProductInventoryRecord = {
+  id: string;
+  productSlug: string;
+  variantLabel: string;
+  stock: number;
+  updatedAt: string;
+};
+
+function dbRowToProductInventory (
+  row: typeof productInventory.$inferSelect
+): ProductInventoryRecord
+{
+  return {
+    id: row.id,
+    productSlug: row.productSlug,
+    variantLabel: row.variantLabel,
+    stock: row.stock,
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
+export async function getAllProductInventory (): Promise<ProductInventoryRecord[]>
+{
+  const rows = await db.select().from(productInventory);
+  return rows.map(dbRowToProductInventory);
+}
+
+export async function getProductInventoryRecord (
+  productSlug: string,
+  variantLabel: string
+): Promise<ProductInventoryRecord | null>
+{
+  const [row] = await db
+    .select()
+    .from(productInventory)
+    .where(
+      and(
+        eq(productInventory.productSlug, productSlug),
+        eq(productInventory.variantLabel, variantLabel)
+      )
+    )
+    .limit(1);
+
+  return row ? dbRowToProductInventory(row) : null;
+}
+
+export async function setProductStock (
+  productSlug: string,
+  variantLabel: string,
+  stock: number
+): Promise<ProductInventoryRecord>
+{
+  const normalizedStock = Math.max(0, Math.trunc(stock));
+  const now = new Date();
+
+  const [row] = await db
+    .insert(productInventory)
+    .values({
+      id: randomUUID(),
+      productSlug,
+      variantLabel,
+      stock: normalizedStock,
+      updatedAt: now,
+    })
+    .onConflictDoUpdate({
+      target: [
+        productInventory.productSlug,
+        productInventory.variantLabel,
+      ],
+      set: {
+        stock: normalizedStock,
+        updatedAt: now,
+      },
+    })
+    .returning();
+
+  return dbRowToProductInventory(row);
 }

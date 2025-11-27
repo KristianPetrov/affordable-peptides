@@ -1,12 +1,16 @@
 import NavBar from "@/components/NavBar";
 import StoreClient from "@/components/store/StoreClient";
-import { peptideProducts } from "@/lib/products";
+import { getProductsWithInventory } from "@/lib/products.server";
 
-export default function StorePage() {
+export const dynamic = "force-dynamic";
+
+export default async function StorePage() {
+  const products = await getProductsWithInventory();
+
   return (
     <div className="min-h-screen bg-black text-zinc-100">
       <NavBar />
-      <StoreClient products={peptideProducts} />
+      <StoreClient products={products} />
     </div>
   );
 }

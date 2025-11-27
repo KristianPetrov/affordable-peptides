@@ -1,13 +1,15 @@
-import {
-  pgTable,
-  text,
-  jsonb,
-  timestamp,
-  varchar,
-  numeric,
-  integer,
-  primaryKey,
-} from "drizzle-orm/pg-core";
+import
+  {
+    pgTable,
+    text,
+    jsonb,
+    timestamp,
+    varchar,
+    numeric,
+    integer,
+    primaryKey,
+    uniqueIndex,
+  } from "drizzle-orm/pg-core";
 import type { OrderStatus } from "../orders";
 import type { CartItem } from "@/components/store/StorefrontContext";
 
@@ -96,4 +98,20 @@ export const orders = pgTable("orders", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
+
+export const productInventory = pgTable(
+  "product_inventory",
+  {
+    id: text("id").primaryKey(),
+    productSlug: text("product_slug").notNull(),
+    variantLabel: text("variant_label").notNull(),
+    stock: integer("stock").notNull().default(0),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    productVariantKey: uniqueIndex(
+      "product_inventory_product_variant_idx"
+    ).on(table.productSlug, table.variantLabel),
+  })
+);
 

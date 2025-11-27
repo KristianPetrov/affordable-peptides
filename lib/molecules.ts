@@ -111,6 +111,17 @@ const withMolecule = (
 });
 
 export const moleculesByProduct: MoleculeMap = {
+    "5 Amino 1 Q": [
+
+        createLocalMoleculeDefinition(
+            "5-amino-1q-iodide",
+            "5-Amino-1-methylquinolinium iodide",
+            {
+                subtitle: "Common iodide salt form (NNMTi)",
+                fallback: pubchemSource("66522933", { queryType: "cid" }),
+            }
+        ),
+    ],
     "AOD 9604": [
         createLocalMoleculeDefinition(
             "aod-9604",
@@ -120,17 +131,22 @@ export const moleculesByProduct: MoleculeMap = {
             }
         ),
     ],
-    "Bacteriostatic Water": [
-        createLocalMoleculeDefinition("water", "Water (H₂O)", {
-            fallback: pubchemSource("Water"),
-        }),
-        createLocalMoleculeDefinition(
+    "Bacteriostatic Water": [ createLocalMoleculeDefinition(
             "benzyl-alcohol",
             "Benzyl Alcohol (0.9%)",
             {
                 fallback: pubchemSource("Benzyl alcohol"),
             }
         ),
+        createLocalMoleculeDefinition("water", "Water (H₂O)", {
+            fallback: pubchemSource("Water"),
+        }),
+
+    ],
+    "Vitamin B12 1mg/mL - 10ml Bottle": [
+        createLocalMoleculeDefinition("b12", "Cyanocobalamin (B12)", {
+            fallback: pubchemSource("Cyanocobalamin"),
+        }),
     ],
     "BPC + TB Combo": [
         withMolecule(canonicalMolecules.bpc157, {
@@ -245,6 +261,16 @@ export const moleculesByProduct: MoleculeMap = {
     Retatrutide: [
         createLocalMoleculeDefinition("retatrutide", "Retatrutide", {
             fallback: pubchemSource("Retatrutide", { recordType: "2d" }),
+        }),
+    ],
+    Selank: [
+        createLocalMoleculeDefinition("selank", "Selank", {
+            fallback: pubchemSource("11765600", { queryType: "cid" }),
+        }),
+    ],
+    Semax: [
+        createLocalMoleculeDefinition("semax", "Semax", {
+            fallback: pubchemSource("9811102", { queryType: "cid" }),
         }),
     ],
     "SLU-PP-332": [

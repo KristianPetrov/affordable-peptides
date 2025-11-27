@@ -11,7 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:migrate-orders": "tsx scripts/migrate-orders.ts"
+    "db:migrate-orders": "tsx scripts/migrate-orders.ts",
+    "seed:inventory": "tsx scripts/seed-inventory.ts"
   },
   "dependencies": {
     "3dmol": "^2.5.3",

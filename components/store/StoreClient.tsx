@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import MoleculeViewer from "@/components/MoleculeViewer";
 import ProductMockup from "@/components/ProductMockup";
@@ -26,14 +26,18 @@ import {
 
 const POPULARITY_ORDER: string[] = [
   "Tirzepatide",
+  "5 Amino 1 Q",
   "BPC-157",
   "CJC-1295",
+  "Selank",
+  "Semax",
   "Ipamorelin",
   "TB-500",
   "AOD 9604",
   "GLP-1",
   "Tesamorelin",
   "BPC + TB Combo",
+  "Vitamin B12 1mg/mL - 10ml Bottle",
   "IGF-1 LR3",
   "HGH",
   "KPV",
@@ -46,6 +50,49 @@ const POPULARITY_ORDER: string[] = [
 const CATEGORY_LOOKUP = new Map<ProductCategoryId, ProductCategory>(
   productCategories.map((category) => [category.id, category])
 );
+
+const SEARCH_SUGGESTION_LIMIT = 6;
+
+type QuickFilterId = "featured" | "labVerified" | "inStock";
+
+type QuickFilter = {
+  id: QuickFilterId;
+  label: string;
+  description: string;
+};
+
+type SearchSuggestion = {
+  slug: string;
+  name: string;
+  subtitle: string;
+  categories: string[];
+  isFeatured: boolean;
+};
+
+const QUICK_FILTERS: QuickFilter[] = [
+  {
+    id: "featured",
+    label: "Featured",
+    description: "Only show curated best sellers",
+  },
+  {
+    id: "labVerified",
+    label: "Lab Verified",
+    description: "Requires a published Chromate report",
+  },
+  {
+    id: "inStock",
+    label: "In Stock",
+    description: "At least one variant currently available",
+  },
+];
+
+const productHasAvailableStock = (product: Product) =>
+  product.variants.some((variant) =>
+    typeof variant.stockQuantity === "number"
+      ? variant.stockQuantity > 0
+      : false
+  );
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -97,6 +144,7 @@ type CategoryTab = {
 type ProductCardProps = {
   product: Product;
   molecules: MoleculeDefinition[];
+  cartItems: CartItem[];
   onAddToCart: (payload: AddToCartPayload) => void;
   defaultExpanded?: boolean;
   forceExpanded?: boolean;
@@ -107,6 +155,7 @@ type ProductCardProps = {
 export function ProductCard({
   product,
   molecules,
+  cartItems,
   onAddToCart,
   defaultExpanded = false,
   forceExpanded,
@@ -122,6 +171,20 @@ export function ProductCard({
     variant.tiers.findIndex(
       (tier) => parseQuantity(tier.quantity) > 0 && parsePrice(tier.price) > 0
     );
+
+  const getUnitsReservedForVariant = (variantLabel: string) =>
+    cartItems.reduce((sum, item) => {
+      if (item.variantLabel !== variantLabel) {
+        return sum;
+      }
+      const matchesProductSlug = item.productSlug
+        ? item.productSlug === product.slug
+        : item.productName.toLowerCase() === product.name.toLowerCase();
+      if (!matchesProductSlug) {
+        return sum;
+      }
+      return sum + item.tierQuantity * item.count;
+    }, 0);
 
   const [selectedTierIndexByVariant, setSelectedTierIndexByVariant] = useState<
     Record<string, number>
@@ -171,6 +234,21 @@ export function ProductCard({
       return;
     }
 
+    const variantStock =
+      typeof variant.stockQuantity === "number" ? variant.stockQuantity : null;
+    const reservedUnits = getUnitsReservedForVariant(variant.label);
+    const remainingStock =
+      variantStock === null
+        ? null
+        : Math.max(variantStock - reservedUnits, 0);
+
+    if (
+      remainingStock !== null &&
+      (remainingStock === 0 || tierQuantity > remainingStock)
+    ) {
+      return;
+    }
+
     const pricingTiers = variant.tiers
       .map((tier) => ({
         quantity: parseQuantity(tier.quantity),
@@ -192,6 +270,7 @@ export function ProductCard({
 
     onAddToCart({
       productName: product.name,
+      productSlug: product.slug,
       variantLabel: variant.label,
       tierQuantity,
       tierPrice,
@@ -201,7 +280,10 @@ export function ProductCard({
   };
 
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-3xl border border-purple-900/60 bg-gradient-to-b from-[#13001f] via-[#090012] to-black shadow-[0_20px_60px_rgba(45,0,95,0.45)]">
+    <article
+      id={`product-${product.slug}`}
+      className="flex h-full flex-col overflow-hidden rounded-3xl border border-purple-900/60 bg-gradient-to-b from-[#13001f] via-[#090012] to-black shadow-[0_20px_60px_rgba(45,0,95,0.45)]"
+    >
       <div className="relative h-64 w-full border-b border-purple-900/40 bg-black/40 p-4">
         <MoleculeViewer
           productName={product.name}
@@ -354,10 +436,26 @@ export function ProductCard({
                       ? selectedTier.price
                       : `$${selectedTier.price}`
                     : "";
+                  const variantStock =
+                    typeof variant.stockQuantity === "number"
+                      ? variant.stockQuantity
+                      : null;
+                  const reservedUnits = getUnitsReservedForVariant(variant.label);
+                  const remainingStock =
+                    variantStock === null
+                      ? null
+                      : Math.max(variantStock - reservedUnits, 0);
+                  const isOutOfStock =
+                    remainingStock !== null && remainingStock <= 0;
+                  const insufficientSelection =
+                    remainingStock !== null &&
+                    selectedTierQuantity > remainingStock;
                   const addDisabled =
                     !selectedTier ||
                     selectedTierQuantity === 0 ||
-                    selectedTierPrice === 0;
+                    selectedTierPrice === 0 ||
+                    isOutOfStock ||
+                    insufficientSelection;
 
                   return (
                     <div
@@ -380,6 +478,24 @@ export function ProductCard({
                         <span className="rounded-full border border-purple-500/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
                           Pricing
                         </span>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
+                        <span>
+                          {variantStock === null
+                            ? "Stock not set"
+                            : remainingStock !== null
+                            ? `${remainingStock} of ${variantStock} units available${
+                                reservedUnits > 0
+                                  ? ` (${reservedUnits} in cart)`
+                                  : ""
+                              }`
+                            : "Stock not set"}
+                        </span>
+                        {isOutOfStock && (
+                          <span className="font-semibold uppercase tracking-wide text-red-300">
+                            Out of stock
+                          </span>
+                        )}
                       </div>
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                         {variant.tiers.map((tier, index) => {
@@ -450,6 +566,13 @@ export function ProductCard({
                         >
                           Add {variant.label} to Cart
                         </button>
+                        {insufficientSelection && remainingStock !== null && (
+                          <p className="text-xs font-semibold text-amber-300">
+                            Only {remainingStock} unit
+                            {remainingStock === 1 ? "" : "s"} left for this
+                            variant.
+                          </p>
+                        )}
                       </div>
                     </div>
                   );
@@ -655,6 +778,24 @@ export default function StoreClient({ products }: StoreClientProps) {
   const [activeCategory, setActiveCategory] = useState<CategoryTab["id"]>(
     "featured"
   );
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [activeQuickFilters, setActiveQuickFilters] = useState<
+    Set<QuickFilterId>
+  >(() => new Set());
+  const searchBlurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+  const suggestionListId = "product-search-suggestions";
+  const searchHelperId = "product-search-helper";
+
+  useEffect(() => {
+    return () => {
+      if (searchBlurTimeoutRef.current) {
+        clearTimeout(searchBlurTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const categoryTabs = useMemo<CategoryTab[]>(() => {
     return [
@@ -672,10 +813,45 @@ export default function StoreClient({ products }: StoreClientProps) {
     ];
   }, []);
 
+  const categoryLabelLookup = useMemo(() => {
+    const map = new Map<ProductCategoryId, string>();
+    productCategories.forEach((category) => map.set(category.id, category.label));
+    return map;
+  }, []);
+
   const activeCategoryMeta = useMemo(
     () => categoryTabs.find((tab) => tab.id === activeCategory),
     [categoryTabs, activeCategory]
   );
+
+  const searchTokens = useMemo(() => {
+    const normalized = searchQuery.trim().toLowerCase();
+    return normalized.length === 0
+      ? []
+      : normalized.split(/\s+/).filter(Boolean);
+  }, [searchQuery]);
+
+  const productSearchIndex = useMemo(() => {
+    const index = new Map<string, string>();
+    products.forEach((product) => {
+      const categoryLabels = product.categories.map(
+        (categoryId) => categoryLabelLookup.get(categoryId) ?? categoryId
+      );
+      const variantLabels = product.variants.map((variant) => variant.label);
+      const searchableText = [
+        product.name,
+        product.slug,
+        product.researchFocus,
+        product.detailedDescription ?? "",
+        ...categoryLabels,
+        ...variantLabels,
+      ]
+        .join(" ")
+        .toLowerCase();
+      index.set(product.slug, searchableText);
+    });
+    return index;
+  }, [products, categoryLabelLookup]);
 
   const productMolecules = useMemo(() => {
     const map = new Map<string, MoleculeDefinition[]>();
@@ -714,7 +890,31 @@ export default function StoreClient({ products }: StoreClientProps) {
     });
   }, [products, popularityRank, originalOrder]);
 
-  const filteredProducts = useMemo(() => {
+  const searchSuggestions = useMemo<SearchSuggestion[]>(() => {
+    const normalized = searchQuery.trim().toLowerCase();
+    if (normalized.length === 0) {
+      return [];
+    }
+    return sortedProducts
+      .filter((product) => {
+        const haystack = productSearchIndex.get(product.slug);
+        return haystack ? haystack.includes(normalized) : false;
+      })
+      .slice(0, SEARCH_SUGGESTION_LIMIT)
+      .map((product) => ({
+        slug: product.slug,
+        name: product.name,
+        subtitle: product.researchFocus,
+        categories: product.categories.map(
+          (categoryId) => categoryLabelLookup.get(categoryId) ?? categoryId
+        ),
+        isFeatured: Boolean(product.isFeatured),
+      }));
+  }, [sortedProducts, searchQuery, productSearchIndex, categoryLabelLookup]);
+
+  const showSuggestions = isSearchFocused && searchSuggestions.length > 0;
+
+  const categoryMatchedProducts = useMemo(() => {
     if (activeCategory === "all") {
       return sortedProducts;
     }
@@ -725,6 +925,87 @@ export default function StoreClient({ products }: StoreClientProps) {
       product.categories.includes(activeCategory)
     );
   }, [sortedProducts, activeCategory]);
+
+  const filteredProducts = useMemo(() => {
+    return categoryMatchedProducts.filter((product) => {
+      if (searchTokens.length > 0) {
+        const haystack = productSearchIndex.get(product.slug);
+        if (!haystack) {
+          return false;
+        }
+        const matchesQuery = searchTokens.every((token) =>
+          haystack.includes(token)
+        );
+        if (!matchesQuery) {
+          return false;
+        }
+      }
+
+      if (activeQuickFilters.has("featured") && !product.isFeatured) {
+        return false;
+      }
+
+      if (activeQuickFilters.has("labVerified") && !product.testResultUrl) {
+        return false;
+      }
+
+      if (activeQuickFilters.has("inStock") && !productHasAvailableStock(product)) {
+        return false;
+      }
+
+      return true;
+    });
+  }, [
+    categoryMatchedProducts,
+    searchTokens,
+    activeQuickFilters,
+    productSearchIndex,
+  ]);
+
+  const handleSearchFocus = () => {
+    if (searchBlurTimeoutRef.current) {
+      clearTimeout(searchBlurTimeoutRef.current);
+      searchBlurTimeoutRef.current = null;
+    }
+    setIsSearchFocused(true);
+  };
+
+  const handleSearchBlur = () => {
+    searchBlurTimeoutRef.current = setTimeout(() => {
+      setIsSearchFocused(false);
+    }, 120);
+  };
+
+  const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
+    setSearchQuery(suggestion.name);
+    setActiveCategory("all");
+    setIsSearchFocused(false);
+  };
+
+  const toggleQuickFilter = (filterId: QuickFilterId) => {
+    setActiveQuickFilters((prev) => {
+      const next = new Set(prev);
+      if (next.has(filterId)) {
+        next.delete(filterId);
+      } else {
+        next.add(filterId);
+      }
+      return next;
+    });
+  };
+
+  const handleClearSearch = () => {
+    setSearchQuery("");
+  };
+
+  const handleClearAllFilters = () => {
+    setSearchQuery("");
+    setActiveQuickFilters(() => new Set());
+  };
+
+  const isSearchActive = searchTokens.length > 0;
+  const isQuickFilterActive = activeQuickFilters.size > 0;
+  const showClearFilters = isSearchActive || isQuickFilterActive;
 
   return (
     <>
@@ -768,7 +1049,7 @@ export default function StoreClient({ products }: StoreClientProps) {
         </section>
 
         <section className="px-6 sm:px-12 lg:px-16">
-          <div className="mx-auto max-w-6xl space-y-8">
+          <div className="mx-auto max-w-6xl space-y-10">
             <div className="space-y-3 text-center">
               <h2 className="text-2xl font-semibold text-white sm:text-3xl">
                 Browse the Catalog
@@ -779,7 +1060,141 @@ export default function StoreClient({ products }: StoreClientProps) {
                 volumes.
               </p>
             </div>
-            <div className="space-y-8">
+
+            <div className="space-y-4">
+              <div className="space-y-3">
+                <div className="relative mx-auto max-w-4xl">
+                  <label htmlFor="product-search" className="sr-only">
+                    Search products
+                  </label>
+                  <div className="flex items-center gap-3 rounded-full border border-purple-900/60 bg-black/60 px-5 py-3 text-sm text-white shadow-[0_12px_35px_rgba(45,0,95,0.4)] transition focus-within:border-purple-400 focus-within:bg-black/80 focus-within:shadow-[0_18px_45px_rgba(120,48,255,0.35)]">
+                    <svg
+                      className="h-5 w-5 text-purple-300"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.35-4.35" />
+                    </svg>
+                    <input
+                      id="product-search"
+                      type="search"
+                      role="combobox"
+                      aria-autocomplete="list"
+                      aria-expanded={showSuggestions}
+                      aria-controls={showSuggestions ? suggestionListId : undefined}
+                      aria-describedby={searchHelperId}
+                      value={searchQuery}
+                      onChange={(event) => setSearchQuery(event.target.value)}
+                      onFocus={handleSearchFocus}
+                      onBlur={handleSearchBlur}
+                      placeholder="Search by peptide name, goal, or category..."
+                      className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-500 focus:outline-none"
+                    />
+                    {searchQuery.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleClearSearch}
+                        className="rounded-full px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.35em] text-purple-200 transition hover:text-white"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                  {showSuggestions && (
+                    <ul
+                      id={suggestionListId}
+                      role="listbox"
+                      className="absolute left-0 right-0 z-30 mt-3 max-h-72 overflow-y-auto rounded-2xl border border-purple-900/60 bg-black/95 p-2 shadow-[0_25px_60px_rgba(45,0,95,0.65)]"
+                    >
+                      {searchSuggestions.map((suggestion) => (
+                        <li key={suggestion.slug}>
+                          <button
+                            type="button"
+                            role="option"
+                            aria-selected={false}
+                            onMouseDown={(event) => {
+                              event.preventDefault();
+                              handleSuggestionSelect(suggestion);
+                            }}
+                            className="flex w-full flex-col rounded-2xl px-4 py-3 text-left text-sm text-white transition hover:bg-purple-500/10 focus:bg-purple-500/20 focus:outline-none"
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="font-semibold">
+                                {suggestion.name}
+                              </span>
+                              {suggestion.isFeatured && (
+                                <span className="rounded-full border border-amber-200/60 px-2 py-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.35em] text-amber-100">
+                                  Featured
+                                </span>
+                              )}
+                            </div>
+                            <p className="mt-1 text-xs text-zinc-400">
+                              {suggestion.subtitle}
+                            </p>
+                            <p className="mt-1 text-[0.55rem] uppercase tracking-[0.35em] text-purple-300">
+                              {suggestion.categories.join(" • ")}
+                            </p>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+                <div className="flex flex-wrap justify-center gap-2">
+                  {QUICK_FILTERS.map((filter) => {
+                    const isActive = activeQuickFilters.has(filter.id);
+                    return (
+                      <button
+                        key={filter.id}
+                        type="button"
+                        onClick={() => toggleQuickFilter(filter.id)}
+                        aria-pressed={isActive}
+                        title={filter.description}
+                        className={`rounded-full border px-4 py-1 text-[0.55rem] font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+                          isActive
+                            ? "border-purple-300 bg-purple-500/30 text-white shadow-[0_0_25px_rgba(120,48,255,0.35)]"
+                            : "border-purple-900/50 bg-black/60 text-purple-200 hover:border-purple-400 hover:text-white"
+                        }`}
+                      >
+                        {filter.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="text-center text-xs text-zinc-400" id={searchHelperId}>
+                  Showing {filteredProducts.length} of {categoryMatchedProducts.length}{" "}
+                  {activeCategory === "featured"
+                    ? "featured peptides"
+                    : activeCategory === "all"
+                    ? "total peptides"
+                    : `${
+                        CATEGORY_LOOKUP.get(activeCategory as ProductCategoryId)
+                          ?.label ?? "peptides"
+                      }`}
+                  .
+                  {showClearFilters && (
+                    <>
+                      {" "}
+                      <button
+                        type="button"
+                        onClick={handleClearAllFilters}
+                        className="font-semibold text-purple-200 underline decoration-dotted underline-offset-4 hover:text-white"
+                      >
+                        Clear search & filters
+                      </button>
+                    </>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-6">
               <div className="space-y-4">
                 <div
                   role="tablist"
@@ -818,14 +1233,15 @@ export default function StoreClient({ products }: StoreClientProps) {
                       key={product.slug}
                       product={product}
                       molecules={productMolecules.get(product.name) ?? []}
+                      cartItems={cartItems}
                       onAddToCart={addToCart}
                     />
                   ))}
                 </div>
               ) : (
                 <div className="rounded-3xl border border-purple-900/50 bg-black/60 p-8 text-center text-sm text-zinc-400">
-                  No peptides match this category yet. Check another tab or contact us
-                  for sourcing.
+                  No peptides match your search yet. Adjust filters or reach out for
+                  sourcing support.
                 </div>
               )}
             </div>

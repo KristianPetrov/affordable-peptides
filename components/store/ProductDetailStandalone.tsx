@@ -36,6 +36,7 @@ export default function ProductDetailStandalone({
         <ProductCard
           product={product}
           molecules={molecules}
+          cartItems={cartItems}
           onAddToCart={addToCart}
           defaultExpanded
           forceExpanded

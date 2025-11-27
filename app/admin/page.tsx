@@ -4,10 +4,14 @@ import { redirect } from "next/navigation";
 import NavBar from "@/components/NavBar";
 import { getAllOrders } from "@/lib/db";
 import { formatOrderNumber } from "@/lib/orders";
-import { updateOrderStatusAction } from "@/app/actions/admin";
+import {
+  updateOrderStatusAction,
+  updateProductStockAction,
+} from "@/app/actions/admin";
 import { auth, signOut } from "@/lib/auth";
 import type { OrderStatus } from "@/lib/orders";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
+import { getProductsWithInventory } from "@/lib/products.server";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -88,8 +92,15 @@ async function SignOutButton() {
   );
 }
 
-export default async function AdminPage() {
+type AdminPageProps = {
+  searchParams?: Promise<{ view?: string }>;
+};
+
+export default async function AdminPage({ searchParams }: AdminPageProps) {
   const session = await auth();
+  const params = searchParams ? await searchParams : undefined;
+  const activeView =
+    params?.view === "inventory" ? "inventory" : "orders";
 
   // Redirect to login if not authenticated
   if (!session) {
@@ -100,7 +111,10 @@ export default async function AdminPage() {
     redirect("/account");
   }
 
-  const orders = await getAllOrders();
+  const [orders, productsWithInventory] = await Promise.all([
+    getAllOrders(),
+    getProductsWithInventory(),
+  ]);
   const sortedOrders = [...orders].sort(
     (a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -122,10 +136,10 @@ export default async function AdminPage() {
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-3xl font-semibold text-white sm:text-4xl">
-                Order Management
+                Admin Console
               </h1>
               <p className="mt-2 text-zinc-400">
-                Manage orders and update their status
+                Manage orders, payments, and product inventory in one view.
               </p>
               {session.user && (
                 <p className="mt-1 text-xs text-zinc-500">
@@ -144,6 +158,130 @@ export default async function AdminPage() {
             </div>
           </div>
 
+          <div
+            role="tablist"
+            aria-label="Admin sections"
+            className="mb-8 flex flex-wrap gap-3"
+          >
+            {[
+              { id: "orders", label: "Orders", href: "/admin" },
+              {
+                id: "inventory",
+                label: "Inventory",
+                href: "/admin?view=inventory",
+              },
+            ].map((tab) => {
+              const isActive = activeView === tab.id;
+              return (
+                <Link
+                  key={tab.id}
+                  role="tab"
+                  aria-selected={isActive}
+                  aria-current={isActive ? "page" : undefined}
+                  href={tab.href}
+                  className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
+                    isActive
+                      ? "border-purple-400 bg-purple-500/30 text-white shadow-[0_0_30px_rgba(120,48,255,0.35)]"
+                      : "border-purple-900/50 bg-black/60 text-purple-200 hover:border-purple-400 hover:text-white"
+                  }`}
+                >
+                  {tab.label}
+                </Link>
+              );
+            })}
+          </div>
+
+          {activeView === "inventory" && (
+            <section className="mb-10 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6">
+            <div className="flex flex-col gap-2 pb-4 border-b border-purple-900/40">
+              <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
+                Inventory Management
+              </p>
+              <h2 className="text-2xl font-semibold text-white">
+                Update Product Stock
+              </h2>
+              <p className="text-sm text-zinc-400">
+                Enter the total number of research units currently on hand for
+                each variant. Setting a value to 0 marks it as out of stock in
+                the storefront.
+              </p>
+            </div>
+            <div className="mt-6 space-y-6">
+              {productsWithInventory.map((product) => (
+                <div
+                  key={product.slug}
+                  className="rounded-2xl border border-purple-900/40 bg-black/40 p-4"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-b border-purple-900/30 pb-3">
+                    <div>
+                      <h3 className="text-lg font-semibold text-white">
+                        {product.name}
+                      </h3>
+                      <p className="text-xs text-zinc-500">
+                        {product.variants.length} tracked variant
+                        {product.variants.length === 1 ? "" : "s"}
+                      </p>
+                    </div>
+                    <Link
+                      href={`/store/product/${product.slug}`}
+                      className="rounded-full border border-purple-500/40 px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-purple-200 transition hover:border-purple-300 hover:text-white"
+                    >
+                      View Product
+                    </Link>
+                  </div>
+                  <div className="mt-4 grid gap-4 lg:grid-cols-2">
+                    {product.variants.map((variant) => (
+                      <form
+                        key={`${product.slug}-${variant.label}`}
+                        action={updateProductStockAction}
+                        className="flex flex-col gap-3 rounded-xl border border-purple-900/30 bg-black/60 p-4"
+                      >
+                        <input
+                          type="hidden"
+                          name="productSlug"
+                          value={product.slug}
+                        />
+                        <input
+                          type="hidden"
+                          name="variantLabel"
+                          value={variant.label}
+                        />
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-sm font-semibold uppercase tracking-wide text-purple-100">
+                            {variant.label}
+                          </span>
+                          <span className="text-xs text-zinc-500">
+                            Current: {variant.stockQuantity ?? 0} unit
+                            {variant.stockQuantity === 1 ? "" : "s"}
+                          </span>
+                        </div>
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                          <input
+                            type="number"
+                            name="stock"
+                            min={0}
+                            step={1}
+                            defaultValue={variant.stockQuantity ?? 0}
+                            className="flex-1 rounded-lg border border-purple-900/40 bg-black/70 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                          />
+                          <button
+                            type="submit"
+                            className="rounded-full bg-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                          >
+                            Save
+                          </button>
+                        </div>
+                      </form>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            </section>
+          )}
+
+          {activeView === "orders" && (
+            <>
           <div className="mb-8 grid gap-4 sm:grid-cols-4">
             <div className="rounded-2xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6">
               <div className="text-sm text-zinc-400">Pending Payment</div>
@@ -296,6 +434,8 @@ export default async function AdminPage() {
               })
             )}
           </div>
+            </>
+          )}
         </div>
       </main>
     </div>

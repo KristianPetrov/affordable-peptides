@@ -8,6 +8,13 @@
       "when": 1763759673052,
       "tag": "0000_greedy_mandrill",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1764172800000,
+      "tag": "0001_product_inventory",
+      "breakpoints": false
     }
   ]
 }

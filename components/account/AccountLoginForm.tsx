@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
+import { signIn, getSession } from "next-auth/react";
 import Link from "next/link";
 
 type AccountLoginFormProps = {
@@ -34,7 +34,11 @@ export function AccountLoginForm({ callbackUrl }: AccountLoginFormProps) {
         return;
       }
 
-      router.push(callbackUrl || "/account");
+      const session = await getSession();
+      const destination =
+        session?.user?.role === "ADMIN" ? "/admin" : "/account";
+
+      router.push(callbackUrl || destination);
       router.refresh();
     });
   };

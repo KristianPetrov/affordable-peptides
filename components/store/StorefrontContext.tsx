@@ -15,6 +15,7 @@ import {
 
 export type AddToCartPayload = {
   productName: string;
+  productSlug: string;
   variantLabel: string;
   tierQuantity: number;
   tierPrice: number;
@@ -25,6 +26,7 @@ export type AddToCartPayload = {
 export type CartItem = {
   key: string;
   productName: string;
+  productSlug?: string;
   variantLabel: string;
   tierQuantity: number;
   tierPrice: number;
@@ -52,6 +54,7 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
   const addToCart = useCallback((payload: AddToCartPayload) => {
     const {
       productName,
+      productSlug,
       variantLabel,
       tierQuantity,
       tierPrice,
@@ -61,7 +64,8 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
     if (!tierQuantity || !tierPrice) {
       return;
     }
-    const key = `${productName}|${variantLabel}|${tierQuantity}`;
+    const normalizedSlug = productSlug || productName;
+    const key = `${normalizedSlug}|${variantLabel}|${tierQuantity}`;
     setCartItems((prev) => {
       const index = prev.findIndex((item) => item.key === key);
       if (index !== -1) {
@@ -77,6 +81,7 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
         {
           key,
           productName,
+          productSlug: normalizedSlug,
           variantLabel,
           tierQuantity,
           tierPrice,
