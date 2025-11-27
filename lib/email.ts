@@ -280,19 +280,23 @@ function formatCustomerReceiptEmail (
 
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 12px;">Payment options</h3>
-          <div style="display: flex; flex-direction: column; gap: 12px;">
-            <a href="${cashAppLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;">
-              <div style="border-radius: 9999px; background: #059669; color: white; text-align: center; padding: 12px 24px; font-weight: bold;">
-                Pay $${cashAppDisplay} via Cash App
-              </div>
-            </a>
-            <p style="margin: 0 0 8px 0; color: #4b5563; font-size: 13px;">Includes 2.6% + $0.15 processing fee.</p>
-            <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;">
-              <div style="border-radius: 9999px; background: #2563eb; color: white; text-align: center; padding: 12px 24px; font-weight: bold;">
-                Pay $${venmoDisplay} via Venmo
-              </div>
-            </a>
-            <p style="margin: 0 0 8px 0; color: #4b5563; font-size: 13px;">Includes 1.9% + $0.10 processing fee.</p>
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div>
+              <a href="${cashAppLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;width:100%;">
+                <div style="border-radius: 8px; background: #059669; color: white; text-align: center; padding: 14px 24px; font-weight: bold;">
+                  Pay $${cashAppDisplay} via Cash App
+                </div>
+              </a>
+              <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee.</p>
+            </div>
+            <div>
+              <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;width:100%;">
+                <div style="border-radius: 8px; background: #2563eb; color: white; text-align: center; padding: 14px 24px; font-weight: bold;">
+                  Pay $${venmoDisplay} via Venmo
+                </div>
+              </a>
+              <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 1.9% + $0.10 processing fee.</p>
+            </div>
             <div style="font-size: 14px; color: #374151;">
               Prefer Zelle? It&apos;s free and our preferred option. Send $${amountDisplay} to
               <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>).
