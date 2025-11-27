@@ -129,7 +129,7 @@ export default function OrderLookupClient({
             required
             value={formData.orderNumber}
             onChange={handleChange}
-            placeholder="AP-12345-678"
+            placeholder="123456"
             className="w-full rounded-xl border border-purple-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-black"
           />
         </div>
@@ -240,7 +240,7 @@ export default function OrderLookupClient({
       {!result.order && result.hasSearched && !result.error && (
         <div className="rounded-2xl border border-purple-900/40 bg-black/30 p-6 text-sm text-zinc-300">
           We couldn&apos;t find an order with that number yet. Double-check the
-          format (example: AP-12345-678) or try entering the email used at
+          format (example: 123456) or try entering the email used at
           checkout.
         </div>
       )}

@@ -288,7 +288,7 @@ export async function lookupOrderAction (input: {
   if (!normalizedOrderNumber) {
     return {
       success: false,
-      error: "Enter a valid order number (example: AP-12345-678).",
+      error: "Enter a valid 6-digit order number (example: 123456).",
     };
   }
 

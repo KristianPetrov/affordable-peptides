@@ -23,47 +23,50 @@ export type Order = {
   createdAt: string;
   updatedAt: string;
   notes?: string;
+  trackingNumber?: string;
+  trackingCarrier?: "UPS" | "USPS";
 };
 
-export function generateOrderNumber(): string {
-  const prefix = "AP";
-  const timestamp = Date.now().toString().slice(-8);
-  const random = Math.floor(Math.random() * 1000)
-    .toString()
-    .padStart(3, "0");
-  return `${prefix}-${timestamp}${random}`;
+export function generateOrderNumber (): string
+{
+  // Generate a 6-digit order number
+  // Use timestamp to ensure uniqueness, then pad to 6 digits
+  const timestamp = Date.now().toString();
+  // Take last 5 digits of timestamp and add a random digit to make 6 digits
+  const lastFive = timestamp.slice(-5);
+  const randomDigit = Math.floor(Math.random() * 10).toString();
+  const sixDigit = (lastFive + randomDigit).slice(-6);
+
+  // Ensure it's exactly 6 digits
+  return sixDigit.padStart(6, "0");
 }
 
-export function formatOrderNumber(orderNumber: string): string {
-  // Format AP-12345678 to AP-12345-678
-  const parts = orderNumber.split("-");
-  if (parts.length === 2 && parts[1].length === 11) {
-    return `${parts[0]}-${parts[1].slice(0, 5)}-${parts[1].slice(5)}`;
-  }
+export function formatOrderNumber (orderNumber: string): string
+{
+  // Just return the order number as-is (it's already a 6-digit number)
   return orderNumber;
 }
 
-export function normalizeOrderNumberInput(input: string | null | undefined): string | null {
+export function normalizeOrderNumberInput (input: string | null | undefined): string | null
+{
   if (!input) {
     return null;
   }
 
-  const trimmed = input.trim().toUpperCase();
+  const trimmed = input.trim();
   if (!trimmed) {
     return null;
   }
 
-  const alphanumeric = trimmed.replace(/[^A-Z0-9]/g, "");
-  if (!alphanumeric.startsWith("AP")) {
+  // Remove any non-digit characters (spaces, dashes, etc.)
+  const digitsOnly = trimmed.replace(/\D/g, "");
+
+  // Must be exactly 6 digits
+  if (digitsOnly.length !== 6 || !/^\d{6}$/.test(digitsOnly)) {
     return null;
   }
 
-  const suffix = alphanumeric.slice(2);
-  if (suffix.length !== 11 || /\D/.test(suffix)) {
-    return null;
-  }
-
-  return `AP-${suffix}`;
+  return digitsOnly;
 }
 
 

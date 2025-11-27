@@ -12,6 +12,7 @@ import { auth, signOut } from "@/lib/auth";
 import type { OrderStatus } from "@/lib/orders";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
 import { getProductsWithInventory } from "@/lib/products.server";
+import { TrackingNumberInput } from "@/components/admin/TrackingNumberInput";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -24,9 +25,13 @@ const formatCurrency = (value: number) =>
 function OrderStatusForm({
   orderId,
   currentStatus,
+  currentTrackingNumber,
+  currentTrackingCarrier,
 }: {
   orderId: string;
   currentStatus: OrderStatus;
+  currentTrackingNumber?: string;
+  currentTrackingCarrier?: "UPS" | "USPS";
 }) {
   const statusOptions: { value: OrderStatus; label: string }[] = [
     { value: "PENDING_PAYMENT", label: "Pending Payment" },
@@ -40,8 +45,16 @@ function OrderStatusForm({
     const orderId = formData.get("orderId") as string;
     const status = formData.get("status") as OrderStatus;
     const notes = formData.get("notes") as string | null;
+    const trackingNumber = formData.get("trackingNumber") as string | null;
+    const trackingCarrier = formData.get("trackingCarrier") as "UPS" | "USPS" | null;
 
-    await updateOrderStatusAction(orderId, status, notes || undefined);
+    await updateOrderStatusAction(
+      orderId,
+      status,
+      notes || undefined,
+      trackingNumber || undefined,
+      trackingCarrier || undefined
+    );
   }
 
   return (
@@ -50,6 +63,7 @@ function OrderStatusForm({
       <select
         name="status"
         defaultValue={currentStatus}
+        id={`status-${orderId}`}
         className="w-full rounded-lg border border-purple-900/40 bg-black/60 px-3 py-2 text-sm text-white focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
       >
         {statusOptions.map((option) => (
@@ -58,6 +72,12 @@ function OrderStatusForm({
           </option>
         ))}
       </select>
+      <TrackingNumberInput
+        orderId={orderId}
+        currentStatus={currentStatus}
+        currentTrackingNumber={currentTrackingNumber}
+        currentTrackingCarrier={currentTrackingCarrier}
+      />
       <textarea
         name="notes"
         placeholder="Optional notes..."
@@ -424,6 +444,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                             <OrderStatusForm
                               orderId={order.id}
                               currentStatus={order.status}
+                              currentTrackingNumber={order.trackingNumber}
+                              currentTrackingCarrier={order.trackingCarrier}
                             />
                           </div>
                         </div>

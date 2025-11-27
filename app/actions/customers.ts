@@ -184,3 +184,94 @@ export async function updateCustomerProfileAction(
   }
 }
 
+type ChangePasswordInput = {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
+export async function changePasswordAction(
+  input: ChangePasswordInput
+): Promise<ActionResult> {
+  try {
+    const session = await auth();
+
+    if (!session) {
+      return { success: false, error: "You need to be signed in." };
+    }
+
+    const currentPassword = input.currentPassword?.trim();
+    const newPassword = input.newPassword?.trim();
+    const confirmPassword = input.confirmPassword?.trim();
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      return { success: false, error: "All password fields are required." };
+    }
+
+    if (newPassword.length < 8) {
+      return {
+        success: false,
+        error: "New password must be at least 8 characters long.",
+      };
+    }
+
+    if (newPassword !== confirmPassword) {
+      return { success: false, error: "New passwords do not match." };
+    }
+
+    if (currentPassword === newPassword) {
+      return {
+        success: false,
+        error: "New password must be different from your current password.",
+      };
+    }
+
+    const userId = session.user.id;
+
+    // Get the user's current password hash
+    const [user] = await db
+      .select({ password: users.password })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user || !user.password) {
+      return {
+        success: false,
+        error: "Unable to verify current password. Please contact support.",
+      };
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password
+    );
+
+    if (!isCurrentPasswordValid) {
+      return { success: false, error: "Current password is incorrect." };
+    }
+
+    // Hash and update the new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
+    await db
+      .update(users)
+      .set({
+        password: hashedNewPassword,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    revalidatePath("/account/profile");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to change password:", error);
+    return {
+      success: false,
+      error: "Unable to change password. Please try again.",
+    };
+  }
+}
+

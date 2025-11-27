@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useStorefront } from "@/components/store/StorefrontContext";
 import { createOrderAction } from "@/app/actions/orders";
 import type { CustomerProfile } from "@/lib/db";
+import { calculateShippingCost, calculateTotalWithShipping } from "@/lib/shipping";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -34,6 +35,9 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saveProfile, setSaveProfile] = useState(Boolean(sessionUser));
+
+  const shippingCost = calculateShippingCost(subtotal);
+  const total = calculateTotalWithShipping(subtotal);
 
   const defaultFormValues = useMemo(
     () => ({
@@ -359,13 +363,35 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
                   </div>
                 ))}
               </div>
-              <div className="mt-6 border-t border-purple-900/40 pt-4">
-                <div className="flex justify-between text-lg font-semibold text-white">
-                  <span>Total</span>
+              <div className="mt-6 space-y-2 border-t border-purple-900/40 pt-4">
+                <div className="flex justify-between text-sm text-zinc-300">
+                  <span>Subtotal</span>
                   <span>{formatCurrency(subtotal)}</span>
+                </div>
+                <div className="flex justify-between text-sm text-zinc-300">
+                  <span>Shipping</span>
+                  <span>
+                    {shippingCost === 0 ? (
+                      <span className="text-green-400">FREE</span>
+                    ) : (
+                      formatCurrency(shippingCost)
+                    )}
+                  </span>
+                </div>
+                {subtotal < 300 && (
+                  <div className="text-xs text-purple-300">
+                    Free shipping on orders over $300
+                  </div>
+                )}
+                <div className="flex justify-between border-t border-purple-900/40 pt-2 text-lg font-semibold text-white">
+                  <span>Total</span>
+                  <span>{formatCurrency(total)}</span>
                 </div>
                 <div className="mt-2 text-xs text-zinc-400">
                   {totalUnits} unit{totalUnits === 1 ? "" : "s"}
+                </div>
+                <div className="mt-2 text-xs text-purple-300">
+                  Shipped within 48 hours
                 </div>
               </div>
             </div>

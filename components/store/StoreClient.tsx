@@ -370,7 +370,7 @@ export function ProductCard({
                 rel="noopener noreferrer"
                 className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
               >
-                View verified Chromate report
+                View certificate of analysis
                 <svg
                   className="h-3.5 w-3.5"
                   viewBox="0 0 24 24"
@@ -776,7 +776,7 @@ export default function StoreClient({ products }: StoreClientProps) {
     removeItem,
   } = useStorefront();
   const [activeCategory, setActiveCategory] = useState<CategoryTab["id"]>(
-    "featured"
+    "all"
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
@@ -798,18 +798,18 @@ export default function StoreClient({ products }: StoreClientProps) {
   }, []);
 
   const categoryTabs = useMemo<CategoryTab[]>(() => {
-    return [
+    return [{
+        id: "all",
+        label: "All Products",
+        description: "View the entire catalog sorted by popularity.",
+      },
       {
         id: "featured",
         label: "Featured",
         description: "Our most requested products, curated for their purity, reliability, and results.",
       },
       ...productCategories,
-      {
-        id: "all",
-        label: "All Products",
-        description: "View the entire catalog sorted by popularity.",
-      },
+
     ];
   }, []);
 
@@ -879,16 +879,10 @@ export default function StoreClient({ products }: StoreClientProps) {
 
   const sortedProducts = useMemo(() => {
     return [...products].sort((a, b) => {
-      const aRank = popularityRank.get(a.name) ?? Infinity;
-      const bRank = popularityRank.get(b.name) ?? Infinity;
-      if (aRank !== bRank) {
-        return aRank - bRank;
-      }
-      const aOriginal = originalOrder.get(a.name) ?? Infinity;
-      const bOriginal = originalOrder.get(b.name) ?? Infinity;
-      return aOriginal - bOriginal;
+      // Sort alphabetically by product name
+      return a.name.localeCompare(b.name);
     });
-  }, [products, popularityRank, originalOrder]);
+  }, [products]);
 
   const searchSuggestions = useMemo<SearchSuggestion[]>(() => {
     const normalized = searchQuery.trim().toLowerCase();
@@ -1024,7 +1018,7 @@ export default function StoreClient({ products }: StoreClientProps) {
               Store
             </span>
             <h1 className="text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">
-              Research-grade peptides available in flexible volume tiers.
+              Research-grade peptides available in flexible volume tiers without the industry markup.
             </h1>
             <p className="mx-auto max-w-3xl text-balance text-base text-zinc-300 sm:text-lg">
               Every product is independently tested to verify purity and potency

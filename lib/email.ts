@@ -470,3 +470,259 @@ export async function sendOrderEmail (order: Order): Promise<void>
   }
 }
 
+function formatOrderPaidEmail (order: Order):
+  {
+    subject: string;
+    html: string;
+    text: string;
+  }
+{
+  const orderNumber = formatOrderNumber(order.orderNumber);
+  const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; background: #f3f4f6; margin: 0; padding: 0; }
+    .container { max-width: 640px; margin: 0 auto; padding: 24px; }
+    .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(146, 64, 214, 0.15); }
+    .header { background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 32px; }
+    .header h1 { margin: 0 0 12px 0; font-size: 28px; }
+    .content { padding: 28px; }
+    .info-block { background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid #d1fae5; }
+    .footer { font-size: 13px; color: #6b7280; text-align: center; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1>Payment Received!</h1>
+        <p style="margin: 0; font-size: 16px;">Order ${orderNumber} • ${formattedDate}</p>
+      </div>
+      <div class="content">
+        <p>Great news! We've received your payment for Order ${orderNumber}.</p>
+
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 8px;">What's Next?</h3>
+          <p style="margin: 0;">Your order will be shipped within 48 hours. You'll receive another email with tracking information once your order ships.</p>
+        </div>
+
+        <div class="info-block" style="background: #fef3c7; border-color: #f59e0b;">
+          <p style="margin: 0; color: #92400e;"><strong>Important:</strong> Please do not reply to this email. For questions or support, please text us at (951) 539-3821.</p>
+        </div>
+
+        <p>Need anything? Text us at (951) 539-3821 and reference your order number (do not reply to this email).</p>
+      </div>
+    </div>
+    <p class="footer">Affordable Peptides • Thank you for your order!</p>
+  </div>
+</body>
+</html>
+  `;
+
+  const text = [
+    `Payment Received!`,
+    ``,
+    `Great news! We've received your payment for Order ${orderNumber}.`,
+    ``,
+    `Your order will be shipped within 48 hours. You'll receive another email with tracking information once your order ships.`,
+    ``,
+    `IMPORTANT: Please do not reply to this email. For questions or support, please text us at (951) 539-3821.`,
+    ``,
+    `Need anything? Text us at (951) 539-3821 and reference your order number (do not reply to this email).`,
+  ].join("\n");
+
+  return {
+    subject: `Payment Confirmed - Order ${orderNumber}`,
+    html,
+    text,
+  };
+}
+
+function formatOrderShippedEmail (order: Order):
+  {
+    subject: string;
+    html: string;
+    text: string;
+  }
+{
+  const orderNumber = formatOrderNumber(order.orderNumber);
+  const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
+  const trackingNumber = order.trackingNumber || "Tracking number will be available soon";
+
+  // Build tracking URL based on carrier
+  let trackingUrl: string | null = null;
+  let carrierName = "";
+  if (order.trackingNumber && order.trackingCarrier) {
+    if (order.trackingCarrier === "UPS") {
+      trackingUrl = `https://www.ups.com/track?tracknum=${encodeURIComponent(order.trackingNumber)}`;
+      carrierName = "UPS";
+    } else if (order.trackingCarrier === "USPS") {
+      trackingUrl = `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(order.trackingNumber)}`;
+      carrierName = "USPS";
+    }
+  }
+
+  const trackingInfo = order.trackingNumber && trackingUrl
+    ? `<p style="margin: 8px 0 0 0; font-size: 18px; font-weight: bold;"><a href="${trackingUrl}" target="_blank" rel="noopener noreferrer" style="color: #059669; text-decoration: none; border-bottom: 2px solid #059669; padding-bottom: 2px;">${trackingNumber}</a></p><p style="margin: 8px 0 0 0; font-size: 14px; color: #6b7280;"><a href="${trackingUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Track on ${carrierName}.com →</a></p>`
+    : `<p style="margin: 8px 0 0 0; color: #6b7280;">Tracking number will be available soon</p>`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; background: #f3f4f6; margin: 0; padding: 0; }
+    .container { max-width: 640px; margin: 0 auto; padding: 24px; }
+    .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(146, 64, 214, 0.15); }
+    .header { background: linear-gradient(135deg, #2563eb, #3b82f6); color: white; padding: 32px; }
+    .header h1 { margin: 0 0 12px 0; font-size: 28px; }
+    .content { padding: 28px; }
+    .info-block { background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid #dbeafe; }
+    .tracking-box { background: #eff6ff; border: 2px solid #3b82f6; border-radius: 12px; padding: 20px; margin: 16px 0; text-align: center; }
+    .footer { font-size: 13px; color: #6b7280; text-align: center; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1>Your Order Has Shipped! 🚀</h1>
+        <p style="margin: 0; font-size: 16px;">Order ${orderNumber} • ${formattedDate}</p>
+      </div>
+      <div class="content">
+        <p>Great news! Your order has been shipped and is on its way to you.</p>
+
+        <div class="tracking-box">
+          <h3 style="margin-top: 0; margin-bottom: 8px; color: #1e40af;">Tracking Number</h3>
+          ${trackingInfo}
+        </div>
+
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 8px;">Shipping Details</h3>
+          <p style="margin: 0;">
+            ${order.customerName}<br />
+            ${order.shippingAddress.street}<br />
+            ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}<br />
+            ${order.shippingAddress.country}
+          </p>
+        </div>
+
+        ${order.notes ? `<div class="info-block"><p style="margin: 0;"><strong>Note:</strong> ${order.notes}</p></div>` : ''}
+
+        <div class="info-block" style="background: #fef3c7; border-color: #f59e0b;">
+          <p style="margin: 0; color: #92400e;"><strong>Important:</strong> Please do not reply to this email. For questions or support, please text us at (951) 539-3821.</p>
+        </div>
+
+        <p>You can track your package using the tracking number above. Need anything? Text us at (951) 539-3821 (do not reply to this email).</p>
+      </div>
+    </div>
+    <p class="footer">Affordable Peptides • Thank you for your order!</p>
+  </div>
+</body>
+</html>
+  `;
+
+  const trackingLinkText = trackingUrl && order.trackingNumber
+    ? `Tracking Number: ${trackingNumber}\nTrack your package: ${trackingUrl}`
+    : `Tracking Number: ${trackingNumber}`;
+
+  const text = [
+    `Your Order Has Shipped! 🚀`,
+    ``,
+    `Great news! Your order has been shipped and is on its way to you.`,
+    ``,
+    `Order ${orderNumber}`,
+    trackingLinkText,
+    ``,
+    `Shipping Details:`,
+    `${order.customerName}`,
+    `${order.shippingAddress.street}`,
+    `${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}`,
+    `${order.shippingAddress.country}`,
+    ``,
+    ...(order.notes ? [`Note: ${order.notes}`, ``] : []),
+    ``,
+    `IMPORTANT: Please do not reply to this email. For questions or support, please text us at (951) 539-3821.`,
+    ``,
+    `You can track your package using the tracking number above. Need anything? Text us at (951) 539-3821 (do not reply to this email).`,
+  ].join("\n");
+
+  return {
+    subject: `Order ${orderNumber} Has Shipped!`,
+    html,
+    text,
+  };
+}
+
+export async function sendOrderPaidEmail (order: Order): Promise<void>
+{
+  const emailContent = formatOrderPaidEmail(order);
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not configured. Email not sent.");
+    logEmailPreview(order.customerEmail, emailContent);
+    return;
+  }
+
+  try {
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+      to: order.customerEmail,
+      subject: emailContent.subject,
+      html: emailContent.html,
+      text: emailContent.text,
+      replyTo: "noreply@affordablepeptides.life",
+      headers: {
+        "Reply-To": "noreply@affordablepeptides.life",
+        "X-Auto-Response-Suppress": "All",
+      },
+    });
+    console.log("PAID email sent successfully to", order.customerEmail);
+  } catch (error) {
+    console.error("Failed to send PAID email via Resend:", error);
+    throw error;
+  }
+}
+
+export async function sendOrderShippedEmail (order: Order): Promise<void>
+{
+  const emailContent = formatOrderShippedEmail(order);
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not configured. Email not sent.");
+    logEmailPreview(order.customerEmail, emailContent);
+    return;
+  }
+
+  try {
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+      to: order.customerEmail,
+      subject: emailContent.subject,
+      html: emailContent.html,
+      text: emailContent.text,
+      replyTo: "noreply@affordablepeptides.life",
+      headers: {
+        "Reply-To": "noreply@affordablepeptides.life",
+        "X-Auto-Response-Suppress": "All",
+      },
+    });
+    console.log("SHIPPED email sent successfully to", order.customerEmail);
+  } catch (error) {
+    console.error("Failed to send SHIPPED email via Resend:", error);
+    throw error;
+  }
+}
+

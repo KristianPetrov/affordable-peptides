@@ -224,7 +224,7 @@ const productDefinitions: ProductDefinition[] = [
   {
     name: "GLOW",
     researchFocus: "BPC/TB/GHK blend tailored for regenerative aesthetics and total-body recovery.",
-    detailedDescription: "GLOW combines BPC-157, TB-500, and GHK-Cu to create a regenerative-focused blend for aesthetic and recovery research. It's designed for investigators interested in both connective tissue support and skin quality optimization within a single formula.",
+    detailedDescription: "GLOW combines BPC-157 (10mg), TB-500 (10mg), and GHK-Cu (50mg) to create a regenerative-focused blend for aesthetic and recovery research. It's designed for investigators interested in both connective tissue support and skin quality optimization within a single formula.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [
       createVariant("70mg", 90, "/products/label-glow-70mg-3ml.png"),
@@ -294,7 +294,7 @@ const productDefinitions: ProductDefinition[] = [
   {
     name: "KLOW",
     researchFocus: "GHK/KPV/BPC/TB blend that targets skin glow, inflammation control, and joint comfort.",
-    detailedDescription: "KLOW blends GHK-Cu, KPV, BPC-157, and TB-500 for multi-system regenerative research. It's designed for investigators seeking a single formula that touches skin quality, inflammatory balance, and joint or connective-tissue comfort.",
+    detailedDescription: "KLOW blends BPC-157 (10mg), TB-500 (10mg), GHK-Cu (50mg), and KPV (10mg) for multi-system regenerative research. It's designed for investigators seeking a single formula that touches skin quality, inflammatory balance, and joint or connective-tissue comfort.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [
       createVariant("80mg", 100, "/products/label-klow-80mg-3ml.png"),
@@ -367,6 +367,7 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Triple agonist driving exceptional weight and glycemic control.",
     detailedDescription: "Retatrutide is a next-generation triple agonist (GIP/GLP-1/glucagon) in development for obesity and metabolic research. Early trials have reported exceptional weight and glycemic outcomes, making it one of the most closely watched peptides in the metabolic space.",
     categories: ["weight-metabolic"],
+    isFeatured: true,
     variants: [
       createVariant("10mg", 100, "/products/label-retatrutide-10mg-3ml.png"),
       createVariant("20mg", 160, "/products/label-retatrutide-20mg-3ml.png"),
@@ -381,7 +382,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription:
       "Selank is a tuftsin-derived heptapeptide explored for its anxiolytic, nootropic, and immunomodulatory characteristics. Researchers deploy it in studies centered on focus, mood regulation, and helping the nervous and immune systems stay balanced under stress without sedative drawbacks.",
     categories: ["longevity-wellness", "recovery-performance"],
-    variants: [createVariant("10mg", 30, "/products/label-selank-10mg-3ml.png")],
+    variants: [createVariant("10mg", 50, "/products/label-selank-10mg-3ml.png")],
   },
   {
     name: "Semax",
@@ -390,7 +391,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription:
       "Semax traces back to melanocortin fragments that elevate BDNF and other neurotrophins in experimental models. It's widely investigated for sharpening attention, supporting post-stroke recovery, and buffering oxidative stress within brain-focused research protocols.",
     categories: ["longevity-wellness", "recovery-performance"],
-    variants: [createVariant("10mg", 30, "/products/label-semax-10mg-3ml.png")],
+    variants: [createVariant("10mg", 50, "/products/label-semax-10mg-3ml.png")],
   },
   {
     name: "SLU-PP-332",

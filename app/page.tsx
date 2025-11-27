@@ -153,7 +153,7 @@ export default function Home() {
                   (951) 539-3821
                 </a>
                 <p className="text-xs text-zinc-500">
-                  Available daily 9am–7pm PST. Leave a message after hours and
+                  Available daily 6am–9pm PST. Leave a message after hours and
                   we&apos;ll return your call.
                 </p>
               </div>

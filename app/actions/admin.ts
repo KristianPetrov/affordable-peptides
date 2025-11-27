@@ -6,17 +6,20 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { getProductBySlug } from "@/lib/products";
 import
-  {
-    applyInventoryAdjustments,
-    loadInventoryMap,
-    prepareInventoryAdjustments,
-    type StockAdjustment,
-  } from "@/lib/inventory";
+{
+  applyInventoryAdjustments,
+  loadInventoryMap,
+  prepareInventoryAdjustments,
+  type StockAdjustment,
+} from "@/lib/inventory";
+import { sendOrderPaidEmail, sendOrderShippedEmail } from "@/lib/email";
 
 export async function updateOrderStatusAction (
   orderId: string,
   status: OrderStatus,
-  notes?: string
+  notes?: string,
+  trackingNumber?: string,
+  trackingCarrier?: "UPS" | "USPS"
 ): Promise<{ success: boolean; error?: string }>
 {
   try {
@@ -76,7 +79,7 @@ export async function updateOrderStatusAction (
       stockAdjustments = reserveResult.adjustments;
     }
 
-    const updated = await updateOrderStatus(orderId, status, notes);
+    const updated = await updateOrderStatus(orderId, status, notes, trackingNumber, trackingCarrier);
 
     if (!updated) {
       return { success: false, error: "Order not found" };
@@ -84,6 +87,25 @@ export async function updateOrderStatusAction (
 
     if (stockAdjustments.length > 0) {
       await applyInventoryAdjustments(stockAdjustments);
+    }
+
+    // Send email notifications for status changes
+    if (status === "PAID" && previousStatus !== "PAID") {
+      try {
+        await sendOrderPaidEmail(updated);
+      } catch (emailError) {
+        console.error("Failed to send PAID email:", emailError);
+        // Don't fail the status update if email fails
+      }
+    }
+
+    if (status === "SHIPPED" && previousStatus !== "SHIPPED") {
+      try {
+        await sendOrderShippedEmail(updated);
+      } catch (emailError) {
+        console.error("Failed to send SHIPPED email:", emailError);
+        // Don't fail the status update if email fails
+      }
     }
 
     // Revalidate admin page to show updated order

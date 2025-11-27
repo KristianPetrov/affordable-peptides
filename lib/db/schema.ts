@@ -1,15 +1,15 @@
 import
-  {
-    pgTable,
-    text,
-    jsonb,
-    timestamp,
-    varchar,
-    numeric,
-    integer,
-    primaryKey,
-    uniqueIndex,
-  } from "drizzle-orm/pg-core";
+{
+  pgTable,
+  text,
+  jsonb,
+  timestamp,
+  varchar,
+  numeric,
+  integer,
+  primaryKey,
+  uniqueIndex,
+} from "drizzle-orm/pg-core";
 import type { OrderStatus } from "../orders";
 import type { CartItem } from "@/components/store/StorefrontContext";
 
@@ -95,6 +95,8 @@ export const orders = pgTable("orders", {
   subtotal: numeric("subtotal", { precision: 10, scale: 2 }).notNull(),
   totalUnits: integer("total_units").notNull(),
   notes: text("notes"),
+  trackingNumber: text("tracking_number"),
+  trackingCarrier: varchar("tracking_carrier", { length: 10 }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

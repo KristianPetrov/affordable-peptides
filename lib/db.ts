@@ -23,6 +23,8 @@ function dbRowToOrder (row: typeof orders.$inferSelect): Order
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
     notes: row.notes || undefined,
+    trackingNumber: row.trackingNumber || undefined,
+    trackingCarrier: (row.trackingCarrier as "UPS" | "USPS" | null) || undefined,
   };
 }
 
@@ -42,6 +44,8 @@ function orderToDbRow (order: Order): typeof orders.$inferInsert
     subtotal: order.subtotal.toString(),
     totalUnits: order.totalUnits,
     notes: order.notes || null,
+    trackingNumber: order.trackingNumber || null,
+    trackingCarrier: order.trackingCarrier || null,
     createdAt: new Date(order.createdAt),
     updatedAt: new Date(order.updatedAt),
   };
@@ -87,7 +91,9 @@ export async function getAllOrders (): Promise<Order[]>
 export async function updateOrderStatus (
   id: string,
   status: Order["status"],
-  notes?: string
+  notes?: string,
+  trackingNumber?: string,
+  trackingCarrier?: "UPS" | "USPS"
 ): Promise<Order | null>
 {
   const [updated] = await db
@@ -95,6 +101,8 @@ export async function updateOrderStatus (
     .set({
       status,
       notes: notes || null,
+      trackingNumber: trackingNumber || null,
+      trackingCarrier: trackingCarrier || null,
       updatedAt: new Date(),
     })
     .where(eq(orders.id, id))
