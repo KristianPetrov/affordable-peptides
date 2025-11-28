@@ -109,7 +109,7 @@ export default function Home() {
                 Top selections
               </h2>
               <p className="mx-auto max-w-3xl text-balance text-base text-zinc-300 sm:text-lg">
-                Explore our most requested products, curated for their purity,
+                Explore our most requested products, curated for their popularity,
                 reliability, and results. Select a highlight to learn more in
                 the full store.
               </p>

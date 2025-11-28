@@ -216,6 +216,7 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Copper tripeptide that promotes collagen synthesis, skin quality, and wound care.",
     detailedDescription: "GHK-Cu is a copper tripeptide widely studied for its positive impact on collagen synthesis, skin quality, and wound care. It appears in both cosmetic and regenerative research for its role in supporting dermal remodeling and overall tissue repair.",
     categories: ["longevity-wellness", "recovery-performance"],
+    isFeatured: true,
     variants: [
       createVariant("50mg", 40, "/products/label-ghk-cu-50mg-3ml.png"),
       createVariant("100mg", 70, "/products/label-ghk-cu-100mg-3ml.png"),
@@ -356,6 +357,7 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Coenzyme precursor that sustains cellular energy and sirtuin activity.",
     detailedDescription: "NAD+ is a central coenzyme in energy production and DNA repair, with levels known to decline with age and metabolic stress. Research with NAD+ and its precursors (like NR and NMN) centers on cellular energy, sirtuin activation, and healthy aging pathways.",
     categories: ["longevity-wellness", "weight-metabolic"],
+    isFeatured: true,
     variants: [
       createVariant("500mg", 60, "/products/label-nad-500mg-10ml.png"),
       createVariant("1000mg", 100, "/products/label-nad-1000mg-10ml.png"),
