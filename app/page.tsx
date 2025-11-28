@@ -144,7 +144,7 @@ export default function Home() {
                 Talk With Affordable Peptides
               </h2>
               <p className="mx-auto max-w-2xl text-balance text-base text-zinc-300 sm:text-lg">
-                Have a question about sourcing, availability, or lab partnership
+                Have a question about products, availability, or lab partnership
                 opportunities? Reach out anytime and we&apos;ll get back to you
                 quickly.
               </p>
