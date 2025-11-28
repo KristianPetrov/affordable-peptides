@@ -31,7 +31,7 @@ type CheckoutClientProps = {
 
 export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
   const router = useRouter();
-  const { cartItems, subtotal, totalUnits, lineItemTotals } = useStorefront();
+  const { cartItems, subtotal, totalUnits, lineItemTotals, clearCart } = useStorefront();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saveProfile, setSaveProfile] = useState(Boolean(sessionUser));
@@ -98,6 +98,7 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
       });
 
       if (result.success) {
+        clearCart();
         router.push(
           `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${subtotal.toFixed(
             2

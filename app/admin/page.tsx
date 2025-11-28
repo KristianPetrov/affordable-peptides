@@ -5,14 +5,12 @@ import NavBar from "@/components/NavBar";
 import { getAllOrders } from "@/lib/db";
 import { formatOrderNumber } from "@/lib/orders";
 import {
-  updateOrderStatusAction,
   updateProductStockAction,
 } from "@/app/actions/admin";
 import { auth, signOut } from "@/lib/auth";
-import type { OrderStatus } from "@/lib/orders";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
 import { getProductsWithInventory } from "@/lib/products.server";
-import { TrackingNumberInput } from "@/components/admin/TrackingNumberInput";
+import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 import { DeleteOrderButton } from "@/components/admin/DeleteOrderButton";
 
 const formatCurrency = (value: number) =>
@@ -22,78 +20,6 @@ const formatCurrency = (value: number) =>
     minimumFractionDigits: 0,
     maximumFractionDigits: 2,
   }).format(value);
-
-function OrderStatusForm({
-  orderId,
-  currentStatus,
-  currentTrackingNumber,
-  currentTrackingCarrier,
-}: {
-  orderId: string;
-  currentStatus: OrderStatus;
-  currentTrackingNumber?: string;
-  currentTrackingCarrier?: "UPS" | "USPS";
-}) {
-  const statusOptions: { value: OrderStatus; label: string }[] = [
-    { value: "PENDING_PAYMENT", label: "Pending Payment" },
-    { value: "PAID", label: "Paid" },
-    { value: "SHIPPED", label: "Shipped" },
-    { value: "CANCELLED", label: "Cancelled" },
-  ];
-
-  async function handleSubmit(formData: FormData) {
-    "use server";
-    const orderId = formData.get("orderId") as string;
-    const status = formData.get("status") as OrderStatus;
-    const notes = formData.get("notes") as string | null;
-    const trackingNumber = formData.get("trackingNumber") as string | null;
-    const trackingCarrier = formData.get("trackingCarrier") as "UPS" | "USPS" | null;
-
-    await updateOrderStatusAction(
-      orderId,
-      status,
-      notes || undefined,
-      trackingNumber || undefined,
-      trackingCarrier || undefined
-    );
-  }
-
-  return (
-    <form action={handleSubmit} className="space-y-2">
-      <input type="hidden" name="orderId" value={orderId} />
-      <select
-        name="status"
-        defaultValue={currentStatus}
-        id={`status-${orderId}`}
-        className="w-full rounded-lg border border-purple-900/40 bg-black/60 px-3 py-2 text-sm text-white focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
-      >
-        {statusOptions.map((option) => (
-          <option key={option.value} value={option.value}>
-            {option.label}
-          </option>
-        ))}
-      </select>
-      <TrackingNumberInput
-        orderId={orderId}
-        currentStatus={currentStatus}
-        currentTrackingNumber={currentTrackingNumber}
-        currentTrackingCarrier={currentTrackingCarrier}
-      />
-      <textarea
-        name="notes"
-        placeholder="Optional notes..."
-        className="w-full rounded-lg border border-purple-900/40 bg-black/60 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
-        rows={2}
-      />
-      <button
-        type="submit"
-        className="w-full rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-purple-500"
-      >
-        Update Status
-      </button>
-    </form>
-  );
-}
 
 async function SignOutButton() {
   return (
@@ -473,6 +399,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                                 Update Status
                               </label>
                               <OrderStatusForm
+                                key={`${order.id}-${order.updatedAt}`}
                                 orderId={order.id}
                                 currentStatus={order.status}
                                 currentTrackingNumber={order.trackingNumber}

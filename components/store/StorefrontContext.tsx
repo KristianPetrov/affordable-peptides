@@ -44,6 +44,7 @@ type StorefrontContextValue = {
   incrementItem: (key: string) => void;
   decrementItem: (key: string) => void;
   removeItem: (key: string) => void;
+  clearCart: () => void;
 };
 
 const StorefrontContext = createContext<StorefrontContextValue | null>(null);
@@ -126,6 +127,10 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
     [updateCartCount]
   );
 
+  const clearCart = useCallback(() => {
+    setCartItems([]);
+  }, []);
+
   const { subtotal, lineItemTotals } = useMemo(
     () => calculateVolumePricing(cartItems),
     [cartItems]
@@ -146,6 +151,7 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
       incrementItem,
       decrementItem,
       removeItem,
+      clearCart,
     }),
     [
       cartItems,
@@ -156,6 +162,7 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
       incrementItem,
       decrementItem,
       removeItem,
+      clearCart,
     ]
   );
 

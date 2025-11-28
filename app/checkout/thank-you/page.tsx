@@ -193,10 +193,53 @@ function ThankYouContent() {
                 <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
                   Instant Payment Links
                 </h3>
-                <p className="text-sm text-zinc-300">
-                  Amount due:{" "}
+                <div className="rounded-2xl border border-green-500/60 bg-green-500/10 p-4 shadow-[0_10px_35px_rgba(16,185,129,0.25)]">
+                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-green-200">
+                    Preferred • No Fees
+                  </p>
+                  <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <p className="text-2xl font-semibold text-green-100">
+                        Pay with Zelle
+                      </p>
+                      <p className="mt-1 text-sm text-green-50/80">
+                        Send{" "}
+                        <span className="font-semibold text-green-50">
+                          {paymentAmountDisplay ?? "your order total"}
+                        </span>{" "}
+                        to{" "}
+                        <span className="font-semibold text-green-50">
+                          {ZELLE_EMAIL}
+                        </span>{" "}
+                        (recipient:{" "}
+                        <span className="font-semibold text-green-50">
+                          {ZELLE_RECIPIENT_NAME}
+                        </span>
+                        ) via the Zelle app or your bank. This is the fastest way to
+                        get your order moving.
+                      </p>
+                      <p className="mt-2 text-xs text-green-100/70">
+                        Include Order {orderReference} in the memo so we can match it immediately.
+                      </p>
+                    </div>
+                    <div className="flex flex-col items-stretch gap-2 md:items-end">
+                      <span className="rounded-lg border border-green-400/50 bg-green-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-green-100">
+                        Zelle Details
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => navigator.clipboard?.writeText(ZELLE_EMAIL)}
+                        className="rounded-full bg-green-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-green-400"
+                      >
+                        Copy Email
+                      </button>
+                    </div>
+                  </div>
+                </div>
+                <p className="mt-6 text-sm text-zinc-300">
+                  Amount due for app payments:{" "}
                   <span className="font-semibold text-white">
-                    {paymentAmountDisplay ?? "Use the total shown above"}
+                    {paymentAmountDisplay ?? "use the total shown above"}
                   </span>
                 </p>
                 <div className="mt-4 flex flex-col gap-3 md:flex-row">
@@ -226,7 +269,13 @@ function ThankYouContent() {
                     <span className="font-semibold">({orderReference})</span> in the payment memo/note. This helps us quickly match your payment to your order.
                   </p>
                 </div>
-                <ul className="mt-4 space-y-2 text-sm text-zinc-300">
+                <ul className="mt-4 space-y-3 text-sm text-zinc-300">
+                  <li className="rounded-xl border border-green-500/40 bg-green-500/5 p-3">
+                    <span className="font-semibold text-green-200">Zelle (Preferred):</span> Free, instant, and no limits from us. Send{" "}
+                    {paymentAmountDisplay ?? "your total"} to{" "}
+                    <span className="font-semibold text-white">{ZELLE_EMAIL}</span> (recipient:{" "}
+                    <span className="font-semibold text-white">{ZELLE_RECIPIENT_NAME}</span>) and place Order {orderReference} in the memo.
+                  </li>
                   <li>
                     <span className="font-semibold text-white">Cash App:</span> Includes a 2.6% + $0.15 processing fee.{" "}
                     <span className="text-yellow-200">Add order number {orderReference} in the memo.</span>
@@ -234,18 +283,6 @@ function ThankYouContent() {
                   <li>
                     <span className="font-semibold text-white">Venmo:</span> Includes a 1.9% + $0.10 fee.{" "}
                     <span className="text-yellow-200">Order number is pre-filled in the note.</span>
-                  </li>
-                  <li>
-                    <span className="font-semibold text-white">Zelle:</span> Free and our preferred option. Send{" "}
-                    {paymentAmountDisplay ?? "your total"} to{" "}
-                    <span className="font-semibold text-white">
-                      {ZELLE_EMAIL}
-                    </span>{" "}
-                    (recipient:{" "}
-                    <span className="font-semibold text-white">
-                      {ZELLE_RECIPIENT_NAME}
-                    </span>
-                    ). <span className="text-yellow-200">Include order number {orderReference} in the memo.</span>
                   </li>
                 </ul>
               </div>

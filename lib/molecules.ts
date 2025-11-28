@@ -131,16 +131,16 @@ export const moleculesByProduct: MoleculeMap = {
             }
         ),
     ],
-    "Bacteriostatic Water": [ createLocalMoleculeDefinition(
+    "Bacteriostatic Water": [  createLocalMoleculeDefinition("water", "Water (H₂O)", {
+            fallback: pubchemSource("Water"),
+        }),createLocalMoleculeDefinition(
             "benzyl-alcohol",
             "Benzyl Alcohol (0.9%)",
             {
                 fallback: pubchemSource("Benzyl alcohol"),
             }
         ),
-        createLocalMoleculeDefinition("water", "Water (H₂O)", {
-            fallback: pubchemSource("Water"),
-        }),
+
 
     ],
     "Vitamin B12 1mg/mL - 10ml Bottle": [

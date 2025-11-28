@@ -1,33 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import type { OrderStatus } from "@/lib/orders";
 
 type TrackingNumberInputProps = {
   orderId: string;
-  currentStatus: OrderStatus;
+  selectedStatus: OrderStatus;
   currentTrackingNumber?: string;
   currentTrackingCarrier?: "UPS" | "USPS";
 };
 
 export function TrackingNumberInput({
   orderId,
-  currentStatus,
+  selectedStatus,
   currentTrackingNumber,
   currentTrackingCarrier,
 }: TrackingNumberInputProps) {
-  const [status, setStatus] = useState(currentStatus);
-
-  useEffect(() => {
-    const select = document.getElementById(`status-${orderId}`) as HTMLSelectElement;
-    if (select) {
-      const updateStatus = () => setStatus(select.value as OrderStatus);
-      select.addEventListener("change", updateStatus);
-      return () => select.removeEventListener("change", updateStatus);
-    }
-  }, [orderId]);
-
-  if (status !== "SHIPPED") {
+  if (selectedStatus !== "SHIPPED") {
     return null;
   }
 

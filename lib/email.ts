@@ -288,6 +288,16 @@ function formatCustomerReceiptEmail (
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 12px;">Payment options</h3>
           <div style="display: flex; flex-direction: column; gap: 16px;">
+            <div style="border-radius: 12px; background: #ecfdf5; border: 1px solid #34d399; padding: 16px;">
+              <p style="margin: 0; font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 600; color: #047857;">Preferred Method</p>
+              <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: 700; color: #065f46;">Pay with Zelle (No Fees)</p>
+              <p style="margin: 6px 0 0 0; color: #065f46; font-size: 14px;">
+                Send <strong>$${amountDisplay}</strong> to <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>) directly from your bank or Zelle app. This is the fastest way to get your order processed.
+              </p>
+              <p style="margin: 6px 0 0 0; color: #065f46; font-size: 13px;">
+                <strong style="color: #92400e;">Include Order ${orderNumber} in the memo.</strong>
+              </p>
+            </div>
             <div>
               <a href="${cashAppLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;width:100%;">
                 <div style="border-radius: 8px; background: #059669; color: white; text-align: center; padding: 14px 24px; font-weight: bold;">
@@ -303,10 +313,6 @@ function formatCustomerReceiptEmail (
                 </div>
               </a>
               <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 1.9% + $0.10 processing fee. <strong style="color: #059669;">Order number is pre-filled in the note.</strong></p>
-            </div>
-            <div style="font-size: 14px; color: #374151;">
-              <strong>Zelle (preferred, no fee):</strong> Send $${amountDisplay} to
-              <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>). <strong style="color: #92400e;">Include order number ${orderNumber} in the memo.</strong>
             </div>
           </div>
         </div>
@@ -360,12 +366,12 @@ function formatCustomerReceiptEmail (
     ``,
     `⚠️ IMPORTANT: Include order number ${orderNumber} in the payment memo/note for all payment methods.`,
     ``,
+    `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
+    `  → Include order number ${orderNumber} in the memo`,
     `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
     `  → Add order number ${orderNumber} in the memo`,
     `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
     `  → Order number is pre-filled in the note`,
-    `- Zelle (preferred, no fee): ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
-    `  → Include order number ${orderNumber} in the memo`,
     ``,
     `Shipping To:`,
     `${order.customerName}`,
