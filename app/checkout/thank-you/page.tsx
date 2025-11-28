@@ -217,22 +217,35 @@ function ThankYouContent() {
                     {venmoLabel}
                   </Link>
                 </div>
-                <ul className="mt-4 space-y-1 text-sm text-zinc-300">
+                <div className="mt-4 rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-4">
+                  <p className="text-sm font-semibold text-yellow-200 mb-2">
+                    ⚠️ Important: Include Order Number in Payment Memo
+                  </p>
+                  <p className="text-xs text-yellow-100/90">
+                    When sending payment via Cash App, Venmo, or Zelle, please include your order number{" "}
+                    <span className="font-semibold">({orderReference})</span> in the payment memo/note. This helps us quickly match your payment to your order.
+                  </p>
+                </div>
+                <ul className="mt-4 space-y-2 text-sm text-zinc-300">
                   <li>
-                    Cash App includes a 2.6% + $0.15 processing fee; Venmo
-                    includes a 1.9% + $0.10 fee.
+                    <span className="font-semibold text-white">Cash App:</span> Includes a 2.6% + $0.15 processing fee.{" "}
+                    <span className="text-yellow-200">Add order number {orderReference} in the memo.</span>
                   </li>
                   <li>
-                    Prefer Zelle? It&apos;s free and our preferred option. Send{" "}
+                    <span className="font-semibold text-white">Venmo:</span> Includes a 1.9% + $0.10 fee.{" "}
+                    <span className="text-yellow-200">Order number is pre-filled in the note.</span>
+                  </li>
+                  <li>
+                    <span className="font-semibold text-white">Zelle:</span> Free and our preferred option. Send{" "}
                     {paymentAmountDisplay ?? "your total"} to{" "}
                     <span className="font-semibold text-white">
                       {ZELLE_EMAIL}
                     </span>{" "}
-                    (recipient name:{" "}
+                    (recipient:{" "}
                     <span className="font-semibold text-white">
                       {ZELLE_RECIPIENT_NAME}
                     </span>
-                    ).
+                    ). <span className="text-yellow-200">Include order number {orderReference} in the memo.</span>
                   </li>
                 </ul>
               </div>

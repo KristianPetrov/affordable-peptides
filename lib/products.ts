@@ -443,7 +443,8 @@ export const peptideProducts: Product[] = productDefinitions.map(defineProduct);
 
 const productBySlug = new Map<string, Product>();
 const productSlugByName = new Map<string, string>();
-peptideProducts.forEach((product) => {
+peptideProducts.forEach((product) =>
+{
   productBySlug.set(product.slug, product);
   productSlugByName.set(product.name.toLowerCase(), product.slug);
 });

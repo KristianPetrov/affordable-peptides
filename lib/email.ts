@@ -278,6 +278,13 @@ function formatCustomerReceiptEmail (
           </ol>
         </div>
 
+        <div class="info-block" style="background: #fef3c7; border: 1px solid #fbbf24;">
+          <h3 style="margin-top: 0; margin-bottom: 8px; color: #92400e;">⚠️ Important: Include Order Number in Payment Memo</h3>
+          <p style="margin: 0; color: #78350f; font-size: 13px;">
+            When sending payment via Cash App, Venmo, or Zelle, please include your order number <strong>${orderNumber}</strong> in the payment memo/note. This helps us quickly match your payment to your order.
+          </p>
+        </div>
+
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 12px;">Payment options</h3>
           <div style="display: flex; flex-direction: column; gap: 16px;">
@@ -287,7 +294,7 @@ function formatCustomerReceiptEmail (
                   Pay $${cashAppDisplay} via Cash App
                 </div>
               </a>
-              <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee.</p>
+              <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee. <strong style="color: #92400e;">Add order number ${orderNumber} in the memo.</strong></p>
             </div>
             <div>
               <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;width:100%;">
@@ -295,11 +302,11 @@ function formatCustomerReceiptEmail (
                   Pay $${venmoDisplay} via Venmo
                 </div>
               </a>
-              <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 1.9% + $0.10 processing fee.</p>
+              <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 1.9% + $0.10 processing fee. <strong style="color: #059669;">Order number is pre-filled in the note.</strong></p>
             </div>
             <div style="font-size: 14px; color: #374151;">
-              Prefer Zelle? It&apos;s free and our preferred option. Send $${amountDisplay} to
-              <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>).
+              <strong>Zelle (preferred, no fee):</strong> Send $${amountDisplay} to
+              <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>). <strong style="color: #92400e;">Include order number ${orderNumber} in the memo.</strong>
             </div>
           </div>
         </div>
@@ -350,9 +357,15 @@ function formatCustomerReceiptEmail (
     `View your order: ${receiptUrl}`,
     ``,
     `Payment options:`,
+    ``,
+    `⚠️ IMPORTANT: Include order number ${orderNumber} in the payment memo/note for all payment methods.`,
+    ``,
     `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
+    `  → Add order number ${orderNumber} in the memo`,
     `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
+    `  → Order number is pre-filled in the note`,
     `- Zelle (preferred, no fee): ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
+    `  → Include order number ${orderNumber} in the memo`,
     ``,
     `Shipping To:`,
     `${order.customerName}`,

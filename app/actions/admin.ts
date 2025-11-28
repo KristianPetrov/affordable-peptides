@@ -1,6 +1,6 @@
 "use server";
 
-import { getOrderById, setProductStock, updateOrderStatus } from "@/lib/db";
+import { getOrderById, setProductStock, updateOrderStatus, deleteOrder } from "@/lib/db";
 import type { OrderStatus } from "@/lib/orders";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
@@ -166,6 +166,62 @@ export async function updateProductStockAction (formData: FormData)
   revalidatePath("/store");
   revalidatePath(`/store/product/${productSlug}`);
   revalidatePath(`/store/@modal/(.)product/${productSlug}`);
+}
+
+export async function deleteOrderAction (
+  orderId: string
+): Promise<{ success: boolean; error?: string }>
+{
+  try {
+    const session = await auth();
+
+    if (!session || session.user.role !== "ADMIN") {
+      return { success: false, error: "Unauthorized" };
+    }
+
+    if (!orderId) {
+      return { success: false, error: "Missing order ID" };
+    }
+
+    const existingOrder = await getOrderById(orderId);
+    if (!existingOrder) {
+      return { success: false, error: "Order not found" };
+    }
+
+    // If order is not cancelled, restock inventory before deleting
+    if (existingOrder.status !== "CANCELLED") {
+      const inventoryMap = await loadInventoryMap();
+      const restockResult = prepareInventoryAdjustments(
+        existingOrder.items,
+        inventoryMap,
+        "restock"
+      );
+
+      if (!restockResult.success) {
+        return { success: false, error: restockResult.error };
+      }
+
+      await applyInventoryAdjustments(restockResult.adjustments);
+    }
+
+    const deleted = await deleteOrder(orderId);
+
+    if (!deleted) {
+      return { success: false, error: "Failed to delete order" };
+    }
+
+    // Revalidate admin page to remove deleted order
+    revalidatePath("/admin");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting order:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to delete order",
+    };
+  }
 }
 
 

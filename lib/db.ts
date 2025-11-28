@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, or, ilike } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import { db as drizzleDb, orders, customerProfiles, productInventory } from "./db/index";
 import type { Order } from "./orders";
@@ -82,8 +82,24 @@ export async function getOrderByOrderNumber (
   return order ? dbRowToOrder(order) : null;
 }
 
-export async function getAllOrders (): Promise<Order[]>
+export async function getAllOrders (searchQuery?: string): Promise<Order[]>
 {
+  if (searchQuery && searchQuery.trim()) {
+    const query = `%${searchQuery.trim()}%`;
+    const allOrders = await db
+      .select()
+      .from(orders)
+      .where(
+        or(
+          ilike(orders.orderNumber, query),
+          ilike(orders.customerName, query),
+          ilike(orders.customerEmail, query),
+          ilike(orders.customerPhone, query)
+        )
+      );
+    return allOrders.map(dbRowToOrder);
+  }
+
   const allOrders = await db.select().from(orders);
   return allOrders.map(dbRowToOrder);
 }
@@ -301,4 +317,10 @@ export async function setProductStock (
     .returning();
 
   return dbRowToProductInventory(row);
+}
+
+export async function deleteOrder (id: string): Promise<boolean>
+{
+  const result = await db.delete(orders).where(eq(orders.id, id)).returning();
+  return result.length > 0;
 }

@@ -13,6 +13,7 @@ import type { OrderStatus } from "@/lib/orders";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
 import { getProductsWithInventory } from "@/lib/products.server";
 import { TrackingNumberInput } from "@/components/admin/TrackingNumberInput";
+import { DeleteOrderButton } from "@/components/admin/DeleteOrderButton";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -113,7 +114,7 @@ async function SignOutButton() {
 }
 
 type AdminPageProps = {
-  searchParams?: Promise<{ view?: string }>;
+  searchParams?: Promise<{ view?: string; search?: string }>;
 };
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
@@ -121,6 +122,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const params = searchParams ? await searchParams : undefined;
   const activeView =
     params?.view === "inventory" ? "inventory" : "orders";
+  const searchQuery = params?.search || "";
 
   // Redirect to login if not authenticated
   if (!session) {
@@ -132,7 +134,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
 
   const [orders, productsWithInventory] = await Promise.all([
-    getAllOrders(),
+    getAllOrders(searchQuery),
     getProductsWithInventory(),
   ]);
   const sortedOrders = [...orders].sort(
@@ -302,6 +304,32 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
           {activeView === "orders" && (
             <>
+          <div className="mb-6">
+            <form method="get" action="/admin" className="flex gap-3">
+              <input type="hidden" name="view" value="orders" />
+              <input
+                type="text"
+                name="search"
+                placeholder="Search by order number, name, email, or phone..."
+                defaultValue={searchQuery}
+                className="flex-1 rounded-lg border border-purple-900/40 bg-black/60 px-4 py-2 text-sm text-white placeholder-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              />
+              <button
+                type="submit"
+                className="rounded-lg bg-purple-600 px-6 py-2 text-sm font-semibold text-white transition hover:bg-purple-500"
+              >
+                Search
+              </button>
+              {searchQuery && (
+                <Link
+                  href="/admin"
+                  className="rounded-lg border border-purple-900/40 bg-black/60 px-6 py-2 text-sm font-semibold text-white transition hover:bg-black/80"
+                >
+                  Clear
+                </Link>
+              )}
+            </form>
+          </div>
           <div className="mb-8 grid gap-4 sm:grid-cols-4">
             <div className="rounded-2xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6">
               <div className="text-sm text-zinc-400">Pending Payment</div>
@@ -332,7 +360,9 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
           <div className="space-y-4">
             {sortedOrders.length === 0 ? (
               <div className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-12 text-center">
-                <p className="text-zinc-400">No orders yet</p>
+                <p className="text-zinc-400">
+                  {searchQuery ? "No orders found matching your search" : "No orders yet"}
+                </p>
               </div>
             ) : (
               sortedOrders.map((order) => {
@@ -437,16 +467,24 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                             </div>
                           </div>
 
-                          <div className="border-t border-purple-900/40 pt-4">
-                            <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
-                              Update Status
-                            </label>
-                            <OrderStatusForm
-                              orderId={order.id}
-                              currentStatus={order.status}
-                              currentTrackingNumber={order.trackingNumber}
-                              currentTrackingCarrier={order.trackingCarrier}
-                            />
+                          <div className="border-t border-purple-900/40 pt-4 space-y-4">
+                            <div>
+                              <label className="mb-2 block text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
+                                Update Status
+                              </label>
+                              <OrderStatusForm
+                                orderId={order.id}
+                                currentStatus={order.status}
+                                currentTrackingNumber={order.trackingNumber}
+                                currentTrackingCarrier={order.trackingCarrier}
+                              />
+                            </div>
+                            <div className="border-t border-purple-900/40 pt-4">
+                              <DeleteOrderButton
+                                orderId={order.id}
+                                orderNumber={formattedOrderNumber}
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
