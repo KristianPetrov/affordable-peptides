@@ -345,7 +345,7 @@ function formatCustomerReceiptEmail (
           <small style="font-weight: normal; color: #6b7280;">${order.totalUnits} total unit${order.totalUnits === 1 ? "" : "s"}</small>
         </div>
 
-        <p style="margin-top: 24px;">Need anything? Reply to this email or call (951) 539-3821 and reference your order number.</p>
+        <p style="margin-top: 24px;">Need anything? Reply to this email or text (951) 539-3821 and reference your order number.</p>
       </div>
     </div>
     <p class="footer">Affordable Peptides • View your order anytime: <a href="${receiptUrl}" style="color: #7c3aed;">${receiptUrl}</a></p>

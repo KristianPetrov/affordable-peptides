@@ -14,17 +14,23 @@ import {
 } from "@/lib/products";
 
 function getShowcaseProducts(): Product[] {
-  const featured = featuredProducts.slice(0, 3);
-  if (featured.length === 3) {
-    return featured;
+  const prioritySlug = "tirzepatide";
+  const featured = [...featuredProducts];
+  const priorityProduct = featured.find((product) => product.slug === prioritySlug);
+  const orderedFeatured = priorityProduct
+    ? [priorityProduct, ...featured.filter((product) => product.slug !== prioritySlug)]
+    : featured;
+
+  const selection = orderedFeatured.slice(0, 3);
+  if (selection.length === 3) {
+    return selection;
   }
 
-  const remaining =
-    featured.length > 0
-      ? peptideProducts.filter((product) => !product.isFeatured)
-      : peptideProducts;
+  const remainingPool = peptideProducts.filter(
+    (product) => !selection.some((selected) => selected.slug === product.slug)
+  );
 
-  return [...featured, ...remaining.slice(0, 3 - featured.length)];
+  return [...selection, ...remainingPool.slice(0, 3 - selection.length)];
 }
 
 export default function Home() {
@@ -142,19 +148,19 @@ export default function Home() {
                 opportunities? Reach out anytime and we&apos;ll get back to you
                 quickly.
               </p>
-              <div className="mx-auto flex max-w-md flex-col items-center gap-3 rounded-2xl border border-purple-900/60 bg-black/60 p-6">
+            <div className="mx-auto flex max-w-md flex-col items-center gap-3 rounded-2xl border border-purple-900/60 bg-black/60 p-6">
                 <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
-                  Phone
+                Text
                 </span>
                 <a
-                  href="tel:9515393821"
-                  className="text-2xl font-semibold text-white transition hover:text-purple-200"
+                href="sms:9515393821"
+                className="text-2xl font-semibold text-white transition hover:text-purple-200"
                 >
-                  (951) 539-3821
+                Text (951) 539-3821
                 </a>
                 <p className="text-xs text-zinc-500">
-                  Available daily 6am–9pm PST. Leave a message after hours and
-                  we&apos;ll return your call.
+                Available daily 6am–9pm PST. Send a text after hours and
+                we&apos;ll get back to you promptly.
                 </p>
               </div>
             </div>
