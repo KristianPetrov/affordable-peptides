@@ -20,7 +20,7 @@ export default function MissionSection() {
           <p className="text-lg leading-8 text-zinc-200 sm:text-xl">
             Affordable Peptides exists to make high-quality, research-grade
             peptides accessible without the inflated pricing or industry
-            smoke-and-mirrors. Our mission is to deliver reliable purity,
+            mark up. Our mission is to deliver reliable purity,
             transparent third-party testing, and clear information so customers
             can make informed decisions with confidence. We combine integrity,
             science, and responsible practices to raise the standard for the

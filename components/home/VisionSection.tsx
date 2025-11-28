@@ -16,7 +16,7 @@ export default function VisionSection() {
           We aim to become the most trusted name in affordable, high-purity
           peptides by proving that transparency and quality should never be out
           of reach. Our vision is a future where anyone seeking to improve their
-          research, wellness, or performance has access to safe, consistent, and
+          research has access to safe, consistent, and
           responsibly verified products. Affordable Peptides is committed to
           leading the industry with honesty, innovation, and a straightforward,
           no-nonsense approach that sets a new bar for trust and reliability.
