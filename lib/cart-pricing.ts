@@ -87,34 +87,41 @@ export function calculateVolumePricing(
       variantItems,
       variantItems[0].pricingTiers
     );
+    const productName = variantItems[0].productName;
+    const isBacteriostaticWater = productName === "Bacteriostatic Water";
 
     const packItems = variantItems.filter((item) => item.tierQuantity > 1);
     const singleItems = variantItems.filter((item) => item.tierQuantity === 1);
-
-    let consumedUnits = 0;
 
     for (const packItem of packItems) {
       const packTotal = packItem.tierPrice * packItem.count;
       lineItemTotals[packItem.key] = packTotal;
       subtotal += packTotal;
-      consumedUnits += packItem.tierQuantity * packItem.count;
     }
+
+    const totalSingleUnits = singleItems.reduce(
+      (sum, item) => sum + item.count * item.tierQuantity,
+      0
+    );
+
+    const determineSingleUnitPrice = (): number => {
+      if (isBacteriostaticWater) {
+        return unitPricing.single;
+      }
+      if (totalSingleUnits >= 10) {
+        return unitPricing.ten;
+      }
+      if (totalSingleUnits >= 5) {
+        return unitPricing.five;
+      }
+      return unitPricing.single;
+    };
+
+    const singleUnitPrice = determineSingleUnitPrice();
 
     for (const singleItem of singleItems) {
       const units = singleItem.count * singleItem.tierQuantity;
-      let itemTotal = 0;
-
-      for (let i = 0; i < units; i++) {
-        consumedUnits += 1;
-        if (consumedUnits > 10) {
-          itemTotal += unitPricing.ten;
-        } else if (consumedUnits > 5) {
-          itemTotal += unitPricing.five;
-        } else {
-          itemTotal += unitPricing.single;
-        }
-      }
-
+      const itemTotal = units * singleUnitPrice;
       lineItemTotals[singleItem.key] = itemTotal;
       subtotal += itemTotal;
     }
