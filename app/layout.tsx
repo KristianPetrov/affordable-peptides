@@ -38,7 +38,7 @@ export default function RootLayout({
                   >
                     Set Free Digital Disciples
                   </a>{" "}
-                  
+
                 </p>
               </footer>
             </div>
