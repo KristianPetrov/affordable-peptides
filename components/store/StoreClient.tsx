@@ -1187,6 +1187,9 @@ export default function StoreClient({ products }: StoreClientProps) {
               <div className="rounded-full border border-blue-400/50 bg-blue-500/10 px-4 py-2 font-semibold text-blue-200 shadow-[0_10px_30px_rgba(59,130,246,0.25)]">
                 10+ Bottles = 30% Off
               </div>
+              <div className="rounded-full border border-emerald-400/50 bg-emerald-500/10 px-4 py-2 font-semibold text-emerald-100 shadow-[0_10px_30px_rgba(16,185,129,0.25)]">
+                Free Shipping $300+
+              </div>
               <span className="rounded-full border border-purple-500/40 bg-black/40 px-4 py-2 text-purple-100">
                 Automatic savings on every peptide
               </span>
