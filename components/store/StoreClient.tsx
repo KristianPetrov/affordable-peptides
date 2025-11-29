@@ -145,7 +145,7 @@ type ProductCardProps = {
   product: Product;
   molecules: MoleculeDefinition[];
   cartItems: CartItem[];
-  onAddToCart: (payload: AddToCartPayload) => void;
+  onAddToCart: (payload: AddToCartPayload) => number;
   defaultExpanded?: boolean;
   forceExpanded?: boolean;
   showExpandToggle?: boolean;
@@ -197,6 +197,16 @@ export function ProductCard({
     return initial;
   });
 
+  const [pendingAddCountByVariant, setPendingAddCountByVariant] = useState<
+    Record<string, number>
+  >(() => {
+    const initial: Record<string, number> = {};
+    for (const variant of product.variants) {
+      initial[variant.label] = 1;
+    }
+    return initial;
+  });
+
   const resolveSelectedIndex = (variant: Variant) => {
     const storedIndex = selectedTierIndexByVariant[variant.label];
     if (typeof storedIndex === "number") {
@@ -206,11 +216,44 @@ export function ProductCard({
     return defaultIndex === -1 ? 0 : defaultIndex;
   };
 
+  const getPendingAddCount = (variantLabel: string) =>
+    pendingAddCountByVariant[variantLabel] ?? 1;
+
   const handleSelectTier = (variantLabel: string, tierIndex: number) => {
     setSelectedTierIndexByVariant((prev) => ({
       ...prev,
       [variantLabel]: tierIndex,
     }));
+  };
+
+  const handleAdjustPendingAddCount = (
+    variant: Variant,
+    delta: number,
+    tierQuantity: number,
+    remainingStock: number | null
+  ) => {
+    setPendingAddCountByVariant((prev) => {
+      const current = prev[variant.label] ?? 1;
+      const maxPacks =
+        remainingStock === null || tierQuantity === 0
+          ? Number.POSITIVE_INFINITY
+          : Math.max(Math.floor(remainingStock / tierQuantity), 0);
+      if (delta > 0 && maxPacks === 0) {
+        return prev;
+      }
+      const desired = Math.max(1, current + delta);
+      const clamped =
+        maxPacks === Number.POSITIVE_INFINITY
+          ? desired
+          : Math.min(desired, Math.max(maxPacks, 1));
+      if (clamped === current) {
+        return prev;
+      }
+      return {
+        ...prev,
+        [variant.label]: clamped,
+      };
+    });
   };
 
   const handleToggleExpansion = () => {
@@ -268,7 +311,8 @@ export function ProductCard({
       ? selectedTier.price
       : `$${selectedTier.price}`;
 
-    onAddToCart({
+    const pendingCount = getPendingAddCount(variant.label);
+    const addedCount = onAddToCart({
       productName: product.name,
       productSlug: product.slug,
       variantLabel: variant.label,
@@ -276,7 +320,19 @@ export function ProductCard({
       tierPrice,
       tierPriceDisplay,
       pricingTiers,
+      maxVariantUnits:
+        typeof variant.stockQuantity === "number"
+          ? variant.stockQuantity
+          : null,
+      addCount: pendingCount,
     });
+
+    if (addedCount > 0) {
+      setPendingAddCountByVariant((prev) => ({
+        ...prev,
+        [variant.label]: 1,
+      }));
+    }
   };
 
   return (
@@ -456,6 +512,23 @@ export function ProductCard({
                     selectedTierPrice === 0 ||
                     isOutOfStock ||
                     insufficientSelection;
+                  const pendingAddCount = getPendingAddCount(variant.label);
+                  const unitsPerPack = Math.max(selectedTierQuantity, 1);
+                  const maxAddablePacks =
+                    remainingStock === null || unitsPerPack === 0
+                      ? Number.POSITIVE_INFINITY
+                      : Math.max(Math.floor(remainingStock / unitsPerPack), 0);
+                  const effectivePendingCount =
+                    maxAddablePacks === Number.POSITIVE_INFINITY
+                      ? pendingAddCount
+                      : Math.min(
+                          pendingAddCount,
+                          Math.max(maxAddablePacks, 1)
+                        );
+                  const canIncreasePending =
+                    maxAddablePacks === Number.POSITIVE_INFINITY
+                      ? true
+                      : effectivePendingCount < Math.max(maxAddablePacks, 1);
 
                   return (
                     <div
@@ -558,14 +631,57 @@ export function ProductCard({
                             ? `Selected: Qty ${selectedTier.quantity} • ${selectedTierDisplay}`
                             : "No available tier selected"}
                         </div>
-                        <button
-                          type="button"
-                          className="inline-flex items-center justify-center rounded-full bg-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:bg-purple-900/40"
-                          onClick={() => handleAddVariantToCart(variant)}
-                          disabled={addDisabled}
-                        >
-                          Add {variant.label} to Cart
-                        </button>
+                        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                          <div className="inline-flex items-center gap-1 rounded-full border border-purple-500/60 bg-black/60 px-3 py-1">
+                            <button
+                              type="button"
+                              className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-purple-900/60"
+                              onClick={() =>
+                                handleAdjustPendingAddCount(
+                                  variant,
+                                  -1,
+                                  unitsPerPack,
+                                  remainingStock
+                                )
+                              }
+                              disabled={effectivePendingCount <= 1}
+                              aria-label={`Decrease ${variant.label} add quantity`}
+                            >
+                              -
+                            </button>
+                            <span className="px-2 text-sm font-semibold text-white">
+                              {effectivePendingCount}
+                            </span>
+                            <button
+                              type="button"
+                              className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-purple-900/60"
+                              onClick={() =>
+                                handleAdjustPendingAddCount(
+                                  variant,
+                                  1,
+                                  unitsPerPack,
+                                  remainingStock
+                                )
+                              }
+                              disabled={!canIncreasePending || addDisabled}
+                              aria-label={`Increase ${variant.label} add quantity`}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            className="inline-flex items-center justify-center rounded-full bg-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:bg-purple-900/40"
+                            onClick={() => handleAddVariantToCart(variant)}
+                            disabled={addDisabled}
+                          >
+                            Add{" "}
+                            {effectivePendingCount > 1
+                              ? `${effectivePendingCount}× `
+                              : ""}
+                            {variant.label} to Cart
+                          </button>
+                        </div>
                         {insufficientSelection && remainingStock !== null && (
                           <p className="text-xs font-semibold text-amber-300">
                             Only {remainingStock} unit
@@ -616,6 +732,19 @@ export function FloatingCartButton({
 }: FloatingCartButtonProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  const variantUnitsInCart = useMemo(() => {
+    const map = new Map<string, number>();
+    cartItems.forEach((item) => {
+      const variantKey =
+        item.variantKey ??
+        `${item.productSlug ?? item.productName}|${item.variantLabel}`;
+      map.set(
+        variantKey,
+        (map.get(variantKey) ?? 0) + item.tierQuantity * item.count
+      );
+    });
+    return map;
+  }, [cartItems]);
 
   return (
     <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
@@ -677,7 +806,21 @@ export function FloatingCartButton({
 
               {cartItems.length > 0 ? (
                 <ul className="space-y-4">
-                  {cartItems.map((item) => (
+                  {cartItems.map((item) => {
+                    const variantKeyForItem =
+                      item.variantKey ??
+                      `${item.productSlug ?? item.productName}|${item.variantLabel}`;
+                    const variantLimit =
+                      typeof item.maxVariantUnits === "number"
+                        ? item.maxVariantUnits
+                        : null;
+                    const totalUnitsForVariant =
+                      variantUnitsInCart.get(variantKeyForItem) ??
+                      item.tierQuantity * item.count;
+                    const incrementDisabled =
+                      variantLimit !== null &&
+                      totalUnitsForVariant + item.tierQuantity > variantLimit;
+                    return (
                     <li
                       key={item.key}
                       className="rounded-2xl border border-purple-900/40 bg-zinc-950/80 p-4"
@@ -728,6 +871,7 @@ export function FloatingCartButton({
                             type="button"
                             className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white"
                             onClick={() => onIncrement(item.key)}
+                              disabled={incrementDisabled}
                             aria-label={`Increase ${item.productName} ${item.variantLabel} quantity`}
                           >
                             +
@@ -741,8 +885,14 @@ export function FloatingCartButton({
                           Remove
                         </button>
                       </div>
-                    </li>
-                  ))}
+                        {incrementDisabled && (
+                          <p className="mt-2 text-[11px] font-semibold text-amber-300">
+                            Maximum stock reached for this variant.
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ul>
               ) : (
                 <p className="text-sm text-zinc-400">
