@@ -14,12 +14,19 @@ import {
 } from "@/lib/products";
 
 function getShowcaseProducts(): Product[] {
-  const prioritySlug = "tirzepatide";
+  const prioritySlugs = ["tirzepatide", "retatrutide"];
   const featured = [...featuredProducts];
-  const priorityProduct = featured.find((product) => product.slug === prioritySlug);
-  const orderedFeatured = priorityProduct
-    ? [priorityProduct, ...featured.filter((product) => product.slug !== prioritySlug)]
-    : featured;
+  const prioritySlugSet = new Set(prioritySlugs);
+
+  const prioritizedProducts = prioritySlugs
+    .map((slug) => featured.find((product) => product.slug === slug))
+    .filter((product): product is Product => Boolean(product));
+
+  const remainingProducts = featured.filter(
+    (product) => !prioritySlugSet.has(product.slug)
+  );
+
+  const orderedFeatured = [...prioritizedProducts, ...remainingProducts];
 
   const selection = orderedFeatured.slice(0, 3);
   if (selection.length === 3) {
