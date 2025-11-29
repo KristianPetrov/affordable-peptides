@@ -145,7 +145,7 @@ function ThankYouContent() {
                         the quick links below.
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
-                        Include your order number in the payment note so we can
+                        Include ONLY your order number in the payment note so we can
                         match it instantly.
                       </p>
                     </div>
@@ -219,7 +219,7 @@ function ThankYouContent() {
                         get your order moving.
                       </p>
                       <p className="mt-2 text-xs text-green-100/70">
-                        Include Order {orderReference} in the memo so we can match it immediately.
+                        Include ONLY the order number {orderReference} in the memo so we can match it immediately.
                       </p>
                     </div>
                     <div className="flex flex-col items-stretch gap-2 md:items-end">
@@ -262,11 +262,11 @@ function ThankYouContent() {
                 </div>
                 <div className="mt-4 rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-4">
                   <p className="text-sm font-semibold text-yellow-200 mb-2">
-                    ⚠️ Important: Include Order Number in Payment Memo
+                    ⚠️ Important: Include ONLY the Order Number in Payment Memo
                   </p>
                   <p className="text-xs text-yellow-100/90">
-                    When sending payment via Cash App, Venmo, or Zelle, please include your order number{" "}
-                    <span className="font-semibold">({orderReference})</span> in the payment memo/note. This helps us quickly match your payment to your order.
+                    When sending payment via Cash App, Venmo, or Zelle, please include ONLY your order number{" "}
+                    <span className="font-semibold">({orderReference})</span> in the payment memo/note. This helps us quickly match your payment to your order. Do not include any other information in the memo.
                   </p>
                 </div>
                 <ul className="mt-4 space-y-3 text-sm text-zinc-300">
@@ -274,15 +274,15 @@ function ThankYouContent() {
                     <span className="font-semibold text-green-200">Zelle (Preferred):</span> Free, instant, and no limits from us. Send{" "}
                     {paymentAmountDisplay ?? "your total"} to{" "}
                     <span className="font-semibold text-white">{ZELLE_EMAIL}</span> (recipient:{" "}
-                    <span className="font-semibold text-white">{ZELLE_RECIPIENT_NAME}</span>) and place Order {orderReference} in the memo.
+                    <span className="font-semibold text-white">{ZELLE_RECIPIENT_NAME}</span>) and place ONLY the order number {orderReference} in the memo.
                   </li>
                   <li>
                     <span className="font-semibold text-white">Cash App:</span> Includes a 2.6% + $0.15 processing fee.{" "}
-                    <span className="text-yellow-200">Add order number {orderReference} in the memo.</span>
+                    <span className="text-yellow-200">Add ONLY the order number {orderReference} in the memo.</span>
                   </li>
                   <li>
                     <span className="font-semibold text-white">Venmo:</span> Includes a 1.9% + $0.10 fee.{" "}
-                    <span className="text-yellow-200">Order number is pre-filled in the note.</span>
+                    <span className="text-yellow-200">The order number is pre-filled in the note.</span>
                   </li>
                 </ul>
               </div>
@@ -292,10 +292,10 @@ function ThankYouContent() {
                   Need Help?
                 </h3>
                 <p className="text-sm text-zinc-300">
-                  If you have any questions about your order, please contact us
+                  If you have any questions about your order, please text us
                   at{" "}
                   <Link
-                    href={`tel:${PHONE_NUMBER.replace(/\D/g, "")}`}
+                    href={`sms:${PHONE_NUMBER.replace(/\D/g, "")}`}
                     className="text-purple-200 underline hover:text-purple-100"
                   >
                     {PHONE_NUMBER}
