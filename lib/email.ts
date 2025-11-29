@@ -279,9 +279,9 @@ function formatCustomerReceiptEmail (
         </div>
 
         <div class="info-block" style="background: #fef3c7; border: 1px solid #fbbf24;">
-          <h3 style="margin-top: 0; margin-bottom: 8px; color: #92400e;">⚠️ Important: Include Order Number in Payment Memo</h3>
+          <h3 style="margin-top: 0; margin-bottom: 8px; color: #92400e;">⚠️ Important: Include ONLY Order Number in Payment Memo</h3>
           <p style="margin: 0; color: #78350f; font-size: 13px;">
-            When sending payment via Cash App, Venmo, or Zelle, please include your order number <strong>${orderNumber}</strong> in the payment memo/note. This helps us quickly match your payment to your order.
+            When sending payment via Cash App, Venmo, or Zelle, please include <strong>ONLY</strong> your order number <strong>${orderNumber}</strong> in the payment memo/note. This helps us quickly match your payment to your order.
           </p>
         </div>
 
@@ -389,7 +389,7 @@ function formatCustomerReceiptEmail (
     ``,
     `Next Steps:`,
     `1. Send payment via Cash App, Venmo, or Zelle.`,
-    `2. Text (951) 539-3821 with your name, Order ${orderNumber}, and payment screenshot.`,
+    `2. Text (951) 539-3821 with your order ${orderNumber}, and payment screenshot.`,
     `3. We'll confirm manually and update you once your order ships.`,
   ].join("\n");
 
