@@ -295,7 +295,7 @@ function formatCustomerReceiptEmail (
                 Send <strong>$${amountDisplay}</strong> to <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>) directly from your bank or Zelle app. This is the fastest way to get your order processed.
               </p>
               <p style="margin: 6px 0 0 0; color: #065f46; font-size: 13px;">
-                <strong style="color: #92400e;">Include Order ${orderNumber} in the memo.</strong>
+                <strong style="color: #92400e;">Include ONLY the order number ${orderNumber} in the memo.</strong>
               </p>
             </div>
             <div>
@@ -304,7 +304,7 @@ function formatCustomerReceiptEmail (
                   Pay $${cashAppDisplay} via Cash App
                 </div>
               </a>
-              <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee. <strong style="color: #92400e;">Add order number ${orderNumber} in the memo.</strong></p>
+              <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee. <strong style="color: #92400e;">Add ONLY the order number ${orderNumber} in the memo.</strong></p>
             </div>
             <div>
               <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;width:100%;">
@@ -345,7 +345,7 @@ function formatCustomerReceiptEmail (
           <small style="font-weight: normal; color: #6b7280;">${order.totalUnits} total unit${order.totalUnits === 1 ? "" : "s"}</small>
         </div>
 
-        <p style="margin-top: 24px;">Need anything? Reply to this email or text (951) 539-3821 and reference your order number.</p>
+        <p style="margin-top: 24px;">Need anything? Text (951) 539-3821 and reference your order number (do not reply to this email).</p>
       </div>
     </div>
     <p class="footer">Affordable Peptides • View your order anytime: <a href="${receiptUrl}" style="color: #7c3aed;">${receiptUrl}</a></p>
