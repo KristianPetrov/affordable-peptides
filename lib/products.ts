@@ -177,7 +177,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["recovery-performance", "longevity-wellness"],
     isFeatured: true,
     variants: [
-      createVariant("10mg", 70, "/products/label-bpc157-10mg-3ml.png"),
+      createVariant("10mg", 50, "/products/label-bpc157-10mg-3ml.png"),
     ],
     testResultUrl: "https://chromate.org/verify?c=29115_AFFORDX493E7",
   },
@@ -410,7 +410,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "TB-500 is a synthetic fragment of thymosin β4 studied for its impact on angiogenesis, cell migration, and tissue repair. It's frequently used in preclinical research on joint health, soft-tissue recovery, and post-injury remodeling.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("10mg", 70, "/products/label-tb500-10mg-3ml.png"),
+      createVariant("10mg", 60, "/products/label-tb500-10mg-3ml.png"),
     ],
     testResultUrl: "https://chromate.org/verify?c=29113_AFFORD2NQWKZ",
   },
