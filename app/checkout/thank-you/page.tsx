@@ -187,6 +187,10 @@ function ThankYouContent() {
                     </div>
                   </li>
                 </ol>
+                <p className="mt-6 text-sm text-zinc-400">
+                  If you do not receive an email confirmation, please check your spam
+                  or junk folder before reaching out.
+                </p>
               </div>
 
               <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 p-6">
