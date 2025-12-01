@@ -300,7 +300,9 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant("80mg", 100, "/products/label-klow-80mg-3ml.png"),
     ],
+    testResultUrl:"https://drive.google.com/file/d/1w18p5MiL1RLgvR6m6vP2r12Id2gV-V96/view"
   },
+
   {
     name: "KPV",
     researchFocus: "Anti-inflammatory tripeptide studied for gut lining support and immune calm.",
