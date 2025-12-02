@@ -286,12 +286,6 @@ export async function createOrderAction (
       // Log but don't throw - order is still created
     });
 
-    // Revalidate admin page to show new order
-    revalidatePath("/admin");
-    revalidatePath("/account");
-    revalidatePath("/account/orders");
-    revalidatePath("/admin?view=referrals");
-
     if (userId && input.saveProfile) {
       await upsertCustomerProfile(userId, {
         fullName: input.customerName.trim(),
@@ -308,11 +302,24 @@ export async function createOrderAction (
     }
 
     if (referralContext) {
-      finalizeReferralForOrder(order, referralContext).catch((error) =>
-      {
+      try {
+        await finalizeReferralForOrder(order, referralContext);
+      } catch (error) {
         console.error("Failed to finalize referral attribution:", error);
-      });
+        return {
+          success: false,
+          error:
+            "We couldn't record the referral discount. Please try again in a moment.",
+          errorCode: "UNKNOWN",
+        };
+      }
     }
+
+    // Revalidate admin/account pages after all mutations (including referrals) succeed
+    revalidatePath("/admin");
+    revalidatePath("/account");
+    revalidatePath("/account/orders");
+    revalidatePath("/admin?view=referrals");
 
     return {
       success: true,
