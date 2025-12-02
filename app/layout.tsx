@@ -2,8 +2,16 @@ import { Geist, Geist_Mono } from "next/font/google";
 
 import { AgeGateProvider } from "@/components/AgeGateProvider";
 import { Providers } from "@/components/Providers";
+import {
+  organizationJsonLd,
+  serializeJsonLd,
+  websiteJsonLd,
+} from "@/lib/seo";
 
 import "./globals.css";
+
+export { metadata } from "./metadata";
+export { viewport } from "./viewport";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -20,6 +28,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const globalJsonLd = [organizationJsonLd, websiteJsonLd];
+
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
@@ -42,6 +52,13 @@ export default function RootLayout({
                 </p>
               </footer>
             </div>
+            {globalJsonLd.map((schema) => (
+              <script
+                key={`global-jsonld-${String(schema["@type"])}`}
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
+              />
+            ))}
           </Providers>
         </AgeGateProvider>
       </body>

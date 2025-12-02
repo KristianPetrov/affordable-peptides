@@ -5,8 +5,20 @@ import Link from "next/link";
 import NavBar from "@/components/NavBar";
 import ProductDetailStandalone from "@/components/store/ProductDetailStandalone";
 import { getMoleculesForProduct } from "@/lib/molecules";
-import { getProductBySlug, peptideProducts } from "@/lib/products";
+import {
+  getProductBySlug,
+  peptideProducts,
+  productCategories,
+  type Product,
+} from "@/lib/products";
 import { getProductBySlugWithInventory } from "@/lib/products.server";
+import {
+  FALLBACK_PRODUCT_IMAGE,
+  absoluteUrl,
+  createProductJsonLd,
+  serializeJsonLd,
+  siteMetadata,
+} from "@/lib/seo";
 
 type ProductPageProps = {
   params: Promise<{
@@ -16,6 +28,41 @@ type ProductPageProps = {
 
 export const dynamic = "force-dynamic";
 
+const categoryLookup = new Map(
+  productCategories.map((category) => [category.id, category.label]),
+);
+
+const getProductImagePath = (product: Product): string => {
+  const variantWithImage = product.variants.find(
+    (variant) => typeof variant.mockupLabel === "string",
+  );
+  return variantWithImage?.mockupLabel ?? FALLBACK_PRODUCT_IMAGE;
+};
+
+const getProductKeywords = (product: Product): string[] => {
+  const categoryNames = product.categories
+    .map((categoryId) => categoryLookup.get(categoryId) ?? categoryId)
+    .filter(Boolean);
+
+  const baseKeywords = [
+    product.name,
+    `${product.name} peptide`,
+    product.researchFocus,
+    ...categoryNames,
+    "research-grade peptides",
+    "lab tested peptides",
+    "peptide research supply",
+  ];
+
+  return Array.from(
+    new Set(
+      baseKeywords
+        .map((keyword) => keyword?.toString().trim())
+        .filter((keyword): keyword is string => Boolean(keyword)),
+    ),
+  );
+};
+
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const product = await getProductBySlugWithInventory(slug);
@@ -24,6 +71,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   const molecules = getMoleculesForProduct(product.name);
+  const productUrl = absoluteUrl(`/store/product/${product.slug}`);
+  const imagePath = getProductImagePath(product);
+  const productJsonLd = createProductJsonLd({
+    product,
+    productUrl,
+    imageUrl: absoluteUrl(imagePath),
+    keywords: getProductKeywords(product),
+  });
 
   return (
     <div className="min-h-screen bg-black text-zinc-100">
@@ -37,14 +92,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </Link>
       </div>
       <ProductDetailStandalone product={product} molecules={molecules} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(productJsonLd) }}
+      />
     </div>
   );
-}
-
-export async function generateStaticParams() {
-  return peptideProducts.map((product) => ({
-    slug: product.slug,
-  }));
 }
 
 export async function generateMetadata({
@@ -62,22 +115,53 @@ export async function generateMetadata({
     product.researchFocus ||
     "Explore the latest research-grade peptides available for your lab.";
 
-  const title = `${product.name} | Affordable Peptides Store`;
+  const title = `${product.name} | ${siteMetadata.name} Store`;
+  const imagePath = getProductImagePath(product);
+  const imageUrl = absoluteUrl(imagePath);
+  const keywords = getProductKeywords(product);
+  const canonicalPath = `/store/product/${product.slug}`;
+  const categoryLabel =
+    categoryLookup.get(product.categories[0]) ?? "Research Peptide";
 
   return {
     title,
     description,
+    keywords,
+    category: categoryLabel,
+    alternates: {
+      canonical: canonicalPath,
+    },
     openGraph: {
       title,
       description,
-      url: `/store/product/${product.slug}`,
+      url: canonicalPath,
       type: "website",
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${product.name} research peptide vial`,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
+      images: [imageUrl],
     },
+    other: product.testResultUrl
+      ? {
+          "lab-test-report": product.testResultUrl,
+        }
+      : undefined,
   };
+}
+
+export async function generateStaticParams() {
+  return peptideProducts.map((product) => ({
+    slug: product.slug,
+  }));
 }
 

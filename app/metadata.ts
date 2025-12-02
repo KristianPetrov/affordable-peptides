@@ -1,38 +1,26 @@
 import type { Metadata } from "next";
 
-const siteUrl = "https://affordablepeptides.life";
-const socialImage = "/opengraph-image";
-const title =
-  "Affordable Peptides | Research-Grade Peptides Without the Markup";
-const description =
-  "Affordable Peptides delivers high-purity, research-grade peptides backed by transparent testing, fair pricing, and science-first integrity.";
+import { absoluteUrl, siteMetadata } from "@/lib/seo";
+
+const defaultTitle = `${siteMetadata.name} | Research-Grade Peptides Without the Markup`;
+const socialImage = absoluteUrl(siteMetadata.socialImagePath);
+const logoImage = absoluteUrl(siteMetadata.logoPath);
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteUrl),
-  applicationName: "Affordable Peptides",
+  metadataBase: new URL(siteMetadata.url),
+  applicationName: siteMetadata.name,
   title: {
-    default: title,
+    default: defaultTitle,
     template: "%s | Affordable Peptides",
   },
-  description,
+  description: siteMetadata.description,
   abstract:
     "Research-grade peptides, transparent testing, and wholesale pricing for serious investigators.",
-  keywords: [
-    "peptides",
-    "research-grade peptides",
-    "third-party tested peptides",
-    "affordable peptides",
-    "peptide research supplies",
-    "peptide transparency",
-    "lab verified peptides",
-    "tirzepatide",
-    "retatrutide",
-    "GLP-1",
-  ],
+  keywords: [...siteMetadata.keywords],
   creator: "Set Free Digital Disciples",
-  publisher: "Affordable Peptides",
+  publisher: siteMetadata.name,
   authors: [
-    { name: "Affordable Peptides", url: siteUrl },
+    { name: siteMetadata.name, url: siteMetadata.url },
     {
       name: "Set Free Digital Disciples",
       url: "https://www.setfreedigitaldisciples.com",
@@ -44,18 +32,18 @@ export const metadata: Metadata = {
     telephone: false,
   },
   alternates: {
-    canonical: siteUrl,
+    canonical: siteMetadata.url,
     languages: {
-      "en-US": siteUrl,
+      "en-US": siteMetadata.url,
     },
   },
   openGraph: {
-    title,
-    description,
+    title: defaultTitle,
+    description: siteMetadata.description,
     type: "website",
-    locale: "en_US",
-    url: siteUrl,
-    siteName: "Affordable Peptides",
+    locale: siteMetadata.localeOg,
+    url: siteMetadata.url,
+    siteName: siteMetadata.name,
     images: [
       {
         url: socialImage,
@@ -67,13 +55,13 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title,
-    description,
+    title: defaultTitle,
+    description: siteMetadata.description,
     images: [socialImage],
   },
   appLinks: {
     web: {
-      url: siteUrl,
+      url: siteMetadata.url,
       should_fallback: true,
     },
   },
@@ -89,6 +77,8 @@ export const metadata: Metadata = {
     },
   },
   category: "research",
+  assets: [siteMetadata.url],
+  bookmarks: [siteMetadata.url],
   icons: {
     icon: [{ url: "/favicon.png" }],
     shortcut: ["/favicon.png"],
@@ -97,6 +87,7 @@ export const metadata: Metadata = {
   other: {
     "designed-by":
       "This website was designed by Set Free Digital Disciples – https://www.setfreedigitaldisciples.com",
+    "og:logo": logoImage,
   },
 };
 
