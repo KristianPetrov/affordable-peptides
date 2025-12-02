@@ -1,13 +1,15 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { useStorefront } from "@/components/store/StorefrontContext";
 import { createOrderAction } from "@/app/actions/orders";
+import { applyReferralCodeAction } from "@/app/actions/referrals";
 import type { CustomerProfile } from "@/lib/db";
 import { calculateShippingCost, calculateTotalWithShipping } from "@/lib/shipping";
+import type { AppliedReferralResult } from "@/types/referrals";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -33,11 +35,22 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
   const router = useRouter();
   const { cartItems, subtotal, totalUnits, lineItemTotals, clearCart } = useStorefront();
   const [isPending, startTransition] = useTransition();
+  const [isApplyingReferral, startReferralTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saveProfile, setSaveProfile] = useState(Boolean(sessionUser));
-
-  const shippingCost = calculateShippingCost(subtotal);
-  const total = calculateTotalWithShipping(subtotal);
+  const [referralInput, setReferralInput] = useState("");
+  const [referralResult, setReferralResult] =
+    useState<AppliedReferralResult | null>(null);
+  const appliedReferral =
+    referralResult && referralResult.status === "applied" ? referralResult : null;
+  const referralDiscount = appliedReferral?.discountAmount ?? 0;
+  const discountedSubtotal = useMemo(
+    () => Math.max(0, subtotal - referralDiscount),
+    [subtotal, referralDiscount]
+  );
+  const shippingCost = calculateShippingCost(discountedSubtotal);
+  const total = calculateTotalWithShipping(discountedSubtotal);
+  const previousSubtotalRef = useRef(subtotal);
 
   const defaultFormValues = useMemo(
     () => ({
@@ -56,6 +69,16 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
   const [formData, setFormData] = useState(defaultFormValues);
 
   const isLoggedIn = Boolean(sessionUser);
+
+  useEffect(() => {
+    if (
+      appliedReferral &&
+      Math.abs(previousSubtotalRef.current - subtotal) > 0.01
+    ) {
+      setReferralResult(null);
+    }
+    previousSubtotalRef.current = subtotal;
+  }, [subtotal, appliedReferral]);
 
   if (cartItems.length === 0) {
     return (
@@ -84,6 +107,41 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
     });
   };
 
+  const handleApplyReferral = () => {
+    if (!formData.customerEmail.trim()) {
+      setReferralResult({
+        status: "error",
+        message: "Enter your email before applying a referral code.",
+      });
+      return;
+    }
+    if (!referralInput.trim()) {
+      setReferralResult({
+        status: "error",
+        message: "Enter a referral code to continue.",
+      });
+      return;
+    }
+
+    startReferralTransition(async () => {
+      const result = await applyReferralCodeAction({
+        code: referralInput,
+        customerEmail: formData.customerEmail,
+        cartItems,
+        cartSubtotal: subtotal,
+      });
+      setReferralResult(result);
+      if (result.status === "applied") {
+        setReferralInput(result.code);
+      }
+    });
+  };
+
+  const handleClearReferral = () => {
+    setReferralResult(null);
+    setReferralInput("");
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
@@ -91,16 +149,18 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
     startTransition(async () => {
       const result = await createOrderAction({
         items: cartItems,
-        subtotal,
+        subtotal: discountedSubtotal,
+        cartSubtotal: subtotal,
         totalUnits,
         saveProfile: isLoggedIn && saveProfile,
+        referralCode: appliedReferral?.code,
         ...formData,
       });
 
       if (result.success) {
         clearCart();
         router.push(
-          `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${subtotal.toFixed(
+          `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${discountedSubtotal.toFixed(
             2
           )}`
         );
@@ -318,6 +378,70 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
                 )}
               </div>
 
+              <div className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-white">
+                      Referral Program
+                    </h2>
+                    <p className="text-sm text-zinc-400">
+                      Apply a partner code to unlock a first-order discount.
+                    </p>
+                  </div>
+                  {appliedReferral && (
+                    <span className="rounded-full bg-green-500/20 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-green-200">
+                      Applied
+                    </span>
+                  )}
+                </div>
+                <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <input
+                    type="text"
+                    name="referralCode"
+                    placeholder="Enter referral code"
+                    value={referralInput}
+                    onChange={(event) =>
+                      setReferralInput(event.target.value.toUpperCase())
+                    }
+                    className="flex-1 rounded-xl border border-purple-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:ring-offset-2 focus:ring-offset-black"
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={handleApplyReferral}
+                      disabled={
+                        isApplyingReferral || referralInput.trim().length === 0
+                      }
+                      className="rounded-full bg-purple-600 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 disabled:cursor-not-allowed disabled:bg-purple-900/40"
+                    >
+                      {isApplyingReferral ? "Applying..." : "Apply Code"}
+                    </button>
+                    {referralResult && (
+                      <button
+                        type="button"
+                        onClick={handleClearReferral}
+                        className="rounded-full border border-purple-900/60 px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200 transition hover:border-purple-400 hover:text-white"
+                      >
+                        Clear
+                      </button>
+                    )}
+                  </div>
+                </div>
+                {referralResult && (
+                  <div
+                    className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
+                      referralResult.status === "applied"
+                        ? "border-green-500/30 bg-green-500/10 text-green-100"
+                        : referralResult.status === "already-attributed"
+                        ? "border-blue-500/30 bg-blue-500/10 text-blue-100"
+                        : "border-red-500/30 bg-red-500/10 text-red-100"
+                    }`}
+                  >
+                    {referralResult.message}
+                  </div>
+                )}
+              </div>
+
               {error && (
                 <div className="rounded-xl border border-red-500/60 bg-red-500/10 p-4 text-sm text-red-200">
                   {error}
@@ -369,6 +493,12 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
                   <span>Subtotal</span>
                   <span>{formatCurrency(subtotal)}</span>
                 </div>
+                {referralDiscount > 0 && (
+                  <div className="flex justify-between text-sm text-green-400">
+                    <span>Referral Discount</span>
+                    <span>-{formatCurrency(referralDiscount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-sm text-zinc-300">
                   <span>Shipping</span>
                   <span>
@@ -379,7 +509,7 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
                     )}
                   </span>
                 </div>
-                {subtotal < 300 && (
+                {discountedSubtotal < 300 && (
                   <div className="text-xs text-purple-300">
                     Free shipping on orders over $300
                   </div>

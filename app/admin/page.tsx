@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import NavBar from "@/components/NavBar";
+import ReferralDashboard from "@/components/admin/ReferralDashboard";
 import { getAllOrders } from "@/lib/db";
 import { formatOrderNumber } from "@/lib/orders";
 import {
@@ -10,6 +11,7 @@ import {
 import { auth, signOut } from "@/lib/auth";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
 import { getProductsWithInventory } from "@/lib/products.server";
+import { getReferralDashboardData } from "@/lib/referrals";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
 import { DeleteOrderButton } from "@/components/admin/DeleteOrderButton";
 
@@ -47,7 +49,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const session = await auth();
   const params = searchParams ? await searchParams : undefined;
   const activeView =
-    params?.view === "inventory" ? "inventory" : "orders";
+    params?.view === "inventory"
+      ? "inventory"
+      : params?.view === "referrals"
+      ? "referrals"
+      : "orders";
   const searchQuery = params?.search || "";
 
   // Redirect to login if not authenticated
@@ -59,10 +65,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     redirect("/account");
   }
 
-  const [orders, productsWithInventory] = await Promise.all([
-    getAllOrders(searchQuery),
-    getProductsWithInventory(),
-  ]);
+  const orders =
+    activeView === "orders" ? await getAllOrders(searchQuery) : [];
+  const productsWithInventory =
+    activeView === "inventory" ? await getProductsWithInventory() : [];
+  const referralDashboard =
+    activeView === "referrals" ? await getReferralDashboardData() : null;
   const sortedOrders = [...orders].sort(
     (a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -117,6 +125,11 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 id: "inventory",
                 label: "Inventory",
                 href: "/admin?view=inventory",
+              },
+              {
+                id: "referrals",
+                label: "Referrals",
+                href: "/admin?view=referrals",
               },
             ].map((tab) => {
               const isActive = activeView === tab.id;
@@ -225,6 +238,16 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
                 </div>
               ))}
             </div>
+            </section>
+          )}
+
+          {activeView === "referrals" && referralDashboard && (
+            <ReferralDashboard data={referralDashboard} />
+          )}
+
+          {activeView === "referrals" && !referralDashboard && (
+            <section className="rounded-3xl border border-purple-900/60 bg-black/60 p-12 text-center text-zinc-400">
+              <p>Loading referral data...</p>
             </section>
           )}
 

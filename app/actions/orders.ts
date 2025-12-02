@@ -27,10 +27,16 @@ import
   loadInventoryMap,
   prepareInventoryAdjustments,
 } from "@/lib/inventory";
+import
+{
+  finalizeReferralForOrder,
+  resolveReferralForOrder,
+} from "@/lib/referrals";
 
 type CreateOrderInput = {
   items: CartItem[];
   subtotal: number;
+  cartSubtotal?: number;
   totalUnits: number;
   customerName: string;
   customerEmail: string;
@@ -41,6 +47,7 @@ type CreateOrderInput = {
   shippingZipCode: string;
   shippingCountry: string;
   saveProfile?: boolean;
+  referralCode?: string;
 };
 
 export type CreateOrderResult =
@@ -141,10 +148,14 @@ export async function createOrderAction (
 
     // Validate subtotal matches items
     const calculatedSubtotal = calculateVolumePricing(input.items).subtotal;
-    if (Math.abs(calculatedSubtotal - input.subtotal) > 0.01) {
+    const submittedCartSubtotal =
+      typeof input.cartSubtotal === "number"
+        ? input.cartSubtotal
+        : input.subtotal;
+    if (Math.abs(calculatedSubtotal - submittedCartSubtotal) > 0.01) {
       return {
         success: false,
-        error: "Subtotal mismatch",
+        error: "Your cart total changed. Please refresh and try again.",
         errorCode: "VALIDATION_ERROR",
       };
     }
@@ -207,6 +218,37 @@ export async function createOrderAction (
       };
     }
 
+    let referralContext: Awaited<ReturnType<typeof resolveReferralForOrder>> =
+      null;
+    try {
+      referralContext = await resolveReferralForOrder({
+        referralCode: input.referralCode,
+        customerEmail: input.customerEmail.trim(),
+        customerName: input.customerName.trim(),
+        userId,
+        subtotal: calculatedSubtotal,
+      });
+    } catch (error: unknown) {
+      return {
+        success: false,
+        error:
+          error instanceof Error
+            ? error.message
+            : "We couldn't apply that referral code.",
+        errorCode: "VALIDATION_ERROR",
+      };
+    }
+
+    const referralDiscount = referralContext?.referralDiscount ?? 0;
+    const finalSubtotal = Math.max(0, calculatedSubtotal - referralDiscount);
+    if (Math.abs(finalSubtotal - input.subtotal) > 0.01) {
+      return {
+        success: false,
+        error: "Referral discount mismatch. Please resubmit your order.",
+        errorCode: "VALIDATION_ERROR",
+      };
+    }
+
     const order = await createOrder({
       id: randomUUID(),
       orderNumber,
@@ -223,10 +265,16 @@ export async function createOrderAction (
         country: input.shippingCountry.trim(),
       },
       items: input.items,
-      subtotal: input.subtotal,
+      subtotal: finalSubtotal,
       totalUnits: input.totalUnits,
       createdAt: now,
       updatedAt: now,
+      referralPartnerId: referralContext?.referralPartnerId ?? undefined,
+      referralPartnerName: referralContext?.referralPartnerName ?? undefined,
+      referralCodeId: referralContext?.referralCodeId ?? undefined,
+      referralCode: referralContext?.referralCodeValue ?? undefined,
+      referralAttributionId: referralContext?.attributionId ?? undefined,
+      referralDiscount,
     });
 
     await applyInventoryAdjustments(reservation.adjustments);
@@ -242,6 +290,7 @@ export async function createOrderAction (
     revalidatePath("/admin");
     revalidatePath("/account");
     revalidatePath("/account/orders");
+    revalidatePath("/admin?view=referrals");
 
     if (userId && input.saveProfile) {
       await upsertCustomerProfile(userId, {
@@ -256,6 +305,13 @@ export async function createOrderAction (
 
       revalidatePath("/account/profile");
       revalidatePath("/checkout");
+    }
+
+    if (referralContext) {
+      finalizeReferralForOrder(order, referralContext).catch((error) =>
+      {
+        console.error("Failed to finalize referral attribution:", error);
+      });
     }
 
     return {

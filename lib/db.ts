@@ -1,6 +1,11 @@
 import { eq, and, or, ilike } from "drizzle-orm";
 import { randomUUID } from "crypto";
-import { db as drizzleDb, orders, customerProfiles, productInventory } from "./db/index";
+import {
+  db as drizzleDb,
+  orders,
+  customerProfiles,
+  productInventory,
+} from "./db/index";
 import type { Order } from "./orders";
 
 export const db = drizzleDb;
@@ -25,6 +30,14 @@ function dbRowToOrder (row: typeof orders.$inferSelect): Order
     notes: row.notes || undefined,
     trackingNumber: row.trackingNumber || undefined,
     trackingCarrier: (row.trackingCarrier as "UPS" | "USPS" | null) || undefined,
+    referralPartnerId: row.referralPartnerId || undefined,
+    referralPartnerName: row.referralPartnerName || undefined,
+    referralCodeId: row.referralCodeId || undefined,
+    referralCode: row.referralCodeValue || undefined,
+    referralAttributionId: row.referralAttributionId || undefined,
+    referralDiscount: row.referralDiscount
+      ? parseFloat(row.referralDiscount)
+      : 0,
   };
 }
 
@@ -46,6 +59,12 @@ function orderToDbRow (order: Order): typeof orders.$inferInsert
     notes: order.notes || null,
     trackingNumber: order.trackingNumber || null,
     trackingCarrier: order.trackingCarrier || null,
+    referralPartnerId: order.referralPartnerId ?? null,
+    referralPartnerName: order.referralPartnerName ?? null,
+    referralCodeId: order.referralCodeId ?? null,
+    referralCodeValue: order.referralCode ?? null,
+    referralAttributionId: order.referralAttributionId ?? null,
+    referralDiscount: (order.referralDiscount ?? 0).toString(),
     createdAt: new Date(order.createdAt),
     updatedAt: new Date(order.updatedAt),
   };

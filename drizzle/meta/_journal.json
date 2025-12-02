@@ -15,6 +15,13 @@
       "when": 1764172800000,
       "tag": "0001_product_inventory",
       "breakpoints": false
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1764633600000,
+      "tag": "0004_referrals",
+      "breakpoints": false
     }
   ]
 }

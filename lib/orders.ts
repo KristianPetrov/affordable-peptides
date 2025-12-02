@@ -25,6 +25,12 @@ export type Order = {
   notes?: string;
   trackingNumber?: string;
   trackingCarrier?: "UPS" | "USPS";
+  referralPartnerId?: string | null;
+  referralPartnerName?: string | null;
+  referralCodeId?: string | null;
+  referralCode?: string | null;
+  referralAttributionId?: string | null;
+  referralDiscount?: number;
 };
 
 export function generateOrderNumber (): string
