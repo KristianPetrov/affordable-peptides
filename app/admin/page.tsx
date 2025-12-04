@@ -23,6 +23,154 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 2,
   }).format(value);
 
+const MONTH_OPTIONS = [
+  { value: 1, label: "January", short: "Jan" },
+  { value: 2, label: "February", short: "Feb" },
+  { value: 3, label: "March", short: "Mar" },
+  { value: 4, label: "April", short: "Apr" },
+  { value: 5, label: "May", short: "May" },
+  { value: 6, label: "June", short: "Jun" },
+  { value: 7, label: "July", short: "Jul" },
+  { value: 8, label: "August", short: "Aug" },
+  { value: 9, label: "September", short: "Sep" },
+  { value: 10, label: "October", short: "Oct" },
+  { value: 11, label: "November", short: "Nov" },
+  { value: 12, label: "December", short: "Dec" },
+] as const;
+
+type RevenueChartPoint = {
+  label: string;
+  paid: number;
+  pending: number;
+};
+
+type ChartGranularity = "day" | "month";
+
+function RevenueChart({
+  data,
+  granularity,
+}: {
+  data: RevenueChartPoint[];
+  granularity: ChartGranularity;
+}) {
+  if (data.length === 0) {
+    return (
+      <div className="rounded-2xl border border-purple-900/40 bg-black/60 p-8 text-center text-sm text-zinc-400">
+        No revenue data for the selected period yet.
+      </div>
+    );
+  }
+
+  const chartWidth = 720;
+  const chartHeight = 240;
+  const paddingY = 24;
+  const usableHeight = chartHeight - paddingY * 2;
+  const maxValue = data.reduce(
+    (max, point) => Math.max(max, point.paid, point.pending),
+    0
+  );
+  const safeMax = maxValue > 0 ? maxValue : 1;
+  const xStep = data.length > 1 ? chartWidth / (data.length - 1) : 0;
+
+  const buildPath = (key: "paid" | "pending") =>
+    data
+      .map((point, index) => {
+        const x = data.length === 1 ? chartWidth / 2 : index * xStep;
+        const y =
+          paddingY +
+          usableHeight -
+          (point[key] / safeMax) * usableHeight;
+        return `${index === 0 ? "M" : "L"}${x},${y}`;
+      })
+      .join(" ");
+
+  const paidPath = buildPath("paid");
+  const pendingPath = buildPath("pending");
+  const labelFrequency =
+    granularity === "day"
+      ? Math.max(1, Math.ceil(data.length / 8))
+      : 1;
+
+  return (
+    <div className="space-y-4">
+      <div className="relative">
+        <svg
+          viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+          className="h-56 w-full"
+          role="img"
+          aria-label="Revenue trend chart"
+        >
+          <defs>
+            <linearGradient
+              id="paidGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
+              <stop offset="0%" stopColor="#6ee7b7" />
+              <stop offset="100%" stopColor="#10b981" />
+            </linearGradient>
+            <linearGradient
+              id="pendingGradient"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
+              <stop offset="0%" stopColor="#fde68a" />
+              <stop offset="100%" stopColor="#f59e0b" />
+            </linearGradient>
+          </defs>
+          {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
+            const y = paddingY + usableHeight * ratio;
+            return (
+              <line
+                key={ratio}
+                x1={0}
+                x2={chartWidth}
+                y1={y}
+                y2={y}
+                stroke="rgba(255,255,255,0.06)"
+                strokeWidth={1}
+              />
+            );
+          })}
+          <path
+            d={pendingPath}
+            fill="none"
+            stroke="url(#pendingGradient)"
+            strokeWidth={3}
+            strokeLinecap="round"
+            strokeOpacity={0.8}
+          />
+          <path
+            d={paidPath}
+            fill="none"
+            stroke="url(#paidGradient)"
+            strokeWidth={3}
+            strokeLinecap="round"
+          />
+        </svg>
+      </div>
+      <div className="grid auto-cols-fr grid-flow-col gap-2 text-[0.65rem] uppercase tracking-[0.2em] text-zinc-500">
+        {data.map((point, index) => {
+          const shouldShowLabel =
+            granularity === "month" ||
+            index === 0 ||
+            index === data.length - 1 ||
+            index % Math.max(1, labelFrequency) === 0;
+          return (
+            <span key={`${point.label}-${index}`} className="text-center">
+              {shouldShowLabel ? point.label : ""}
+            </span>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 async function SignOutButton() {
   return (
     <form
@@ -42,7 +190,12 @@ async function SignOutButton() {
 }
 
 type AdminPageProps = {
-  searchParams?: Promise<{ view?: string; search?: string }>;
+  searchParams?: Promise<{
+    view?: string;
+    search?: string;
+    month?: string;
+    year?: string;
+  }>;
 };
 
 export default async function AdminPage({ searchParams }: AdminPageProps) {
@@ -83,6 +236,123 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     SHIPPED: orders.filter((o) => o.status === "SHIPPED").length,
     CANCELLED: orders.filter((o) => o.status === "CANCELLED").length,
   };
+
+  const orderYears = Array.from(
+    new Set(
+      orders.map((order) => new Date(order.createdAt).getFullYear())
+    )
+  ).sort((a, b) => b - a);
+  const currentYear = new Date().getFullYear();
+  const fallbackYear = orderYears[0] ?? currentYear;
+  const yearParam = params?.year;
+  const parsedYear = yearParam ? Number(yearParam) : Number.NaN;
+  const selectedYear = Number.isFinite(parsedYear) ? parsedYear : fallbackYear;
+  const yearOptions = (() => {
+    const set = new Set<number>(orderYears);
+    if (Number.isFinite(selectedYear)) {
+      set.add(selectedYear);
+    }
+    if (set.size === 0) {
+      set.add(currentYear);
+    }
+    return Array.from(set).sort((a, b) => b - a);
+  })();
+  const yearSelectValue = Number.isFinite(parsedYear)
+    ? String(parsedYear)
+    : String(selectedYear);
+
+  const monthParam = params?.month;
+  let selectedMonth: number | null = null;
+  if (monthParam && monthParam !== "all") {
+    const parsedMonth = Number(monthParam);
+    if (
+      Number.isFinite(parsedMonth) &&
+      parsedMonth >= 1 &&
+      parsedMonth <= 12
+    ) {
+      selectedMonth = parsedMonth;
+    }
+  }
+  const monthSelectValue = selectedMonth ? String(selectedMonth) : "all";
+  const selectedMonthLabel = selectedMonth
+    ? MONTH_OPTIONS.find((month) => month.value === selectedMonth)?.label ??
+      `Month ${selectedMonth}`
+    : null;
+
+  const revenueFilteredOrders = orders.filter((order) => {
+    const createdDate = new Date(order.createdAt);
+    const matchesYear = Number.isFinite(selectedYear)
+      ? createdDate.getFullYear() === selectedYear
+      : true;
+    const matchesMonth = selectedMonth
+      ? createdDate.getMonth() + 1 === selectedMonth
+      : true;
+    return matchesYear && matchesMonth;
+  });
+
+  const paidOrdersForRevenue = revenueFilteredOrders.filter(
+    (order) => order.status === "PAID" || order.status === "SHIPPED"
+  );
+  const pendingOrdersForRevenue = revenueFilteredOrders.filter(
+    (order) => order.status === "PENDING_PAYMENT"
+  );
+
+  const totalPaidRevenue = paidOrdersForRevenue.reduce(
+    (sum, order) => sum + order.subtotal,
+    0
+  );
+  const potentialRevenue = pendingOrdersForRevenue.reduce(
+    (sum, order) => sum + order.subtotal,
+    0
+  );
+  const paidOrderCount = paidOrdersForRevenue.length;
+  const pendingOrderCount = pendingOrdersForRevenue.length;
+
+  const chartGranularity: ChartGranularity = selectedMonth ? "day" : "month";
+  const revenueChartData: RevenueChartPoint[] = (() => {
+    const bucketMap = new Map<number, RevenueChartPoint>();
+    revenueFilteredOrders.forEach((order) => {
+      const createdDate = new Date(order.createdAt);
+      const bucketKey = selectedMonth
+        ? createdDate.getDate()
+        : createdDate.getMonth() + 1;
+      const bucketLabel = selectedMonth
+        ? createdDate.getDate().toString().padStart(2, "0")
+        : MONTH_OPTIONS[bucketKey - 1]?.short ?? `M${bucketKey}`;
+      if (!bucketMap.has(bucketKey)) {
+        bucketMap.set(bucketKey, {
+          label: bucketLabel,
+          paid: 0,
+          pending: 0,
+        });
+      }
+      const bucket = bucketMap.get(bucketKey)!;
+      if (order.status === "PENDING_PAYMENT") {
+        bucket.pending += order.subtotal;
+      } else if (order.status === "PAID" || order.status === "SHIPPED") {
+        bucket.paid += order.subtotal;
+      }
+    });
+    return Array.from(bucketMap.entries())
+      .sort((a, b) => a[0] - b[0])
+      .map(([, value]) => value);
+  })();
+
+  const selectedPeriodLabel = selectedMonthLabel
+    ? `${selectedMonthLabel} ${selectedYear}`
+    : `All Months · ${selectedYear}`;
+  const selectedPeriodSubLabel = selectedMonth
+    ? "Daily totals · USD"
+    : "Monthly totals · USD";
+
+  const filterResetParams = new URLSearchParams();
+  if (searchQuery) {
+    filterResetParams.set("search", searchQuery);
+  }
+  const resetFiltersHref =
+    filterResetParams.size > 0
+      ? `/admin?${filterResetParams.toString()}`
+      : "/admin";
 
   return (
     <div className="min-h-screen bg-black text-zinc-100">
@@ -253,9 +523,175 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
 
           {activeView === "orders" && (
             <>
+          <details
+            className="group mb-10 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6"
+
+          >
+            <summary className="flex cursor-pointer list-none flex-col gap-2 border-b border-purple-900/40 pb-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
+                  Revenue Overview
+                </p>
+                <h2 className="text-2xl font-semibold text-white">
+                  Paid vs Outstanding Revenue
+                </h2>
+                <p className="text-sm text-zinc-400">
+                  Monitor how much cash has cleared and what&apos;s still waiting on payment.
+                  Filters below only affect this revenue overview.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
+                <span className="hidden group-open:inline">Tap to Collapse</span>
+                <span className="group-open:hidden">Tap to Expand</span>
+                <span
+                  aria-hidden="true"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-purple-900/60 bg-black/60 text-lg transition group-open:rotate-180"
+                >
+                  ˇ
+                </span>
+              </div>
+            </summary>
+            <div className="mt-6 grid gap-10 lg:grid-cols-[320px,1fr]">
+              <div className="space-y-6">
+                <form
+                  action="/admin"
+                  method="get"
+                  className="rounded-2xl border border-purple-900/40 bg-black/50 p-4"
+                >
+                  <input type="hidden" name="view" value="orders" />
+                  {searchQuery && (
+                    <input type="hidden" name="search" value={searchQuery} />
+                  )}
+                  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                    <div className="flex flex-col gap-2">
+                      <label
+                        htmlFor="year"
+                        className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200"
+                      >
+                        Year
+                      </label>
+                      <select
+                        id="year"
+                        name="year"
+                        defaultValue={yearSelectValue}
+                        className="rounded-lg border border-purple-900/40 bg-black/70 px-3 py-2 text-sm text-white focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      >
+                        {yearOptions.map((year) => (
+                          <option key={year} value={year}>
+                            {year}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex flex-col gap-2">
+                      <label
+                        htmlFor="month"
+                        className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200"
+                      >
+                        Month
+                      </label>
+                      <select
+                        id="month"
+                        name="month"
+                        defaultValue={monthSelectValue}
+                        className="rounded-lg border border-purple-900/40 bg-black/70 px-3 py-2 text-sm text-white focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                      >
+                        <option value="all">All months</option>
+                        {MONTH_OPTIONS.map((month) => (
+                          <option key={month.value} value={month.value}>
+                            {month.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-3">
+                    <button
+                      type="submit"
+                      className="flex-1 rounded-full bg-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 sm:flex-none"
+                    >
+                      Apply Filters
+                    </button>
+                    <Link
+                      href={resetFiltersHref}
+                      className="flex-1 rounded-full border border-purple-900/50 bg-black/60 px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.2em] text-purple-100 transition hover:border-purple-500/60 sm:flex-none"
+                    >
+                      Reset
+                    </Link>
+                  </div>
+                  <p className="mt-3 text-xs text-zinc-500">
+                    Revenue filters do not change the order list below.
+                  </p>
+                </form>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                  <div className="rounded-2xl border border-purple-900/40 bg-black/50 p-4">
+                    <p className="text-xs uppercase tracking-[0.3em] text-green-300">
+                      Paid Revenue
+                    </p>
+                    <p className="mt-2 text-3xl font-semibold text-white">
+                      {formatCurrency(totalPaidRevenue)}
+                    </p>
+                    <p className="text-xs text-zinc-500">
+                      {paidOrderCount} paid order
+                      {paidOrderCount === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-purple-900/40 bg-black/50 p-4">
+                    <p className="text-xs uppercase tracking-[0.3em] text-amber-300">
+                      Potential Revenue
+                    </p>
+                    <p className="mt-2 text-3xl font-semibold text-white">
+                      {formatCurrency(potentialRevenue)}
+                    </p>
+                    <p className="text-xs text-zinc-500">
+                      {pendingOrderCount} pending payment
+                      {pendingOrderCount === 1 ? "" : "s"}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-4">
+                <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
+                      Selected Period
+                    </p>
+                    <h3 className="text-xl font-semibold text-white">
+                      {selectedPeriodLabel}
+                    </h3>
+                  </div>
+                  <p className="text-xs text-zinc-500">
+                    {selectedPeriodSubLabel}
+                  </p>
+                </div>
+                <RevenueChart
+                  data={revenueChartData}
+                  granularity={chartGranularity}
+                />
+                {revenueChartData.length > 0 && (
+                  <div className="flex flex-wrap gap-4 text-xs text-zinc-400">
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                      Paid revenue
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="h-2 w-2 rounded-full bg-amber-400" />
+                      Pending payment
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </details>
           <div className="mb-6">
             <form method="get" action="/admin" className="flex gap-3">
               <input type="hidden" name="view" value="orders" />
+              {params?.year && (
+                <input type="hidden" name="year" value={params.year} />
+              )}
+              {params?.month && (
+                <input type="hidden" name="month" value={params.month} />
+              )}
               <input
                 type="text"
                 name="search"
