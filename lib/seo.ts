@@ -228,15 +228,29 @@ export const createProductJsonLd = ({
             "@type": "Audience",
             audienceType: "Professional researchers",
         },
-        additionalProperty: product.testResultUrl
-            ? [
-                {
-                    "@type": "PropertyValue",
-                    name: "Chromate certificate",
-                    value: product.testResultUrl,
-                },
-            ]
-            : undefined,
+        additionalProperty: (() => {
+            const variantProperties =
+                product.variants
+                    .filter((variant) => Boolean(variant.testResultUrl))
+                    .map((variant) => ({
+                        "@type": "PropertyValue",
+                        name: `Chromate certificate (${variant.label})`,
+                        value: variant.testResultUrl!,
+                    })) ?? [];
+
+            const baseProperties = product.testResultUrl
+                ? [
+                      {
+                          "@type": "PropertyValue",
+                          name: "Chromate certificate",
+                          value: product.testResultUrl,
+                      },
+                  ]
+                : [];
+
+            const combined = [...baseProperties, ...variantProperties];
+            return combined.length ? combined : undefined;
+        })(),
         offers: offers.length ? offers : undefined,
     };
 };

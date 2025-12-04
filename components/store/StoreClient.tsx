@@ -94,6 +94,12 @@ const productHasAvailableStock = (product: Product) =>
       : false
   );
 
+const productHasTestResults = (product: Product) =>
+  Boolean(
+    product.testResultUrl ||
+      product.variants.some((variant) => variant.testResultUrl)
+  );
+
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -419,33 +425,116 @@ export function ProductCard({
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
               Analytical Testing
             </p>
-            {product.testResultUrl ? (
-              <a
-                href={product.testResultUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
-              >
-                View certificate of analysis
-                <svg
-                  className="h-3.5 w-3.5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M7 17L17 7" />
-                  <path d="M8 7h9v9" />
-                </svg>
-              </a>
-            ) : (
-              <p className="mt-2 text-sm text-zinc-400">
-                Test results coming soon.
-              </p>
-            )}
+            {(() => {
+              const variantTestLinks = product.variants.filter(
+                (variant) => !!variant.testResultUrl
+              );
+              const hasVariantTests = variantTestLinks.length > 0;
+              const defaultTestUrl =
+                product.testResultUrl || variantTestLinks[0]?.testResultUrl;
+
+              if (hasVariantTests) {
+                return (
+                  <div className="mt-3 space-y-3">
+                    {variantTestLinks.map((variant) => (
+                      <div
+                        key={`${product.slug}-${variant.label}-test`}
+                        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-purple-900/30 bg-black/40 px-3 py-2"
+                      >
+                        <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-zinc-400">
+                          {variant.label}
+                        </span>
+                        <a
+                          href={variant.testResultUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-sm font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
+                        >
+                          View certificate
+                          <svg
+                            className="h-3.5 w-3.5"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M7 17L17 7" />
+                            <path d="M8 7h9v9" />
+                          </svg>
+                        </a>
+                      </div>
+                    ))}
+                    {product.testResultUrl &&
+                      !variantTestLinks.some(
+                        (variant) =>
+                          variant.testResultUrl === product.testResultUrl
+                      ) && (
+                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-purple-900/30 bg-black/40 px-3 py-2">
+                          <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-zinc-400">
+                            General
+                          </span>
+                          <a
+                            href={product.testResultUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
+                          >
+                            View certificate
+                            <svg
+                              className="h-3.5 w-3.5"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden="true"
+                            >
+                              <path d="M7 17L17 7" />
+                              <path d="M8 7h9v9" />
+                            </svg>
+                          </a>
+                        </div>
+                      )}
+                  </div>
+                );
+              }
+
+              if (defaultTestUrl) {
+                return (
+                  <a
+                    href={defaultTestUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
+                  >
+                    View certificate of analysis
+                    <svg
+                      className="h-3.5 w-3.5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M7 17L17 7" />
+                      <path d="M8 7h9v9" />
+                    </svg>
+                  </a>
+                );
+              }
+
+              return (
+                <p className="mt-2 text-sm text-zinc-400">
+                  Test results coming soon.
+                </p>
+              );
+            })()}
           </div>
         </div>
         <div className="flex flex-col gap-4">
@@ -1099,7 +1188,7 @@ export default function StoreClient({ products }: StoreClientProps) {
         return false;
       }
 
-      if (activeQuickFilters.has("labVerified") && !product.testResultUrl) {
+      if (activeQuickFilters.has("labVerified") && !productHasTestResults(product)) {
         return false;
       }
 

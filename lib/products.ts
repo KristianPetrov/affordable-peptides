@@ -9,6 +9,7 @@ export type Variant = {
   label: string;
   tiers: Tier[];
   mockupLabel?: string;
+  testResultUrl?: string;
   stockQuantity?: number | null;
 };
 
@@ -82,15 +83,29 @@ const createFlatTiers = (singlePrice: number): Tier[] => [
   { quantity: "10", price: formatPrice(singlePrice * 10) },
 ];
 
+type VariantOptions = {
+  mockupLabel?: string;
+  testResultUrl?: string;
+};
+
 const createVariant = (
   label: string,
   singlePrice: number,
-  mockupLabel?: string
-): Variant => ({
-  label,
-  tiers: createStandardTiers(singlePrice),
-  mockupLabel,
-});
+  mockupLabelOrOptions?: string | VariantOptions
+): Variant =>
+{
+  const options =
+    typeof mockupLabelOrOptions === "string"
+      ? { mockupLabel: mockupLabelOrOptions }
+      : mockupLabelOrOptions ?? {};
+
+  return {
+    label,
+    tiers: createStandardTiers(singlePrice),
+    mockupLabel: options.mockupLabel,
+    testResultUrl: options.testResultUrl,
+  };
+};
 
 const slugify = (value: string): string =>
   value
@@ -122,10 +137,9 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["weight-metabolic"],
     isFeatured: true,
     variants: [
-      createVariant("5mg", 50, "/products/label-aod9604-5mg-3ml.png"),
+      createVariant("5mg", 50, {mockupLabel:"/products/label-aod9604-5mg-3ml.png",testResultUrl: "https://chromate.org/verify?c=29337_AFFORD2WY8BJ",}),
       createVariant("10mg", 80, "/products/label-aod9604-10mg-3ml.png"),
     ],
-    testResultUrl: "https://chromate.org/verify?c=29337_AFFORD2WY8BJ",
   },
   {
     name: "Bacteriostatic Water",
@@ -177,9 +191,8 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["recovery-performance", "longevity-wellness"],
     isFeatured: true,
     variants: [
-      createVariant("10mg", 50, "/products/label-bpc157-10mg-3ml.png"),
+      createVariant("10mg", 50, {mockupLabel:"/products/label-bpc157-10mg-3ml.png",testResultUrl: "https://chromate.org/verify?c=29115_AFFORDX493E7"}),
     ],
-    testResultUrl: "https://chromate.org/verify?c=29115_AFFORDX493E7",
   },
   {
     name: "CJC-1295",
@@ -228,9 +241,8 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "GLOW combines BPC-157 (10mg), TB-500 (10mg), and GHK-Cu (50mg) to create a regenerative-focused blend for aesthetic and recovery research. It's designed for investigators interested in both connective tissue support and skin quality optimization within a single formula.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [
-      createVariant("70mg", 90, "/products/label-glow-70mg-3ml.png"),
+      createVariant("70mg", 90, {mockupLabel:"/products/label-glow-70mg-3ml.png",testResultUrl: "https://chromate.org/verify?c=29438_AFFORD4N2GYT"}),
     ],
-    testResultUrl: "https://chromate.org/verify?c=29438_AFFORD4N2GYT",
   },
   {
     name: "GLP-1",
@@ -298,9 +310,8 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "KLOW blends BPC-157 (10mg), TB-500 (10mg), GHK-Cu (50mg), and KPV (10mg) for multi-system regenerative research. It's designed for investigators seeking a single formula that touches skin quality, inflammatory balance, and joint or connective-tissue comfort.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [
-      createVariant("80mg", 100, "/products/label-klow-80mg-3ml.png"),
+      createVariant("80mg", 100, {mockupLabel:"/products/label-klow-80mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1w18p5MiL1RLgvR6m6vP2r12Id2gV-V96/view"}),
     ],
-    testResultUrl:"https://drive.google.com/file/d/1w18p5MiL1RLgvR6m6vP2r12Id2gV-V96/view"
   },
 
   {
@@ -362,9 +373,9 @@ const productDefinitions: ProductDefinition[] = [
     isFeatured: true,
     variants: [
       createVariant("500mg", 60, "/products/label-nad-500mg-10ml.png"),
-      createVariant("1000mg", 100, "/products/label-nad-1000mg-10ml.png"),
+      createVariant("1000mg", 100, {mockupLabel:"/products/label-nad-1000mg-10ml.png",testResultUrl: "https://chromate.org/verify?c=29420_AFFORDFJF486"}),
     ],
-    testResultUrl: "https://chromate.org/verify?c=29420_AFFORDFJF486",
+
   },
   {
     name: "Retatrutide",
@@ -373,11 +384,13 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["weight-metabolic"],
     isFeatured: true,
     variants: [
-      createVariant("10mg", 100, "/products/label-retatrutide-10mg-3ml.png"),
+      createVariant("10mg", 100, {mockupLabel:"/products/label-retatrutide-10mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29097_AFFORD16FRWY"} ),
       createVariant("20mg", 160, "/products/label-retatrutide-20mg-3ml.png"),
-      createVariant("30mg", 200, "/products/label-retatrutide-30mg-3ml.png"),
+      createVariant("30mg", 200, {
+        mockupLabel: "/products/label-retatrutide-30mg-3ml.png",
+        testResultUrl: "https://chromate.org/verify?c=29895_AFFORD6895HN",
+      }),
     ],
-    testResultUrl: "https://chromate.org/verify?c=29097_AFFORD16FRWY",
   },
   {
     name: "Selank",
@@ -412,9 +425,8 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "TB-500 is a synthetic fragment of thymosin β4 studied for its impact on angiogenesis, cell migration, and tissue repair. It's frequently used in preclinical research on joint health, soft-tissue recovery, and post-injury remodeling.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("10mg", 60, "/products/label-tb500-10mg-3ml.png"),
+      createVariant("10mg", 60, {mockupLabel:"/products/label-tb500-10mg-3ml.png",testResultUrl: "https://chromate.org/verify?c=29113_AFFORD2NQWKZ"}),
     ],
-    testResultUrl: "https://chromate.org/verify?c=29113_AFFORD2NQWKZ",
   },
   {
     name: "Tesamorelin",
@@ -422,10 +434,9 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Tesamorelin is an FDA-approved GHRH analog researched extensively for its effects on visceral adipose tissue (VAT). It's a key peptide in studies targeting central adiposity, liver fat, and cardiometabolic risk markers.",
     categories: ["hormone-growth", "weight-metabolic"],
     variants: [
-      createVariant("10mg", 60, "/products/label-tesamorelin-10mg-3ml.png"),
+      createVariant("10mg", 60, {mockupLabel:"/products/label-tesamorelin-10mg-3ml.png",testResultUrl: "https://chromate.org/verify?c=29111_AFFORDX6932D"}),
       createVariant("20mg", 100, "/products/label-tesamorelin-20mg-3ml.png"),
     ],
-    testResultUrl: "https://chromate.org/verify?c=29111_AFFORDX6932D",
   },
   {
     name: "Tirzepatide",
@@ -434,12 +445,20 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["weight-metabolic"],
     isFeatured: true,
     variants: [
-      createVariant("10mg", 80, "/products/label-tirzepatide-10mg-3ml.png"),
-      createVariant("20mg", 140, "/products/label-tirzepatide-20mg-3ml.png"),
-      createVariant("30mg", 180, "/products/label-tirzepatide-30mg-3ml.png"),
+      createVariant("10mg", 80, {
+        mockupLabel: "/products/label-tirzepatide-10mg-3ml.png",
+        testResultUrl: "https://chromate.org/verify?c=29099_AFFORD4CK48N",
+      }),
+      createVariant("20mg", 140, {
+        mockupLabel: "/products/label-tirzepatide-20mg-3ml.png",
+        testResultUrl: "https://chromate.org/verify?c=29895_AFFORD6895HN",
+      }),
+      createVariant("30mg", 180, {
+        mockupLabel: "/products/label-tirzepatide-30mg-3ml.png",
+        testResultUrl: "https://chromate.org/verify?c=29890_AFFORDM7B9CJ",
+      }),
       createVariant("40mg", 200, "/products/label-tirzepatide-40mg-3ml.png")
     ],
-    testResultUrl: "https://chromate.org/verify?c=29099_AFFORD4CK48N",
   },
 ];
 

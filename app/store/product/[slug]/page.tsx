@@ -122,6 +122,9 @@ export async function generateMetadata({
   const canonicalPath = `/store/product/${product.slug}`;
   const categoryLabel =
     categoryLookup.get(product.categories[0]) ?? "Research Peptide";
+  const canonicalTestUrl =
+    product.testResultUrl ||
+    product.variants.find((variant) => variant.testResultUrl)?.testResultUrl;
 
   return {
     title,
@@ -151,9 +154,9 @@ export async function generateMetadata({
       description,
       images: [imageUrl],
     },
-    other: product.testResultUrl
+    other: canonicalTestUrl
       ? {
-          "lab-test-report": product.testResultUrl,
+          "lab-test-report": canonicalTestUrl,
         }
       : undefined,
   };
