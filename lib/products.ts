@@ -180,7 +180,7 @@ const productDefinitions: ProductDefinition[] = [
       createVariant(
         "20mg total (10mg each)",
         80,
-        "/products/label-bpc157-tb-500-20mg-3ml.png"
+    {mockupLabel:"/products/label-bpc157-tb-500-20mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29951_AFFORDL2DS59"}
       ),
     ],
   },
@@ -206,11 +206,13 @@ const productDefinitions: ProductDefinition[] = [
         "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png"
       ),
       createVariant("With DAC (5mg)", 50, "/products/label-cjc-1295-dac-5mg-3ml.png"),
-      createVariant("Without DAC (5mg)", 40, "/products/label-cjc-1295-wo-dac-5mg-3ml.png"),
+      createVariant("Without DAC (5mg)", 40, {mockupLabel:"/products/label-cjc-1295-wo-dac-5mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29953_AFFORD4C9564"}),
       createVariant(
         "Without DAC (10mg)",
         70,
-        "/products/label-cjc-1295-wo-dac-10mg-3ml.png"
+        {
+          mockupLabel:"/products/label-cjc-1295-wo-dac-10mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29949_AFFORD4YYW61"
+        }
       ),
     ],
   },
@@ -303,7 +305,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Ipamorelin is a selective growth hormone secretagogue (GHRP) studied for its ability to stimulate pulsatile GH release with minimal impact on cortisol and prolactin. It's frequently paired with GHRH analogs in research exploring physiologic GH patterns.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("5mg", 30, "/products/label-ipamorelin-5mg-3ml.png"),
+      createVariant("5mg", 30, {mockupLabel:"/products/label-ipamorelin-5mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29950_AFFORDW7HC2Q"}),
       createVariant("10mg", 50, "/products/label-ipamorelin-10mg-3ml.png"),
     ],
   },
@@ -364,8 +366,8 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "MOTS-C is a mitochondrial-derived peptide gaining attention for its role in insulin sensitivity, metabolic flexibility, and endurance in preclinical models. It's widely viewed as an \"exercise-mimetic\" candidate in longevity and performance research.",
     categories: ["weight-metabolic", "longevity-wellness"],
     variants: [
-      createVariant("10mg", 40, "/products/label-mots-c-10mg-3ml.png"),
-      createVariant("40mg", 100, "/products/label-mots-c-40mg-3ml.png"),
+      createVariant("10mg", 40, {mockupLabel:"/products/label-mots-c-10mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29956_AFFORDK61J7U"}),
+      createVariant("40mg", 100, {mockupLabel:"/products/label-mots-c-40mg-3ml.png",testResultUrl:"https://chromate.org/verify?c=29957_AFFORDT4658D"}),
     ],
   },
   {
@@ -438,7 +440,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["hormone-growth", "weight-metabolic"],
     variants: [
       createVariant("10mg", 60, { mockupLabel: "/products/label-tesamorelin-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29111_AFFORDX6932D" }),
-      createVariant("20mg", 100, "/products/label-tesamorelin-20mg-3ml.png"),
+      createVariant("20mg", 100, {mockupLabel:"/products/label-tesamorelin-20mg-3ml.png",testResultUrl:"https://chromate.org/verify?c=29952_AFFORDBP2149"}),
     ],
   },
   {
