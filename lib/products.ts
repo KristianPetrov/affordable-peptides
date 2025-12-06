@@ -267,7 +267,8 @@ const productDefinitions: ProductDefinition[] = [
       createVariant(
         "1500mg",
         50,
-        "/products/label-glutathione-1500mg-10ml.png"
+        {mockupLabel:"/products/label-glutathione-1500mg-10ml.png",
+          testResultUrl:"https://chromate.org/verify?c=29998_AFFORDB3Z5T9"}
       ),
     ],
   },
