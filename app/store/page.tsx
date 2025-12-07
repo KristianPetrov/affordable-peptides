@@ -3,13 +3,15 @@ import type { Metadata } from "next";
 import NavBar from "@/components/NavBar";
 import StoreClient from "@/components/store/StoreClient";
 import { getProductsWithInventory } from "@/lib/products.server";
-import { siteMetadata } from "@/lib/seo";
+import { absoluteUrl, siteMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
 const storeTitle = "Research Peptide Storefront";
 const storeDescription =
   "Browse transparent, lab-tested peptides, blends, and research injectables with live inventory and wholesale tiers.";
+const storeCanonicalUrl = absoluteUrl("/store");
+const storeSocialImage = absoluteUrl(siteMetadata.socialImagePath);
 
 export const metadata: Metadata = {
   title: storeTitle,
@@ -21,16 +23,16 @@ export const metadata: Metadata = {
     "bulk peptide pricing",
   ],
   alternates: {
-    canonical: "/store",
+    canonical: storeCanonicalUrl,
   },
   openGraph: {
     title: `${storeTitle} | ${siteMetadata.name}`,
     description: storeDescription,
-    url: "/store",
+    url: storeCanonicalUrl,
     type: "website",
     images: [
       {
-        url: siteMetadata.socialImagePath,
+        url: storeSocialImage,
         width: 1200,
         height: 630,
         alt: `${siteMetadata.name} storefront`,
@@ -41,7 +43,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: storeTitle,
     description: storeDescription,
-    images: [siteMetadata.socialImagePath],
+    images: [storeSocialImage],
   },
 };
 

@@ -1,17 +1,53 @@
+import type { Metadata } from "next";
+
 import Image from "next/image";
 import Link from "next/link";
 
-import NavBar from "@/components/NavBar";
 import Disclaimer from "@/components/Disclaimer";
+import NavBar from "@/components/NavBar";
 import HeroShowcase from "@/components/home/HeroShowcase";
 import MissionSection from "@/components/home/MissionSection";
-import VisionSection from "@/components/home/VisionSection";
 import ResearchSection from "@/components/home/ResearchSection";
+import VisionSection from "@/components/home/VisionSection";
 import {
   featuredProducts,
   peptideProducts,
   type Product,
 } from "@/lib/products";
+import { absoluteUrl, siteMetadata } from "@/lib/seo";
+
+const homeUrl = absoluteUrl("/");
+const socialPreviewUrl = absoluteUrl(siteMetadata.socialImagePath);
+
+export const metadata: Metadata = {
+  title: siteMetadata.name,
+  description: siteMetadata.description,
+  keywords: [...siteMetadata.keywords],
+  alternates: {
+    canonical: homeUrl,
+  },
+  openGraph: {
+    title: siteMetadata.name,
+    description: siteMetadata.description,
+    type: "website",
+    url: homeUrl,
+    siteName: siteMetadata.name,
+    images: [
+      {
+        url: socialPreviewUrl,
+        width: 1200,
+        height: 630,
+        alt: "Affordable Peptides hero graphic",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteMetadata.name,
+    description: siteMetadata.description,
+    images: [socialPreviewUrl],
+  },
+};
 
 function getShowcaseProducts(): Product[] {
   const prioritySlug = "tirzepatide";

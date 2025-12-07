@@ -134,6 +134,8 @@ export const absoluteUrl = (path = "/"): string =>
     }
 };
 
+const socialImageUrl = absoluteUrl(siteMetadata.socialImagePath);
+
 export const organizationJsonLd = {
     "@context": SCHEMA_CONTEXT,
     "@type": "Organization",
@@ -141,6 +143,7 @@ export const organizationJsonLd = {
     legalName: siteMetadata.legalName,
     url: siteMetadata.url,
     logo: absoluteUrl(siteMetadata.logoPath),
+    image: [socialImageUrl],
     description: siteMetadata.description,
     contactPoint: [
         {
@@ -159,9 +162,11 @@ export const websiteJsonLd = {
     url: siteMetadata.url,
     inLanguage: siteMetadata.locale,
     description: siteMetadata.tagline,
+    image: socialImageUrl,
     publisher: {
         "@type": "Organization",
         name: siteMetadata.name,
+        logo: absoluteUrl(siteMetadata.logoPath),
     },
     hasPart: primaryNavigation.map((link) => ({
         "@type": "WebPage",
@@ -228,7 +233,8 @@ export const createProductJsonLd = ({
             "@type": "Audience",
             audienceType: "Professional researchers",
         },
-        additionalProperty: (() => {
+        additionalProperty: (() =>
+        {
             const variantProperties =
                 product.variants
                     .filter((variant) => Boolean(variant.testResultUrl))
@@ -240,12 +246,12 @@ export const createProductJsonLd = ({
 
             const baseProperties = product.testResultUrl
                 ? [
-                      {
-                          "@type": "PropertyValue",
-                          name: "Chromate certificate",
-                          value: product.testResultUrl,
-                      },
-                  ]
+                    {
+                        "@type": "PropertyValue",
+                        name: "Chromate certificate",
+                        value: product.testResultUrl,
+                    },
+                ]
                 : [];
 
             const combined = [...baseProperties, ...variantProperties];
