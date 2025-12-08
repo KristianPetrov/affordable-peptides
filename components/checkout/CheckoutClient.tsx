@@ -48,8 +48,21 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
     () => Math.max(0, subtotal - referralDiscount),
     [subtotal, referralDiscount]
   );
-  const shippingCost = calculateShippingCost(discountedSubtotal);
-  const total = calculateTotalWithShipping(discountedSubtotal);
+  const forceShippingCharge = Boolean(appliedReferral);
+  const shippingCost = useMemo(
+    () =>
+      calculateShippingCost(discountedSubtotal, {
+        forceFlatRate: forceShippingCharge,
+      }),
+    [discountedSubtotal, forceShippingCharge]
+  );
+  const total = useMemo(
+    () =>
+      calculateTotalWithShipping(discountedSubtotal, {
+        forceFlatRate: forceShippingCharge,
+      }),
+    [discountedSubtotal, forceShippingCharge]
+  );
   const previousSubtotalRef = useRef(subtotal);
 
   const defaultFormValues = useMemo(
@@ -160,7 +173,7 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
       if (result.success) {
         clearCart();
         router.push(
-          `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${discountedSubtotal.toFixed(
+          `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${total.toFixed(
             2
           )}`
         );

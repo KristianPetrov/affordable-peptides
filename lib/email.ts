@@ -77,6 +77,12 @@ export function formatOrderEmail (order: Order):
     timeStyle: "short",
   });
   const pricing = calculateVolumePricing(order.items);
+  const referralDiscountAmount = order.referralDiscount ?? 0;
+  const referralDiscountDisplay =
+    referralDiscountAmount > 0 ? `$${referralDiscountAmount.toFixed(2)}` : null;
+  const hasReferralDetails =
+    Boolean(order.referralPartnerName || order.referralCode) ||
+    referralDiscountAmount > 0;
 
   const itemsHtml = order.items
     .map(
@@ -132,6 +138,25 @@ export function formatOrderEmail (order: Order):
         ${order.shippingAddress.country}</p>
       </div>
 
+      ${hasReferralDetails
+      ? `<div class="order-info">
+        <h3>Referral Details</h3>
+        ${order.referralPartnerName
+        ? `<p><strong>Partner:</strong> ${order.referralPartnerName}</p>`
+        : ""
+      }
+        ${order.referralCode
+        ? `<p><strong>Code:</strong> ${order.referralCode}</p>`
+        : ""
+      }
+        ${referralDiscountDisplay
+        ? `<p><strong>Discount:</strong> ${referralDiscountDisplay}</p>`
+        : ""
+      }
+      </div>`
+      : ""
+    }
+
       <div class="order-info">
         <h3>Order Items</h3>
         <table>
@@ -177,6 +202,9 @@ Shipping Address:
 ${order.shippingAddress.street}
 ${order.shippingAddress.city}, ${order.shippingAddress.state} ${order.shippingAddress.zipCode}
 ${order.shippingAddress.country}
+
+${hasReferralDetails ? `Referral Details:
+${order.referralPartnerName ? `Partner: ${order.referralPartnerName}\n` : ""}${order.referralCode ? `Code: ${order.referralCode}\n` : ""}${referralDiscountDisplay ? `Discount: ${referralDiscountDisplay}\n` : ""}` : ""}
 
 Order Items:
 ${order.items
