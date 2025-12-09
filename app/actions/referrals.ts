@@ -8,6 +8,8 @@ import
 {
   createReferralCode,
   createReferralPartner,
+  deleteReferralCode,
+  deleteReferralPartner,
   evaluateReferralCodeForCheckout,
   normalizeReferralCode,
   updateReferralCodeStatus,
@@ -163,6 +165,38 @@ export async function toggleReferralCodeStatusAction (
   }
 
   await updateReferralCodeStatus(codeId, nextStatus === "active");
+  revalidatePath("/admin");
+}
+
+export async function deleteReferralPartnerAction (formData: FormData): Promise<void>
+{
+  const session = await auth();
+  if (!session || session.user.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const partnerId = String(formData.get("partnerId") ?? "").trim();
+  if (!partnerId) {
+    throw new Error("Missing partner id.");
+  }
+
+  await deleteReferralPartner(partnerId);
+  revalidatePath("/admin");
+}
+
+export async function deleteReferralCodeAction (formData: FormData): Promise<void>
+{
+  const session = await auth();
+  if (!session || session.user.role !== "ADMIN") {
+    throw new Error("Unauthorized");
+  }
+
+  const codeId = String(formData.get("codeId") ?? "").trim();
+  if (!codeId) {
+    throw new Error("Missing referral code id.");
+  }
+
+  await deleteReferralCode(codeId);
   revalidatePath("/admin");
 }
 

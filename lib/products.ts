@@ -180,7 +180,8 @@ const productDefinitions: ProductDefinition[] = [
       createVariant(
         "20mg total (10mg each)",
         80,
-    {mockupLabel:"/products/label-bpc157-tb-500-20mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29951_AFFORDL2DS59"}
+    {mockupLabel:"/products/label-bpc157-tb-500-20mg-3ml.png",
+       testResultUrl:"https://chromate.org/verify?c=29951_AFFORDL2DS59"}
       ),
     ],
   },
@@ -219,7 +220,8 @@ const productDefinitions: ProductDefinition[] = [
   {
     name: "Epithalon",
     researchFocus: "Telomerase-supportive peptide studied for circadian and longevity benefits.",
-    detailedDescription: "Epithalon (Epitalon) is a synthetic peptide explored in aging research for its effects on telomerase activity, circadian rhythm, and oxidative stress. Studies have positioned it as a potential tool for longevity and cellular health investigations.",
+    detailedDescription: `Epithalon (Epitalon) is a synthetic peptide explored in aging research for its effects on telomerase activity, circadian rhythm, and oxidative stress. Studies have positioned it as a potential tool for longevity and cellular health investigations.
+    After reconstitution, the solution may appear clear at room temperature and can crystallize or become slightly cloudy when refrigerated; a normal characteristic of this peptide. Simply place the vial in a cup of warm water to allow it to warm, and the solution will typically return to clear. If some cloudiness or light particles remain, this can be due to natural precipitation and does not automatically indicate a quality issue. Gently roll the vial to help the solution disperse evenly.This appearance is more common with the larger 50mg vial due to the higher peptide concentration. Customers who prefer to avoid this may select the 10mg vial option.`,
     categories: ["longevity-wellness"],
     variants: [
       createVariant("10mg", 30, "/products/label-epithalon-10mg-3ml.png"),
@@ -278,7 +280,10 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "HCG (human chorionic gonadotropin) is a well-characterized gonadotropin researched for its role in supporting endogenous testosterone and preserving reproductive function. It's commonly used in studies involving hormonal balance and testicular function.",
     categories: ["hormone-growth", "support-essentials"],
     variants: [
-      createVariant("10,000 IU", 60, "/products/label-hcg-10k-iu-3ml.png"),
+      createVariant("10,000 IU", 60, {
+        mockupLabel: "/products/label-hcg-10k-iu-3ml.png",
+         testResultUrl: "https://chromate.org/verify?c=29531_AFFORD8269U5"
+        }),
     ],
   },
   {
@@ -316,7 +321,9 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "KLOW blends BPC-157 (10mg), TB-500 (10mg), GHK-Cu (50mg), and KPV (10mg) for multi-system regenerative research. It's designed for investigators seeking a single formula that touches skin quality, inflammatory balance, and joint or connective-tissue comfort.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [
-      createVariant("80mg", 100, { mockupLabel: "/products/label-klow-80mg-3ml.png", testResultUrl: "https://drive.google.com/file/d/1w18p5MiL1RLgvR6m6vP2r12Id2gV-V96/view" }),
+      createVariant("80mg", 100, {
+        mockupLabel: "/products/label-klow-80mg-3ml.png",
+         testResultUrl: "https://drive.google.com/file/d/1w18p5MiL1RLgvR6m6vP2r12Id2gV-V96/view" }),
     ],
   },
 
@@ -379,7 +386,10 @@ const productDefinitions: ProductDefinition[] = [
     isFeatured: true,
     variants: [
       createVariant("500mg", 60, "/products/label-nad-500mg-10ml.png"),
-      createVariant("1000mg", 100, { mockupLabel: "/products/label-nad-1000mg-10ml.png", testResultUrl: "https://chromate.org/verify?c=29420_AFFORDFJF486" }),
+      createVariant("1000mg", 100, {
+        mockupLabel: "/products/label-nad-1000mg-10ml.png",
+         testResultUrl: "https://chromate.org/verify?c=29420_AFFORDFJF486"
+        }),
     ],
 
   },

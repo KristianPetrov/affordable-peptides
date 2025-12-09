@@ -2,23 +2,23 @@ import "server-only";
 
 import { randomUUID } from "crypto";
 import
-  {
-    and,
-    eq,
-    gte,
-    or,
-    sql,
-  } from "drizzle-orm";
+{
+  and,
+  eq,
+  gte,
+  or,
+  sql,
+} from "drizzle-orm";
 
 import { calculateVolumePricing } from "./cart-pricing";
 import
-  {
-    db,
-    orders,
-    referralAttributions,
-    referralCodes,
-    referralPartners,
-  } from "./db/index";
+{
+  db,
+  orders,
+  referralAttributions,
+  referralCodes,
+  referralPartners,
+} from "./db/index";
 import type { Order } from "./orders";
 import type { CartItem } from "@/components/store/StorefrontContext";
 import type
@@ -496,6 +496,11 @@ export async function updateReferralPartnerStatus (
     .where(eq(referralPartners.id, partnerId));
 }
 
+export async function deleteReferralPartner (partnerId: string): Promise<void>
+{
+  await db.delete(referralPartners).where(eq(referralPartners.id, partnerId));
+}
+
 export async function createReferralCode (input: {
   partnerId: string;
   code: string;
@@ -558,6 +563,11 @@ export async function updateReferralCodeStatus (
     .update(referralCodes)
     .set({ active, updatedAt: new Date() })
     .where(eq(referralCodes.id, codeId));
+}
+
+export async function deleteReferralCode (codeId: string): Promise<void>
+{
+  await db.delete(referralCodes).where(eq(referralCodes.id, codeId));
 }
 
 function mapCodeToSummary (code: ReferralCodeRow): ReferralCodeSummary

@@ -1,6 +1,8 @@
 import {
   createReferralCodeAction,
   createReferralPartnerAction,
+  deleteReferralCodeAction,
+  deleteReferralPartnerAction,
   toggleReferralCodeStatusAction,
   toggleReferralPartnerStatusAction,
 } from "@/app/actions/referrals";
@@ -444,6 +446,15 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
                           {partner.active ? "Pause Partner" : "Activate Partner"}
                         </button>
                       </form>
+                      <form action={deleteReferralPartnerAction}>
+                        <input type="hidden" name="partnerId" value={partner.id} />
+                        <button
+                          type="submit"
+                          className="rounded-full border border-red-500/40 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-red-200 transition hover:border-red-400 hover:text-white"
+                        >
+                          Delete Partner
+                        </button>
+                      </form>
                     </div>
                   </header>
 
@@ -583,6 +594,15 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
                                       {code.active ? "Pause" : "Activate"}
                                     </button>
                                   </form>
+                                <form action={deleteReferralCodeAction}>
+                                  <input type="hidden" name="codeId" value={code.id} />
+                                  <button
+                                    type="submit"
+                                    className="rounded-full border border-red-500/40 px-4 py-2 text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-red-200 transition hover:border-red-400 hover:text-white"
+                                  >
+                                    Delete
+                                  </button>
+                                </form>
                                 </div>
                               </div>
 
