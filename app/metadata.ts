@@ -88,6 +88,9 @@ export const metadata: Metadata = {
     "designed-by":
       "This website was designed by Set Free Digital Disciples – https://www.setfreedigitaldisciples.com",
     "og:logo": logoImage,
+    "social:tiktok": siteMetadata.socialProfiles.tiktok,
+    "social:instagram": siteMetadata.socialProfiles.instagram,
+    "social:youtube": siteMetadata.socialProfiles.youtube,
   },
 };
 

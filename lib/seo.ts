@@ -47,6 +47,12 @@ export const siteMetadata = {
         "retatrutide",
         "GLP-1",
     ],
+    socialProfiles: {
+        tiktok: "https://www.tiktok.com/@affordable.peptides",
+        instagram:
+            "https://www.instagram.com/affordablepeptides/?utm_source=ig_web_button_share_sheet",
+        youtube: "https://www.youtube.com/@AffordablePeptides",
+    },
 } as const;
 
 export const FALLBACK_PRODUCT_IMAGE = "/affordable-peptides-example-product.png";
@@ -135,6 +141,7 @@ export const absoluteUrl = (path = "/"): string =>
 };
 
 const socialImageUrl = absoluteUrl(siteMetadata.socialImagePath);
+const socialProfileUrls = Object.values(siteMetadata.socialProfiles);
 
 export const organizationJsonLd = {
     "@context": SCHEMA_CONTEXT,
@@ -153,6 +160,7 @@ export const organizationJsonLd = {
             availableLanguage: ["English"],
         },
     ],
+    sameAs: socialProfileUrls,
 } as const;
 
 export const websiteJsonLd = {
@@ -168,6 +176,7 @@ export const websiteJsonLd = {
         name: siteMetadata.name,
         logo: absoluteUrl(siteMetadata.logoPath),
     },
+    sameAs: socialProfileUrls,
     hasPart: primaryNavigation.map((link) => ({
         "@type": "WebPage",
         name: link.name,

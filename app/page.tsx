@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { ReactElement, SVGProps } from "react";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -16,8 +17,76 @@ import {
 } from "@/lib/products";
 import { absoluteUrl, siteMetadata } from "@/lib/seo";
 
+type IconProps = SVGProps<SVGSVGElement>;
+
+function TikTokIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+      <path d="M21 7.5c-1.9-.1-3.7-.9-5.1-2.2v8.9c0 3.6-2.9 6.5-6.5 6.5S3 17.8 3 14.2c0-3.1 2.2-5.8 5.2-6.4v3.4c-1.1.5-1.8 1.6-1.8 3 0 1.8 1.4 3.2 3.2 3.2s3.2-1.4 3.2-3.2V2h3.6c.4 1.9 1.9 3.4 3.8 3.8V7.5z" />
+    </svg>
+  );
+}
+
+function InstagramIcon(props: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      aria-hidden="true"
+      {...props}
+    >
+      <rect x={3.5} y={3.5} width={17} height={17} rx={5} />
+      <circle cx={12} cy={12} r={4} />
+      <circle cx={17.5} cy={6.5} r={1.2} fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function YouTubeIcon(props: IconProps) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+      <path d="M21.6 8.2c-.2-1-1-1.8-2-2C17.8 6 12 6 12 6s-5.8 0-7.6.2c-1 .2-1.8 1-2 2C2 10 2 12 2 12s0 2 .4 3.8c.2 1 1 1.8 2 2 1.8.2 7.6.2 7.6.2s5.8 0 7.6-.2c1-.2 1.8-1 2-2 .4-1.8.4-3.8.4-3.8s0-2-.4-3.8Z" />
+      <path d="m10 9 5 3-5 3V9Z" opacity={0.9} />
+    </svg>
+  );
+}
+
 const homeUrl = absoluteUrl("/");
 const socialPreviewUrl = absoluteUrl(siteMetadata.socialImagePath);
+
+type SocialLink = {
+  label: string;
+  handle: string;
+  href: string;
+  description: string;
+  Icon: (props: IconProps) => ReactElement;
+};
+
+const socialLinks: SocialLink[] = [
+  {
+    label: "TikTok",
+    handle: "@affordable.peptides",
+    href: siteMetadata.socialProfiles.tiktok,
+    description: "Behind-the-scenes lab drops",
+    Icon: TikTokIcon,
+  },
+  {
+    label: "Instagram",
+    handle: "@affordablepeptides",
+    href: siteMetadata.socialProfiles.instagram,
+    description: "Product spotlights & quality updates",
+    Icon: InstagramIcon,
+  },
+  {
+    label: "YouTube",
+    handle: "@AffordablePeptides",
+    href: siteMetadata.socialProfiles.youtube,
+    description: "Long-form education & walkthroughs",
+    Icon: YouTubeIcon,
+  },
+] as const;
 
 export const metadata: Metadata = {
   title: siteMetadata.name,
@@ -184,20 +253,54 @@ export default function Home() {
                 opportunities? Reach out anytime and we&apos;ll get back to you
                 quickly.
               </p>
-            <div className="mx-auto flex max-w-md flex-col items-center gap-3 rounded-2xl border border-purple-900/60 bg-black/60 p-6">
-                <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
-                Text
-                </span>
-                <a
-                href="sms:9515393821"
-                className="text-2xl font-semibold text-white transition hover:text-purple-200"
-                >
-                Text (951) 539-3821
-                </a>
-                <p className="text-xs text-zinc-500">
-                Available daily 6am–9pm PST. Send a text after hours and
-                we&apos;ll get back to you promptly.
-                </p>
+              <div className="mx-auto grid w-full max-w-3xl gap-4 md:grid-cols-2">
+                <div className="flex flex-col items-center gap-3 rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-center">
+                  <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
+                    Text
+                  </span>
+                  <a
+                    href="sms:9515393821"
+                    className="text-2xl font-semibold text-white transition hover:text-purple-200"
+                  >
+                    Text (951) 539-3821
+                  </a>
+                  <p className="text-xs text-zinc-500">
+                    Available daily 6am–9pm PST. Send a text after hours and we&apos;ll get
+                    back to you promptly.
+                  </p>
+                </div>
+                <div className="rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-left">
+                  <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
+                    Social
+                  </span>
+                  <p className="mt-2 text-sm text-zinc-400">
+                    Follow the lab for research drops, compliance updates, and education.
+                  </p>
+                  <div className="mt-4 space-y-3">
+                    {socialLinks.map(({ Icon, ...link }) => (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        className="flex items-center justify-between gap-4 rounded-xl border border-purple-800/50 bg-purple-500/5 px-4 py-3 text-sm text-white transition hover:border-purple-400 hover:bg-purple-500/10"
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10 text-purple-200">
+                            <Icon className="h-5 w-5" />
+                          </span>
+                          <span>
+                            {link.label}
+                            <span className="block text-xs font-semibold uppercase tracking-[0.35em] text-purple-200">
+                              {link.handle}
+                            </span>
+                          </span>
+                        </span>
+                        <span className="text-xs text-zinc-400">{link.description}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
