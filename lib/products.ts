@@ -334,7 +334,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
       createVariant("5mg", 40, "/products/label-kpv-5mg-3ml.png"),
-      createVariant("10mg", 70, "/products/label-kpv-10mg-3ml.png"),
+      createVariant("10mg", 70, {mockupLabel:"/products/label-kpv-10mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=30115_AFFORDED7CA4"}),
     ],
   },
   {
