@@ -120,6 +120,10 @@ export const referralCodes = pgTable(
     discountValue: numeric("discount_value", { precision: 10, scale: 2 })
       .notNull()
       .default("0"),
+    minOrderSubtotal: numeric("min_order_subtotal", {
+      precision: 10,
+      scale: 2,
+    }),
     maxRedemptionsPerCustomer: integer(
       "max_redemptions_per_customer"
     )

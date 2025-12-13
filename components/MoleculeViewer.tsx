@@ -101,7 +101,9 @@ export default function MoleculeViewer({
   const [reloadToken, setReloadToken] = useState(0);
   const [isInView, setIsInView] = useState(false);
   const [prefersReducedMotion, setPrefersReducedMotion] = useState(false);
-  const [hasRenderableArea, setHasRenderableArea] = useState(false);
+  const [hasRenderableArea, setHasRenderableArea] = useState(() =>
+    typeof window === "undefined" || typeof ResizeObserver === "undefined"
+  );
 
   useEffect(() => {
     if (isInView) {
@@ -135,7 +137,6 @@ export default function MoleculeViewer({
 
   useEffect(() => {
     if (typeof window === "undefined" || typeof ResizeObserver === "undefined") {
-      setHasRenderableArea(true);
       return;
     }
 

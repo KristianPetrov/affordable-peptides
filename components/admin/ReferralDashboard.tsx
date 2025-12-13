@@ -59,6 +59,13 @@ function formatUsage(code: ReferralCodeSummary): string {
   return `${code.currentRedemptions} used`;
 }
 
+function formatMinimumOrderSubtotal(code: ReferralCodeSummary): string {
+  if (typeof code.minOrderSubtotal === "number" && code.minOrderSubtotal > 0) {
+    return currencyFormatter.format(code.minOrderSubtotal);
+  }
+  return "—";
+}
+
 export default function ReferralDashboard({ data }: ReferralDashboardProps) {
   const hasPartners = data.partners.length > 0;
   const activePartnerCount = data.partners.filter((partner) => partner.active).length;
@@ -331,6 +338,19 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
                   step={0.01}
                   required
                   defaultValue={10}
+                  className="mt-2 w-full rounded-lg border border-purple-900/40 bg-black/70 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
+                  Min Order Subtotal
+                </label>
+                <input
+                  type="number"
+                  name="minOrderSubtotal"
+                  min={0}
+                  step={0.01}
+                  placeholder="Optional"
                   className="mt-2 w-full rounded-lg border border-purple-900/40 bg-black/70 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 />
               </div>
@@ -614,6 +634,12 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
                                   </p>
                                 </div>
                                 <div>
+                                  <p className="text-xs text-zinc-500">Min Order</p>
+                                  <p className="text-sm font-semibold text-white">
+                                    {formatMinimumOrderSubtotal(code)}
+                                  </p>
+                                </div>
+                                <div>
                                   <p className="text-xs text-zinc-500">Usage</p>
                                   <p className="text-sm font-semibold text-white">
                                     {formatUsage(code)}
@@ -625,12 +651,12 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
                                     {formatDate(code.startsAt)}
                                   </p>
                                 </div>
-                                <div>
-                                  <p className="text-xs text-zinc-500">Expires</p>
-                                  <p className="text-sm font-semibold text-white">
-                                    {formatDate(code.expiresAt)}
-                                  </p>
-                                </div>
+                              </div>
+                              <div className="mt-4">
+                                <p className="text-xs text-zinc-500">Expires</p>
+                                <p className="text-sm font-semibold text-white">
+                                  {formatDate(code.expiresAt)}
+                                </p>
                               </div>
                             </div>
                           ))}

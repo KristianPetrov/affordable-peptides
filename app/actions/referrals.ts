@@ -96,9 +96,22 @@ export async function createReferralCodeAction (
     "percent") as ReferralDiscountMode;
   const discountValue = Number(formData.get("discountValue") ?? 0);
 
+  const minOrderSubtotalValue = formData.get("minOrderSubtotal");
   const maxTotalRedemptions = formData.get("maxTotalRedemptions");
   const startsAtValue = formData.get("startsAt");
   const expiresAtValue = formData.get("expiresAt");
+
+  const minOrderSubtotal =
+    typeof minOrderSubtotalValue === "string" && minOrderSubtotalValue.trim()
+      ? Number(minOrderSubtotalValue)
+      : null;
+
+  if (
+    typeof minOrderSubtotal === "number" &&
+    (!Number.isFinite(minOrderSubtotal) || minOrderSubtotal < 0)
+  ) {
+    throw new Error("Minimum order subtotal must be a valid non-negative number.");
+  }
 
   const startsAt =
     typeof startsAtValue === "string" && startsAtValue
@@ -119,6 +132,7 @@ export async function createReferralCodeAction (
     description: (formData.get("description") as string | null) ?? null,
     discountType,
     discountValue,
+    minOrderSubtotal,
     maxTotalRedemptions:
       typeof maxTotalRedemptions === "string" && maxTotalRedemptions
         ? Number(maxTotalRedemptions)

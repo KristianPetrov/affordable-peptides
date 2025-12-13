@@ -84,13 +84,15 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
   const isLoggedIn = Boolean(sessionUser);
 
   useEffect(() => {
-    if (
-      appliedReferral &&
-      Math.abs(previousSubtotalRef.current - subtotal) > 0.01
-    ) {
-      setReferralResult(null);
-    }
+    const previousSubtotal = previousSubtotalRef.current;
     previousSubtotalRef.current = subtotal;
+
+    if (appliedReferral && Math.abs(previousSubtotal - subtotal) > 0.01) {
+      const timeoutId = window.setTimeout(() => {
+        setReferralResult(null);
+      }, 0);
+      return () => window.clearTimeout(timeoutId);
+    }
   }, [subtotal, appliedReferral]);
 
   if (cartItems.length === 0) {

@@ -7,6 +7,7 @@ export type ReferralCodeSummary = {
   description?: string | null;
   discountType: ReferralDiscountMode;
   discountValue: number;
+  minOrderSubtotal?: number | null;
   maxRedemptionsPerCustomer: number;
   maxTotalRedemptions?: number | null;
   currentRedemptions: number;
@@ -51,24 +52,24 @@ export type ReferralDashboardData = {
 
 export type AppliedReferralResult =
   | {
-      status: "applied";
-      code: string;
-      partnerId: string;
-      partnerName: string;
-      discountAmount: number;
-      discountType: ReferralDiscountMode;
-      discountValue: number;
-      message: string;
-    }
+    status: "applied";
+    code: string;
+    partnerId: string;
+    partnerName: string;
+    discountAmount: number;
+    discountType: ReferralDiscountMode;
+    discountValue: number;
+    message: string;
+  }
   | {
-      status: "already-attributed";
-      partnerId: string;
-      partnerName: string;
-      attributionId: string;
-      message: string;
-    }
+    status: "already-attributed";
+    partnerId: string;
+    partnerName: string;
+    attributionId: string;
+    message: string;
+  }
   | {
-      status: "error";
-      message: string;
-    };
+    status: "error";
+    message: string;
+  };
 

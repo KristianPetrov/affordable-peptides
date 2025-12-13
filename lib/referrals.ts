@@ -210,6 +210,29 @@ function calculateReferralDiscountAmount (
   return toCurrency(Math.min(subtotal, (subtotal * percent) / 100));
 }
 
+function getMinimumOrderSubtotal (code: ReferralCodeRow): number | null
+{
+  const raw = (code as { minOrderSubtotal?: string | number | null })
+    .minOrderSubtotal;
+  if (raw == null) {
+    return null;
+  }
+  const parsed = parseNumeric(raw);
+  return parsed > 0 ? parsed : null;
+}
+
+function validateMinimumOrderSubtotal (
+  subtotal: number,
+  code: ReferralCodeRow
+): string | null
+{
+  const minSubtotal = getMinimumOrderSubtotal(code);
+  if (minSubtotal != null && subtotal + 0.0001 < minSubtotal) {
+    return `This referral code requires a minimum order of $${minSubtotal.toFixed(2)}.`;
+  }
+  return null;
+}
+
 export async function evaluateReferralCodeForCheckout (
   params: {
     code: string;
@@ -265,6 +288,14 @@ export async function evaluateReferralCodeForCheckout (
   const validationError = validateReferralCodeRecord(codeRecord);
   if (validationError) {
     return { status: "error", message: validationError };
+  }
+
+  const minimumSubtotalError = validateMinimumOrderSubtotal(
+    subtotal,
+    codeRecord.code
+  );
+  if (minimumSubtotalError) {
+    return { status: "error", message: minimumSubtotalError };
   }
 
   const discountAmount = calculateReferralDiscountAmount(
@@ -336,6 +367,14 @@ export async function resolveReferralForOrder (
   const validationError = validateReferralCodeRecord(codeRecord);
   if (validationError) {
     throw new Error(validationError);
+  }
+
+  const minimumSubtotalError = validateMinimumOrderSubtotal(
+    params.subtotal,
+    codeRecord.code
+  );
+  if (minimumSubtotalError) {
+    throw new Error(minimumSubtotalError);
   }
 
   const discountAmount = calculateReferralDiscountAmount(
@@ -507,6 +546,7 @@ export async function createReferralCode (input: {
   description?: string | null;
   discountType: ReferralDiscountMode;
   discountValue: number;
+  minOrderSubtotal?: number | null;
   maxTotalRedemptions?: number | null;
   startsAt?: Date | null;
   expiresAt?: Date | null;
@@ -531,6 +571,13 @@ export async function createReferralCode (input: {
     throw new Error("Discount value must be greater than zero.");
   }
 
+  const minOrderSubtotal =
+    typeof input.minOrderSubtotal === "number" &&
+      Number.isFinite(input.minOrderSubtotal) &&
+      input.minOrderSubtotal > 0
+      ? toCurrency(input.minOrderSubtotal)
+      : null;
+
   const id = randomUUID();
   const now = new Date();
   await db.insert(referralCodes).values({
@@ -540,6 +587,7 @@ export async function createReferralCode (input: {
     description: input.description?.trim() || null,
     discountType: input.discountType,
     discountValue: discountValue.toString(),
+    minOrderSubtotal: minOrderSubtotal != null ? minOrderSubtotal.toString() : null,
     maxRedemptionsPerCustomer: 1,
     maxTotalRedemptions:
       typeof input.maxTotalRedemptions === "number"
@@ -572,6 +620,8 @@ export async function deleteReferralCode (codeId: string): Promise<void>
 
 function mapCodeToSummary (code: ReferralCodeRow): ReferralCodeSummary
 {
+  const minOrderSubtotal = (code as { minOrderSubtotal?: string | number | null })
+    .minOrderSubtotal;
   return {
     id: code.id,
     partnerId: code.partnerId,
@@ -580,6 +630,8 @@ function mapCodeToSummary (code: ReferralCodeRow): ReferralCodeSummary
     discountType: (code.discountType ??
       "percent") as ReferralDiscountMode,
     discountValue: parseNumeric(code.discountValue),
+    minOrderSubtotal:
+      minOrderSubtotal == null ? null : parseNumeric(minOrderSubtotal),
     maxRedemptionsPerCustomer: code.maxRedemptionsPerCustomer,
     maxTotalRedemptions: code.maxTotalRedemptions ?? null,
     currentRedemptions: code.currentRedemptions,
