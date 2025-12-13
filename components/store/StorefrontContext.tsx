@@ -4,7 +4,9 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -12,6 +14,8 @@ import {
   calculateVolumePricing,
   type PricingTier,
 } from "@/lib/cart-pricing";
+
+const CART_STORAGE_KEY = "affordable-peptides:cart:v1";
 
 export type AddToCartPayload = {
   productName: string;
@@ -53,8 +57,75 @@ type StorefrontContextValue = {
 
 const StorefrontContext = createContext<StorefrontContextValue | null>(null);
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return Boolean(value) && typeof value === "object";
+}
+
+function isValidCartItem(value: unknown): value is CartItem {
+  if (!isRecord(value)) {
+    return false;
+  }
+  return (
+    typeof value.key === "string" &&
+    typeof value.productName === "string" &&
+    typeof value.variantLabel === "string" &&
+    typeof value.tierQuantity === "number" &&
+    typeof value.tierPrice === "number" &&
+    typeof value.tierPriceDisplay === "string" &&
+    Array.isArray(value.pricingTiers) &&
+    typeof value.count === "number" &&
+    typeof value.variantKey === "string"
+  );
+}
+
 export function StorefrontProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const hasHydratedRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    try {
+      const raw = window.localStorage.getItem(CART_STORAGE_KEY);
+      if (!raw) {
+        hasHydratedRef.current = true;
+        return;
+      }
+      const parsed = JSON.parse(raw) as unknown;
+      if (!Array.isArray(parsed)) {
+        window.localStorage.removeItem(CART_STORAGE_KEY);
+        hasHydratedRef.current = true;
+        return;
+      }
+      const restored = parsed.filter(isValidCartItem);
+      setCartItems(restored);
+    } catch {
+      // If storage is corrupted/unreadable, reset it.
+      try {
+        window.localStorage.removeItem(CART_STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+    } finally {
+      hasHydratedRef.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !hasHydratedRef.current) {
+      return;
+    }
+    try {
+      if (cartItems.length === 0) {
+        window.localStorage.removeItem(CART_STORAGE_KEY);
+        return;
+      }
+      window.localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cartItems));
+    } catch {
+      // ignore storage write errors (private mode, quota, etc.)
+    }
+  }, [cartItems]);
 
   const addToCart = useCallback((payload: AddToCartPayload): number => {
     const {
