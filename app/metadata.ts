@@ -50,6 +50,8 @@ export const metadata: Metadata = {
         width: 1200,
         height: 630,
         alt: "Affordable Peptides hero graphic",
+        secureUrl: socialImage,
+        type: "image/png",
       },
     ],
   },
@@ -79,18 +81,24 @@ export const metadata: Metadata = {
   category: "research",
   assets: [siteMetadata.url],
   bookmarks: [siteMetadata.url],
-  icons: {
-    icon: [{ url: "/favicon.png" }],
-    shortcut: ["/favicon.png"],
-    apple: ["/favicon.png"],
-  },
+  // Icons are now handled by file-based metadata (icon.tsx, apple-icon.tsx)
+  // Remove icons from here to use Next.js 16 file-based icon system
   other: {
     "designed-by":
       "This website was designed by Set Free Digital Disciples – https://www.setfreedigitaldisciples.com",
     "og:logo": logoImage,
+    // Social media profiles for better discoverability
+    "og:see_also": [
+      siteMetadata.socialProfiles.tiktok,
+      siteMetadata.socialProfiles.instagram,
+      siteMetadata.socialProfiles.youtube,
+    ].join(","),
     "social:tiktok": siteMetadata.socialProfiles.tiktok,
     "social:instagram": siteMetadata.socialProfiles.instagram,
     "social:youtube": siteMetadata.socialProfiles.youtube,
+    // Additional meta tags for better SEO
+    "og:image:secure_url": socialImage,
+    "og:image:type": "image/png",
   },
 };
 

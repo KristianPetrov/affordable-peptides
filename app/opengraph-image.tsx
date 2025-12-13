@@ -16,7 +16,8 @@ export default async function OgImage() {
       process.cwd(),
       "public",
       "affordable-peptides-logo-transparent.png",
-    ),"base64"
+    ),
+    "base64"
   );
 
   const logoSrc = `data:image/png;base64,${logoBuffer}`;

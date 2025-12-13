@@ -2,7 +2,8 @@ import type { MetadataRoute } from "next";
 
 import { robotsDisallowPaths, siteMetadata } from "@/lib/seo";
 
-export default function robots(): MetadataRoute.Robots {
+export default function robots (): MetadataRoute.Robots
+{
   return {
     rules: [
       {
@@ -15,13 +16,6 @@ export default function robots(): MetadataRoute.Robots {
     host: siteMetadata.url,
   };
 }
-
-
-
-
-
-
-
 
 
 
