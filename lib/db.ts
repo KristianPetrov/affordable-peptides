@@ -1,11 +1,12 @@
 import { eq, and, or, ilike } from "drizzle-orm";
 import { randomUUID } from "crypto";
-import {
-  db as drizzleDb,
-  orders,
-  customerProfiles,
-  productInventory,
-} from "./db/index";
+import
+  {
+    db as drizzleDb,
+    orders,
+    customerProfiles,
+    productInventory,
+  } from "./db/index";
 import type { Order } from "./orders";
 
 export const db = drizzleDb;
@@ -38,6 +39,12 @@ function dbRowToOrder (row: typeof orders.$inferSelect): Order
     referralDiscount: row.referralDiscount
       ? parseFloat(row.referralDiscount)
       : 0,
+    referralCommissionPercent: row.referralCommissionPercent
+      ? parseFloat(row.referralCommissionPercent)
+      : 0,
+    referralCommissionAmount: row.referralCommissionAmount
+      ? parseFloat(row.referralCommissionAmount)
+      : 0,
   };
 }
 
@@ -65,6 +72,8 @@ function orderToDbRow (order: Order): typeof orders.$inferInsert
     referralCodeValue: order.referralCode ?? null,
     referralAttributionId: order.referralAttributionId ?? null,
     referralDiscount: (order.referralDiscount ?? 0).toString(),
+    referralCommissionPercent: (order.referralCommissionPercent ?? 0).toString(),
+    referralCommissionAmount: (order.referralCommissionAmount ?? 0).toString(),
     createdAt: new Date(order.createdAt),
     updatedAt: new Date(order.updatedAt),
   };

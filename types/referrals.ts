@@ -25,13 +25,13 @@ export type ReferralPartnerSummary = {
   contactEmail?: string | null;
   contactPhone?: string | null;
   notes?: string | null;
-  defaultDiscountType: ReferralDiscountMode;
-  defaultDiscountValue: number;
+  commissionPercent: number;
   active: boolean;
   createdAt: string;
   updatedAt: string;
   totalCustomers: number;
   totalRevenue: number;
+  totalCommission: number;
   lastOrderAt?: string | null;
   codes: ReferralCodeSummary[];
 };
@@ -43,6 +43,7 @@ export type ReferralDashboardTotals = {
   totalCustomers: number;
   attributedOrdersLast30Days: number;
   lifetimeRevenue: number;
+  lifetimeCommission: number;
 };
 
 export type ReferralDashboardData = {

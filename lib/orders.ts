@@ -31,6 +31,8 @@ export type Order = {
   referralCode?: string | null;
   referralAttributionId?: string | null;
   referralDiscount?: number;
+  referralCommissionPercent?: number;
+  referralCommissionAmount?: number;
 };
 
 export function generateOrderNumber (): string

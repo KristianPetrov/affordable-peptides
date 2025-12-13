@@ -97,6 +97,11 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
       sublabel: "Across all partners",
     },
     {
+      label: "Lifetime Commission",
+      value: currencyFormatter.format(data.totals.lifetimeCommission),
+      sublabel: "Owed to partners",
+    },
+    {
       label: "Active Partners",
       value: data.totals.activePartners.toLocaleString(),
       sublabel: "Ready to send traffic",
@@ -199,33 +204,23 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
                   className="mt-2 w-full rounded-lg border border-purple-900/40 bg-black/70 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
-                    Discount Type
-                  </label>
-                  <select
-                    name="defaultDiscountType"
-                    defaultValue="percent"
-                    className="mt-2 w-full rounded-lg border border-purple-900/40 bg-black/70 px-3 py-2 text-sm text-white focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                  >
-                    <option value="percent">Percent</option>
-                    <option value="fixed">Fixed $</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
-                    Discount Value
-                  </label>
-                  <input
-                    type="number"
-                    name="defaultDiscountValue"
-                    min={0}
-                    step={0.01}
-                    defaultValue={10}
-                    className="mt-2 w-full rounded-lg border border-purple-900/40 bg-black/70 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
-                  />
-                </div>
+              <div>
+                <label className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
+                  Commission % of Sales
+                </label>
+                <input
+                  type="number"
+                  name="commissionPercent"
+                  min={0}
+                  max={100}
+                  step={0.01}
+                  required
+                  defaultValue={10}
+                  className="mt-2 w-full rounded-lg border border-purple-900/40 bg-black/70 px-3 py-2 text-sm text-white placeholder-zinc-500 focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+                />
+                <p className="mt-2 text-xs text-zinc-500">
+                  This is used to calculate partner payouts on all attributed future orders.
+                </p>
               </div>
             </div>
             <div>
@@ -489,6 +484,12 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
                           {currencyFormatter.format(partner.totalRevenue)}
                         </p>
                       </div>
+                      <div>
+                        <p className="text-sm text-zinc-400">Lifetime Commission</p>
+                        <p className="text-xl font-semibold text-white">
+                          {currencyFormatter.format(partner.totalCommission)}
+                        </p>
+                      </div>
                       <div className="grid grid-cols-2 gap-4 text-sm text-zinc-300">
                         <div>
                           <p className="text-xs text-zinc-500">Customers</p>
@@ -531,15 +532,13 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
 
                     <div className="space-y-2 rounded-2xl border border-purple-900/30 bg-black/40 p-4">
                       <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
-                        Default Offer
+                        Commission
                       </p>
                       <p className="text-sm text-zinc-400">
-                        Applies when creating new codes for this partner.
+                        Used for partner payouts on attributed orders.
                       </p>
                       <div className="mt-2 text-lg font-semibold text-white">
-                        {partner.defaultDiscountType === "percent"
-                          ? `${numberFormatter.format(partner.defaultDiscountValue)}% off`
-                          : `${currencyFormatter.format(partner.defaultDiscountValue)} off`}
+                        {numberFormatter.format(partner.commissionPercent)}% of sales
                       </div>
                       {partner.notes && (
                         <div className="mt-3 rounded-xl border border-purple-900/30 bg-black/50 p-3 text-sm text-zinc-300">

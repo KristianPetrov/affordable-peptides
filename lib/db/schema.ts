@@ -85,6 +85,12 @@ export const referralPartners = pgTable(
     contactEmail: text("contact_email"),
     contactPhone: text("contact_phone"),
     notes: text("notes"),
+    commissionPercent: numeric("commission_percent", {
+      precision: 5,
+      scale: 2,
+    })
+      .notNull()
+      .default("0"),
     defaultDiscountType: varchar("default_discount_type", { length: 10 })
       .notNull()
       .default("percent"),
@@ -186,6 +192,18 @@ export const orders = pgTable("orders", {
   })
     .notNull()
     .default("0"),
+  referralCommissionPercent: numeric("referral_commission_percent", {
+    precision: 5,
+    scale: 2,
+  })
+    .notNull()
+    .default("0"),
+  referralCommissionAmount: numeric("referral_commission_amount", {
+    precision: 10,
+    scale: 2,
+  })
+    .notNull()
+    .default("0"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -214,6 +232,12 @@ export const referralAttributions = pgTable(
       .notNull()
       .default("0"),
     lifetimeRevenue: numeric("lifetime_revenue", {
+      precision: 10,
+      scale: 2,
+    })
+      .notNull()
+      .default("0"),
+    lifetimeCommission: numeric("lifetime_commission", {
       precision: 10,
       scale: 2,
     })

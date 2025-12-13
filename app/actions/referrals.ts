@@ -55,9 +55,14 @@ export async function createReferralPartnerAction (
     throw new Error("Partner name is required.");
   }
 
-  const discountType = (formData.get("defaultDiscountType") ??
-    "percent") as ReferralDiscountMode;
-  const discountValue = Number(formData.get("defaultDiscountValue") ?? 0);
+  const commissionPercent = Number(formData.get("commissionPercent") ?? 0);
+  if (
+    !Number.isFinite(commissionPercent) ||
+    commissionPercent < 0 ||
+    commissionPercent > 100
+  ) {
+    throw new Error("Commission percent must be a number from 0 to 100.");
+  }
 
   await createReferralPartner({
     name,
@@ -65,8 +70,7 @@ export async function createReferralPartnerAction (
     contactEmail: (formData.get("contactEmail") as string | null) ?? null,
     contactPhone: (formData.get("contactPhone") as string | null) ?? null,
     notes: (formData.get("notes") as string | null) ?? null,
-    defaultDiscountType: discountType,
-    defaultDiscountValue: Number.isFinite(discountValue) ? discountValue : 0,
+    commissionPercent,
   });
 
   revalidatePath("/admin");

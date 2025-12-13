@@ -50,6 +50,7 @@ type AttributionJoinedRow = {
 type PendingAttributionInput = {
   partnerId: string;
   partnerName: string;
+  commissionPercent: number;
   codeId?: string | null;
   codeValue?: string | null;
   customerEmail: string;
@@ -64,6 +65,8 @@ export type ReferralOrderContext = {
   referralCodeId?: string | null;
   referralCodeValue?: string | null;
   referralDiscount: number;
+  referralCommissionPercent: number;
+  referralCommissionAmount: number;
   attributionId?: string | null;
   existingAttribution?: AttributionJoinedRow | null;
   pendingAttribution?: PendingAttributionInput | null;
@@ -82,6 +85,26 @@ export function normalizeReferralCode (value: string): string
 function toCurrency (value: number): number
 {
   return Math.round(value * 100) / 100;
+}
+
+function clampPercent (value: number): number
+{
+  if (!Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(100, value));
+}
+
+function calculateCommissionAmount (subtotal: number, commissionPercent: number): number
+{
+  if (subtotal <= 0) {
+    return 0;
+  }
+  const percent = clampPercent(commissionPercent);
+  if (percent <= 0) {
+    return 0;
+  }
+  return toCurrency((subtotal * percent) / 100);
 }
 
 function parseNumeric (value: string | number | null): number
@@ -339,12 +362,19 @@ export async function resolveReferralForOrder (
   });
 
   if (existingAttribution) {
+    const commissionPercent = parseNumeric(
+      (existingAttribution.partner as { commissionPercent?: string | number | null })
+        .commissionPercent ?? 0
+    );
+    const commissionAmount = calculateCommissionAmount(params.subtotal, commissionPercent);
     return {
       referralPartnerId: existingAttribution.partner.id,
       referralPartnerName: existingAttribution.partner.name,
       referralCodeId: existingAttribution.code?.id ?? null,
       referralCodeValue: existingAttribution.code?.code ?? null,
       referralDiscount: 0,
+      referralCommissionPercent: clampPercent(commissionPercent),
+      referralCommissionAmount: commissionAmount,
       attributionId: existingAttribution.attribution.id,
       existingAttribution,
       pendingAttribution: null,
@@ -385,17 +415,26 @@ export async function resolveReferralForOrder (
     throw new Error("This referral code does not apply to the current cart.");
   }
 
+  const commissionPercent = parseNumeric(
+    (codeRecord.partner as { commissionPercent?: string | number | null })
+      .commissionPercent ?? 0
+  );
+  const commissionAmount = calculateCommissionAmount(params.subtotal - discountAmount, commissionPercent);
+
   return {
     referralPartnerId: codeRecord.partner.id,
     referralPartnerName: codeRecord.partner.name,
     referralCodeId: codeRecord.code.id,
     referralCodeValue: codeRecord.code.code,
     referralDiscount: discountAmount,
+    referralCommissionPercent: clampPercent(commissionPercent),
+    referralCommissionAmount: commissionAmount,
     attributionId: null,
     existingAttribution: null,
     pendingAttribution: {
       partnerId: codeRecord.partner.id,
       partnerName: codeRecord.partner.name,
+      commissionPercent: clampPercent(commissionPercent),
       codeId: codeRecord.code.id,
       codeValue: codeRecord.code.code,
       customerEmail: normalizedEmail,
@@ -421,6 +460,7 @@ export async function finalizeReferralForOrder (
   if (context.pendingAttribution) {
     const attributionId = randomUUID();
     const lifetimeRevenue = order.subtotal;
+    const lifetimeCommission = context.referralCommissionAmount;
     await db.insert(referralAttributions).values({
       id: attributionId,
       partnerId: context.pendingAttribution.partnerId,
@@ -432,6 +472,7 @@ export async function finalizeReferralForOrder (
       firstOrderNumber: order.orderNumber,
       firstOrderDiscount: context.pendingAttribution.discountAmount.toString(),
       lifetimeRevenue: lifetimeRevenue.toString(),
+      lifetimeCommission: lifetimeCommission.toString(),
       totalOrders: 1,
       lastOrderId: order.id,
       lastOrderNumber: order.orderNumber,
@@ -446,6 +487,8 @@ export async function finalizeReferralForOrder (
         referralAttributionId: attributionId,
         referralPartnerName:
           context.referralPartnerName ?? context.pendingAttribution.partnerName,
+        referralCommissionPercent: context.referralCommissionPercent.toString(),
+        referralCommissionAmount: context.referralCommissionAmount.toString(),
         updatedAt: new Date(),
       })
       .where(eq(orders.id, order.id));
@@ -467,14 +510,20 @@ export async function finalizeReferralForOrder (
     const currentLifetime = parseNumeric(
       context.existingAttribution.attribution.lifetimeRevenue
     );
+    const currentCommission = parseNumeric(
+      (context.existingAttribution.attribution as { lifetimeCommission?: string | number | null })
+        .lifetimeCommission ?? 0
+    );
     const currentOrders = context.existingAttribution.attribution.totalOrders;
     const nextLifetime = toCurrency(currentLifetime + order.subtotal);
+    const nextCommission = toCurrency(currentCommission + context.referralCommissionAmount);
     const nextOrders = currentOrders + 1;
 
     await db
       .update(referralAttributions)
       .set({
         lifetimeRevenue: nextLifetime.toString(),
+        lifetimeCommission: nextCommission.toString(),
         totalOrders: nextOrders,
         lastOrderId: order.id,
         lastOrderNumber: order.orderNumber,
@@ -488,6 +537,8 @@ export async function finalizeReferralForOrder (
         .update(orders)
         .set({
           referralAttributionId: context.attributionId,
+          referralCommissionPercent: context.referralCommissionPercent.toString(),
+          referralCommissionAmount: context.referralCommissionAmount.toString(),
           updatedAt: new Date(),
         })
         .where(eq(orders.id, order.id));
@@ -501,8 +552,7 @@ export async function createReferralPartner (input: {
   contactEmail?: string | null;
   contactPhone?: string | null;
   notes?: string | null;
-  defaultDiscountType: ReferralDiscountMode;
-  defaultDiscountValue: number;
+  commissionPercent: number;
 }): Promise<void>
 {
   const id = randomUUID();
@@ -514,10 +564,7 @@ export async function createReferralPartner (input: {
     contactEmail: input.contactEmail?.trim().toLowerCase() || null,
     contactPhone: input.contactPhone?.trim() || null,
     notes: input.notes?.trim() || null,
-    defaultDiscountType: input.defaultDiscountType,
-    defaultDiscountValue: toCurrency(
-      Math.max(0, input.defaultDiscountValue)
-    ).toString(),
+    commissionPercent: clampPercent(input.commissionPercent).toString(),
     active: true,
     createdAt: now,
     updatedAt: now,
@@ -661,14 +708,16 @@ export async function getReferralDashboardData ():
       contactEmail: partner.contactEmail,
       contactPhone: partner.contactPhone,
       notes: partner.notes,
-      defaultDiscountType: (partner.defaultDiscountType ??
-        "percent") as ReferralDiscountMode,
-      defaultDiscountValue: parseNumeric(partner.defaultDiscountValue),
+      commissionPercent: parseNumeric(
+        (partner as { commissionPercent?: string | number | null })
+          .commissionPercent ?? 0
+      ),
       active: partner.active,
       createdAt: partner.createdAt.toISOString(),
       updatedAt: partner.updatedAt.toISOString(),
       totalCustomers: 0,
       totalRevenue: 0,
+      totalCommission: 0,
       lastOrderAt: null,
       codes: [],
     });
@@ -684,15 +733,22 @@ export async function getReferralDashboardData ():
 
   let totalCustomers = 0;
   let lifetimeRevenue = 0;
+  let lifetimeCommission = 0;
   for (const attribution of attributionRows) {
     const summary = partnerMap.get(attribution.partnerId);
     if (!summary) {
       continue;
     }
     const revenue = parseNumeric(attribution.lifetimeRevenue);
+    const commission = parseNumeric(
+      (attribution as { lifetimeCommission?: string | number | null })
+        .lifetimeCommission ?? 0
+    );
     lifetimeRevenue += revenue;
+    lifetimeCommission += commission;
     summary.totalCustomers += 1;
     summary.totalRevenue += revenue;
+    summary.totalCommission += commission;
     totalCustomers += 1;
     if (
       attribution.lastOrderAt &&
@@ -728,6 +784,7 @@ export async function getReferralDashboardData ():
       totalCustomers,
       attributedOrdersLast30Days: recentOrders.length,
       lifetimeRevenue: toCurrency(lifetimeRevenue),
+      lifetimeCommission: toCurrency(lifetimeCommission),
     },
     partners,
   };

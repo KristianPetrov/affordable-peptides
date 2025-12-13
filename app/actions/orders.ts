@@ -275,6 +275,8 @@ export async function createOrderAction (
       referralCode: referralContext?.referralCodeValue ?? undefined,
       referralAttributionId: referralContext?.attributionId ?? undefined,
       referralDiscount,
+      referralCommissionPercent: referralContext?.referralCommissionPercent ?? 0,
+      referralCommissionAmount: referralContext?.referralCommissionAmount ?? 0,
     });
 
     await applyInventoryAdjustments(reservation.adjustments);
