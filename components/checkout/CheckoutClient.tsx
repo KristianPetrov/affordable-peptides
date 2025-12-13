@@ -8,7 +8,7 @@ import { useStorefront } from "@/components/store/StorefrontContext";
 import { createOrderAction } from "@/app/actions/orders";
 import { applyReferralCodeAction } from "@/app/actions/referrals";
 import type { CustomerProfile } from "@/lib/db";
-import { calculateShippingCost, calculateTotalWithShipping } from "@/lib/shipping";
+import { calculateShippingCost } from "@/lib/shipping";
 import type { AppliedReferralResult } from "@/types/referrals";
 
 const formatCurrency = (value: number) =>
@@ -48,20 +48,16 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
     () => Math.max(0, subtotal - referralDiscount),
     [subtotal, referralDiscount]
   );
-  const forceShippingCharge = Boolean(appliedReferral);
   const shippingCost = useMemo(
     () =>
-      calculateShippingCost(discountedSubtotal, {
-        forceFlatRate: forceShippingCharge,
-      }),
-    [discountedSubtotal, forceShippingCharge]
+      // Free-shipping qualification is based on the pre-discount subtotal
+      // so that applying a referral discount doesn't remove free shipping.
+      calculateShippingCost(subtotal),
+    [subtotal]
   );
   const total = useMemo(
-    () =>
-      calculateTotalWithShipping(discountedSubtotal, {
-        forceFlatRate: forceShippingCharge,
-      }),
-    [discountedSubtotal, forceShippingCharge]
+    () => discountedSubtotal + shippingCost,
+    [discountedSubtotal, shippingCost]
   );
   const previousSubtotalRef = useRef(subtotal);
 
@@ -524,7 +520,7 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
                     )}
                   </span>
                 </div>
-                {discountedSubtotal < 300 && (
+                {shippingCost > 0 && subtotal < 300 && (
                   <div className="text-xs text-purple-300">
                     Free shipping on orders over $300
                   </div>
