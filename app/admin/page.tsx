@@ -222,8 +222,23 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
     activeView === "orders" ? await getAllOrders(searchQuery) : [];
   const productsWithInventory =
     activeView === "inventory" ? await getProductsWithInventory() : [];
+  const referralYearParam = params?.year;
+  const referralParsedYear = referralYearParam ? Number(referralYearParam) : Number.NaN;
+  const referralMonthParam = params?.month;
+  const referralParsedMonth =
+    referralMonthParam && referralMonthParam !== "all"
+      ? Number(referralMonthParam)
+      : null;
   const referralDashboard =
-    activeView === "referrals" ? await getReferralDashboardData() : null;
+    activeView === "referrals"
+      ? await getReferralDashboardData({
+          year: Number.isFinite(referralParsedYear) ? referralParsedYear : undefined,
+          month:
+            typeof referralParsedMonth === "number" && Number.isFinite(referralParsedMonth)
+              ? referralParsedMonth
+              : null,
+        })
+      : null;
   const sortedOrders = [...orders].sort(
     (a, b) =>
       new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()

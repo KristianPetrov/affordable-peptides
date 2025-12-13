@@ -4,8 +4,10 @@ import { randomUUID } from "crypto";
 import
 {
   and,
+  desc,
   eq,
   gte,
+  lt,
   or,
   sql,
 } from "drizzle-orm";
@@ -690,8 +692,10 @@ function mapCodeToSummary (code: ReferralCodeRow): ReferralCodeSummary
   };
 }
 
-export async function getReferralDashboardData ():
-  Promise<ReferralDashboardData>
+export async function getReferralDashboardData (params?: {
+  year?: number;
+  month?: number | null;
+}): Promise<ReferralDashboardData>
 {
   const [partnerRows, codeRows, attributionRows] = await Promise.all([
     db.select().from(referralPartners),
@@ -718,6 +722,9 @@ export async function getReferralDashboardData ():
       totalCustomers: 0,
       totalRevenue: 0,
       totalCommission: 0,
+      periodOrders: 0,
+      periodRevenue: 0,
+      periodCommission: 0,
       lastOrderAt: null,
       codes: [],
     });
@@ -770,6 +777,88 @@ export async function getReferralDashboardData ():
       )
     );
 
+  // Period filters (paid/shipped, attributed orders)
+  const now = new Date();
+  const yearExpr = sql<number>`EXTRACT(YEAR FROM ${orders.createdAt})::int`;
+
+  const availableYearRows = await db
+    .select({ year: yearExpr })
+    .from(orders)
+    .where(
+      and(
+        or(eq(orders.status, "PAID"), eq(orders.status, "SHIPPED")),
+        sql`${orders.referralPartnerId} IS NOT NULL`
+      )
+    )
+    .groupBy(yearExpr)
+    .orderBy(desc(yearExpr));
+  const availableYears = availableYearRows
+    .map((row) => row.year)
+    .filter((year) => Number.isFinite(year))
+    .map((year) => Math.trunc(year));
+
+  const requestedYear = typeof params?.year === "number" ? params.year : Number.NaN;
+  const resolvedYear = Number.isFinite(requestedYear)
+    ? Math.trunc(requestedYear)
+    : (availableYears[0] ?? now.getFullYear());
+  const requestedMonth =
+    typeof params?.month === "number" ? params.month : (params?.month ?? null);
+  const resolvedMonth =
+    typeof requestedMonth === "number" &&
+      Number.isFinite(requestedMonth) &&
+      requestedMonth >= 1 &&
+      requestedMonth <= 12
+      ? Math.trunc(requestedMonth)
+      : null;
+
+  const periodStart = resolvedMonth
+    ? new Date(resolvedYear, resolvedMonth - 1, 1)
+    : new Date(resolvedYear, 0, 1);
+  const periodEnd = resolvedMonth
+    ? new Date(resolvedYear, resolvedMonth, 1)
+    : new Date(resolvedYear + 1, 0, 1);
+
+  const periodRows = await db
+    .select({
+      partnerId: orders.referralPartnerId,
+      revenue: sql<string>`COALESCE(SUM(${orders.subtotal}), 0)`,
+      commission: sql<string>`COALESCE(SUM(${orders.referralCommissionAmount}), 0)`,
+      orderCount: sql<number>`COUNT(*)::int`,
+    })
+    .from(orders)
+    .where(
+      and(
+        or(eq(orders.status, "PAID"), eq(orders.status, "SHIPPED")),
+        sql`${orders.referralPartnerId} IS NOT NULL`,
+        gte(orders.createdAt, periodStart),
+        lt(orders.createdAt, periodEnd)
+      )
+    )
+    .groupBy(orders.referralPartnerId);
+
+  let periodOrders = 0;
+  let periodRevenue = 0;
+  let periodCommission = 0;
+  for (const row of periodRows) {
+    const partnerId = row.partnerId ?? null;
+    if (!partnerId) {
+      continue;
+    }
+    const summary = partnerMap.get(partnerId);
+    if (!summary) {
+      continue;
+    }
+    const revenue = parseNumeric(row.revenue);
+    const commission = parseNumeric(row.commission);
+    const ordersCount = Number.isFinite(row.orderCount) ? row.orderCount : 0;
+    summary.periodOrders = ordersCount;
+    summary.periodRevenue = revenue;
+    summary.periodCommission = commission;
+    periodOrders += ordersCount;
+    periodRevenue += revenue;
+    periodCommission += commission;
+  }
+
   const partners = Array.from(partnerMap.values()).sort((a, b) =>
     a.name.localeCompare(b.name)
   );
@@ -777,6 +866,14 @@ export async function getReferralDashboardData ():
   const activePartners = partnerRows.filter((partner) => partner.active).length;
 
   return {
+    filters: {
+      years:
+        availableYears.length > 0
+          ? Array.from(new Set([resolvedYear, ...availableYears])).sort((a, b) => b - a)
+          : [resolvedYear],
+      selectedYear: resolvedYear,
+      selectedMonth: resolvedMonth,
+    },
     totals: {
       partners: partners.length,
       activePartners,
@@ -785,6 +882,9 @@ export async function getReferralDashboardData ():
       attributedOrdersLast30Days: recentOrders.length,
       lifetimeRevenue: toCurrency(lifetimeRevenue),
       lifetimeCommission: toCurrency(lifetimeCommission),
+      periodOrders,
+      periodRevenue: toCurrency(periodRevenue),
+      periodCommission: toCurrency(periodCommission),
     },
     partners,
   };

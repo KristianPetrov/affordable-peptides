@@ -30,6 +30,21 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   year: "numeric",
 });
 
+const MONTH_OPTIONS = [
+  { value: 1, label: "January" },
+  { value: 2, label: "February" },
+  { value: 3, label: "March" },
+  { value: 4, label: "April" },
+  { value: 5, label: "May" },
+  { value: 6, label: "June" },
+  { value: 7, label: "July" },
+  { value: 8, label: "August" },
+  { value: 9, label: "September" },
+  { value: 10, label: "October" },
+  { value: 11, label: "November" },
+  { value: 12, label: "December" },
+];
+
 type ReferralDashboardProps = {
   data: ReferralDashboardData;
 };
@@ -69,6 +84,11 @@ function formatMinimumOrderSubtotal(code: ReferralCodeSummary): string {
 export default function ReferralDashboard({ data }: ReferralDashboardProps) {
   const hasPartners = data.partners.length > 0;
   const activePartnerCount = data.partners.filter((partner) => partner.active).length;
+  const selectedMonthLabel = data.filters.selectedMonth
+    ? MONTH_OPTIONS.find((m) => m.value === data.filters.selectedMonth)?.label ??
+      `Month ${data.filters.selectedMonth}`
+    : "All months";
+  const selectedPeriodLabel = `${selectedMonthLabel} · ${data.filters.selectedYear}`;
 
   const overviewMetrics = [
     {
@@ -90,6 +110,16 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
       label: "Orders (30d)",
       value: data.totals.attributedOrdersLast30Days.toLocaleString(),
       sublabel: "Partner-driven",
+    },
+    {
+      label: "Revenue (period)",
+      value: currencyFormatter.format(data.totals.periodRevenue),
+      sublabel: selectedPeriodLabel,
+    },
+    {
+      label: "Commission (period)",
+      value: currencyFormatter.format(data.totals.periodCommission),
+      sublabel: selectedPeriodLabel,
     },
     {
       label: "Lifetime Revenue",
@@ -120,6 +150,54 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
             Monitor partner activity, total attributed revenue, and live codes at a glance.
           </p>
         </div>
+        <form
+          action="/admin"
+          method="get"
+          className="mt-6 flex flex-col gap-3 rounded-2xl border border-purple-900/40 bg-black/40 p-4 sm:flex-row sm:items-end sm:justify-between"
+        >
+          <input type="hidden" name="view" value="referrals" />
+          <div className="grid w-full gap-3 sm:grid-cols-2">
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
+                Year
+              </label>
+              <select
+                name="year"
+                defaultValue={String(data.filters.selectedYear)}
+                className="mt-2 w-full rounded-lg border border-purple-900/40 bg-black/70 px-3 py-2 text-sm text-white focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              >
+                {data.filters.years.map((year) => (
+                  <option key={year} value={String(year)}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
+                Month
+              </label>
+              <select
+                name="month"
+                defaultValue={data.filters.selectedMonth ? String(data.filters.selectedMonth) : "all"}
+                className="mt-2 w-full rounded-lg border border-purple-900/40 bg-black/70 px-3 py-2 text-sm text-white focus:border-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-400"
+              >
+                <option value="all">All months</option>
+                {MONTH_OPTIONS.map((month) => (
+                  <option key={month.value} value={String(month.value)}>
+                    {month.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="rounded-full bg-purple-600 px-6 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-white transition hover:bg-purple-500"
+          >
+            Apply
+          </button>
+        </form>
         <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {overviewMetrics.map((metric) => (
             <div
@@ -478,6 +556,22 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
                       <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
                         Performance
                       </p>
+                      <div>
+                        <p className="text-sm text-zinc-400">Revenue (period)</p>
+                        <p className="text-xl font-semibold text-white">
+                          {currencyFormatter.format(partner.periodRevenue)}
+                        </p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          {partner.periodOrders.toLocaleString()} order
+                          {partner.periodOrders === 1 ? "" : "s"} · {selectedPeriodLabel}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-zinc-400">Commission (period)</p>
+                        <p className="text-xl font-semibold text-white">
+                          {currencyFormatter.format(partner.periodCommission)}
+                        </p>
+                      </div>
                       <div>
                         <p className="text-sm text-zinc-400">Lifetime Revenue</p>
                         <p className="text-xl font-semibold text-white">

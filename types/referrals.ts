@@ -32,6 +32,9 @@ export type ReferralPartnerSummary = {
   totalCustomers: number;
   totalRevenue: number;
   totalCommission: number;
+  periodOrders: number;
+  periodRevenue: number;
+  periodCommission: number;
   lastOrderAt?: string | null;
   codes: ReferralCodeSummary[];
 };
@@ -44,9 +47,17 @@ export type ReferralDashboardTotals = {
   attributedOrdersLast30Days: number;
   lifetimeRevenue: number;
   lifetimeCommission: number;
+  periodOrders: number;
+  periodRevenue: number;
+  periodCommission: number;
 };
 
 export type ReferralDashboardData = {
+  filters: {
+    years: number[];
+    selectedYear: number;
+    selectedMonth: number | null;
+  };
   totals: ReferralDashboardTotals;
   partners: ReferralPartnerSummary[];
 };
