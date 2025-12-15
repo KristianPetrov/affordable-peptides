@@ -8,6 +8,7 @@ import
   eq,
   gte,
   lt,
+  ne,
   or,
   sql,
 } from "drizzle-orm";
@@ -722,9 +723,14 @@ export async function getReferralDashboardData (params?: {
       totalCustomers: 0,
       totalRevenue: 0,
       totalCommission: 0,
+      lifetimePotentialRevenue: 0,
+      lifetimePotentialCommission: 0,
       periodOrders: 0,
       periodRevenue: 0,
       periodCommission: 0,
+      periodPotentialOrders: 0,
+      periodPotentialRevenue: 0,
+      periodPotentialCommission: 0,
       lastOrderAt: null,
       codes: [],
     });
@@ -739,23 +745,12 @@ export async function getReferralDashboardData (params?: {
   }
 
   let totalCustomers = 0;
-  let lifetimeRevenue = 0;
-  let lifetimeCommission = 0;
   for (const attribution of attributionRows) {
     const summary = partnerMap.get(attribution.partnerId);
     if (!summary) {
       continue;
     }
-    const revenue = parseNumeric(attribution.lifetimeRevenue);
-    const commission = parseNumeric(
-      (attribution as { lifetimeCommission?: string | number | null })
-        .lifetimeCommission ?? 0
-    );
-    lifetimeRevenue += revenue;
-    lifetimeCommission += commission;
     summary.totalCustomers += 1;
-    summary.totalRevenue += revenue;
-    summary.totalCommission += commission;
     totalCustomers += 1;
     if (
       attribution.lastOrderAt &&
@@ -773,11 +768,12 @@ export async function getReferralDashboardData (params?: {
     .where(
       and(
         gte(orders.createdAt, cutoff),
+        ne(orders.status, "CANCELLED"),
         sql`${orders.referralPartnerId} IS NOT NULL`
       )
     );
 
-  // Period filters (paid/shipped, attributed orders)
+  // Period filters
   const now = new Date();
   const yearExpr = sql<number>`EXTRACT(YEAR FROM ${orders.createdAt})::int`;
 
@@ -786,7 +782,7 @@ export async function getReferralDashboardData (params?: {
     .from(orders)
     .where(
       and(
-        or(eq(orders.status, "PAID"), eq(orders.status, "SHIPPED")),
+        ne(orders.status, "CANCELLED"),
         sql`${orders.referralPartnerId} IS NOT NULL`
       )
     )
@@ -818,7 +814,8 @@ export async function getReferralDashboardData (params?: {
     ? new Date(resolvedYear, resolvedMonth, 1)
     : new Date(resolvedYear + 1, 0, 1);
 
-  const periodRows = await db
+  // Actual (paid/shipped) metrics for selected period
+  const periodActualRows = await db
     .select({
       partnerId: orders.referralPartnerId,
       revenue: sql<string>`COALESCE(SUM(${orders.subtotal}), 0)`,
@@ -839,7 +836,7 @@ export async function getReferralDashboardData (params?: {
   let periodOrders = 0;
   let periodRevenue = 0;
   let periodCommission = 0;
-  for (const row of periodRows) {
+  for (const row of periodActualRows) {
     const partnerId = row.partnerId ?? null;
     if (!partnerId) {
       continue;
@@ -857,6 +854,118 @@ export async function getReferralDashboardData (params?: {
     periodOrders += ordersCount;
     periodRevenue += revenue;
     periodCommission += commission;
+  }
+
+  // Potential (pending payment) metrics for selected period
+  const periodPotentialRows = await db
+    .select({
+      partnerId: orders.referralPartnerId,
+      revenue: sql<string>`COALESCE(SUM(${orders.subtotal}), 0)`,
+      commission: sql<string>`COALESCE(SUM(${orders.referralCommissionAmount}), 0)`,
+      orderCount: sql<number>`COUNT(*)::int`,
+    })
+    .from(orders)
+    .where(
+      and(
+        eq(orders.status, "PENDING_PAYMENT"),
+        sql`${orders.referralPartnerId} IS NOT NULL`,
+        gte(orders.createdAt, periodStart),
+        lt(orders.createdAt, periodEnd)
+      )
+    )
+    .groupBy(orders.referralPartnerId);
+
+  let periodPotentialOrders = 0;
+  let periodPotentialRevenue = 0;
+  let periodPotentialCommission = 0;
+  for (const row of periodPotentialRows) {
+    const partnerId = row.partnerId ?? null;
+    if (!partnerId) {
+      continue;
+    }
+    const summary = partnerMap.get(partnerId);
+    if (!summary) {
+      continue;
+    }
+    const revenue = parseNumeric(row.revenue);
+    const commission = parseNumeric(row.commission);
+    const ordersCount = Number.isFinite(row.orderCount) ? row.orderCount : 0;
+    summary.periodPotentialOrders = ordersCount;
+    summary.periodPotentialRevenue = revenue;
+    summary.periodPotentialCommission = commission;
+    periodPotentialOrders += ordersCount;
+    periodPotentialRevenue += revenue;
+    periodPotentialCommission += commission;
+  }
+
+  // Lifetime actual (paid/shipped) and potential (pending payment) totals
+  const [lifetimeActualRows, lifetimePotentialRows] = await Promise.all([
+    db
+      .select({
+        partnerId: orders.referralPartnerId,
+        revenue: sql<string>`COALESCE(SUM(${orders.subtotal}), 0)`,
+        commission: sql<string>`COALESCE(SUM(${orders.referralCommissionAmount}), 0)`,
+      })
+      .from(orders)
+      .where(
+        and(
+          or(eq(orders.status, "PAID"), eq(orders.status, "SHIPPED")),
+          sql`${orders.referralPartnerId} IS NOT NULL`
+        )
+      )
+      .groupBy(orders.referralPartnerId),
+    db
+      .select({
+        partnerId: orders.referralPartnerId,
+        revenue: sql<string>`COALESCE(SUM(${orders.subtotal}), 0)`,
+        commission: sql<string>`COALESCE(SUM(${orders.referralCommissionAmount}), 0)`,
+      })
+      .from(orders)
+      .where(
+        and(
+          eq(orders.status, "PENDING_PAYMENT"),
+          sql`${orders.referralPartnerId} IS NOT NULL`
+        )
+      )
+      .groupBy(orders.referralPartnerId),
+  ]);
+
+  let lifetimeRevenue = 0;
+  let lifetimeCommission = 0;
+  for (const row of lifetimeActualRows) {
+    const partnerId = row.partnerId ?? null;
+    if (!partnerId) {
+      continue;
+    }
+    const summary = partnerMap.get(partnerId);
+    if (!summary) {
+      continue;
+    }
+    const revenue = parseNumeric(row.revenue);
+    const commission = parseNumeric(row.commission);
+    summary.totalRevenue = revenue;
+    summary.totalCommission = commission;
+    lifetimeRevenue += revenue;
+    lifetimeCommission += commission;
+  }
+
+  let lifetimePotentialRevenue = 0;
+  let lifetimePotentialCommission = 0;
+  for (const row of lifetimePotentialRows) {
+    const partnerId = row.partnerId ?? null;
+    if (!partnerId) {
+      continue;
+    }
+    const summary = partnerMap.get(partnerId);
+    if (!summary) {
+      continue;
+    }
+    const revenue = parseNumeric(row.revenue);
+    const commission = parseNumeric(row.commission);
+    summary.lifetimePotentialRevenue = revenue;
+    summary.lifetimePotentialCommission = commission;
+    lifetimePotentialRevenue += revenue;
+    lifetimePotentialCommission += commission;
   }
 
   const partners = Array.from(partnerMap.values()).sort((a, b) =>
@@ -882,9 +991,14 @@ export async function getReferralDashboardData (params?: {
       attributedOrdersLast30Days: recentOrders.length,
       lifetimeRevenue: toCurrency(lifetimeRevenue),
       lifetimeCommission: toCurrency(lifetimeCommission),
+      lifetimePotentialRevenue: toCurrency(lifetimePotentialRevenue),
+      lifetimePotentialCommission: toCurrency(lifetimePotentialCommission),
       periodOrders,
       periodRevenue: toCurrency(periodRevenue),
       periodCommission: toCurrency(periodCommission),
+      periodPotentialOrders,
+      periodPotentialRevenue: toCurrency(periodPotentialRevenue),
+      periodPotentialCommission: toCurrency(periodPotentialCommission),
     },
     partners,
   };

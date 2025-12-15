@@ -122,6 +122,16 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
       sublabel: selectedPeriodLabel,
     },
     {
+      label: "Potential Revenue (period)",
+      value: currencyFormatter.format(data.totals.periodPotentialRevenue),
+      sublabel: `${data.totals.periodPotentialOrders.toLocaleString()} pending · ${selectedPeriodLabel}`,
+    },
+    {
+      label: "Potential Commission (period)",
+      value: currencyFormatter.format(data.totals.periodPotentialCommission),
+      sublabel: `${data.totals.periodPotentialOrders.toLocaleString()} pending · ${selectedPeriodLabel}`,
+    },
+    {
       label: "Lifetime Revenue",
       value: currencyFormatter.format(data.totals.lifetimeRevenue),
       sublabel: "Across all partners",
@@ -130,6 +140,16 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
       label: "Lifetime Commission",
       value: currencyFormatter.format(data.totals.lifetimeCommission),
       sublabel: "Owed to partners",
+    },
+    {
+      label: "Outstanding Revenue",
+      value: currencyFormatter.format(data.totals.lifetimePotentialRevenue),
+      sublabel: "Pending payment",
+    },
+    {
+      label: "Outstanding Commission",
+      value: currencyFormatter.format(data.totals.lifetimePotentialCommission),
+      sublabel: "Pending payment",
     },
     {
       label: "Active Partners",
@@ -573,6 +593,21 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
                         </p>
                       </div>
                       <div>
+                        <p className="text-sm text-zinc-400">Potential Revenue (period)</p>
+                        <p className="text-xl font-semibold text-white">
+                          {currencyFormatter.format(partner.periodPotentialRevenue)}
+                        </p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          {partner.periodPotentialOrders.toLocaleString()} pending · {selectedPeriodLabel}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-zinc-400">Potential Commission (period)</p>
+                        <p className="text-xl font-semibold text-white">
+                          {currencyFormatter.format(partner.periodPotentialCommission)}
+                        </p>
+                      </div>
+                      <div>
                         <p className="text-sm text-zinc-400">Lifetime Revenue</p>
                         <p className="text-xl font-semibold text-white">
                           {currencyFormatter.format(partner.totalRevenue)}
@@ -582,6 +617,18 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
                         <p className="text-sm text-zinc-400">Lifetime Commission</p>
                         <p className="text-xl font-semibold text-white">
                           {currencyFormatter.format(partner.totalCommission)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-zinc-400">Outstanding Revenue</p>
+                        <p className="text-xl font-semibold text-white">
+                          {currencyFormatter.format(partner.lifetimePotentialRevenue)}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-zinc-400">Outstanding Commission</p>
+                        <p className="text-xl font-semibold text-white">
+                          {currencyFormatter.format(partner.lifetimePotentialCommission)}
                         </p>
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm text-zinc-300">
