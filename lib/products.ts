@@ -138,7 +138,7 @@ const productDefinitions: ProductDefinition[] = [
     isFeatured: true,
     variants: [
       createVariant("5mg", 50, { mockupLabel: "/products/label-aod9604-5mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29337_AFFORD2WY8BJ", }),
-      createVariant("10mg", 80, "/products/label-aod9604-10mg-3ml.png"),
+      createVariant("10mg", 80, {mockupLabel:"/products/label-aod9604-10mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=30201_AFFORDQQB33U"}),
     ],
   },
   {
