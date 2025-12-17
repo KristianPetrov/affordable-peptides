@@ -45,7 +45,7 @@ export const siteMetadata = {
         "lab verified peptides",
         "tirzepatide",
         "retatrutide",
-        "GLP-1",
+        // "GLP-1",
     ],
     socialProfiles: {
         tiktok: "https://www.tiktok.com/@affordable.peptides",

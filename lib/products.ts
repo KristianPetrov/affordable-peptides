@@ -204,16 +204,14 @@ const productDefinitions: ProductDefinition[] = [
       createVariant(
         "No DAC + IPA (10mg)",
         70,
-        "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png"
+        {mockupLabel:"/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png",testResultUrl:"https://chromate.org/verify?c=29949_AFFORD4YYW61"}
       ),
       createVariant("With DAC (5mg)", 50, "/products/label-cjc-1295-dac-5mg-3ml.png"),
       createVariant("Without DAC (5mg)", 40, {mockupLabel:"/products/label-cjc-1295-wo-dac-5mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29953_AFFORD4C9564"}),
       createVariant(
         "Without DAC (10mg)",
         70,
-        {
-          mockupLabel:"/products/label-cjc-1295-wo-dac-10mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29949_AFFORD4YYW61"
-        }
+       "/products/label-cjc-1295-wo-dac-10mg-3ml.png"
       ),
     ],
   },
@@ -249,15 +247,6 @@ const productDefinitions: ProductDefinition[] = [
         mockupLabel: "/products/label-glow-70mg-3ml.png",
         testResultUrl: "https://chromate.org/verify?c=29438_AFFORD4N2GYT"
       }),
-    ],
-  },
-  {
-    name: "GLP-1",
-    researchFocus: "Incretin mimetic that improves satiety, glucose control, and weight reduction.",
-    detailedDescription: "GLP-1 receptor agonists are incretin-based peptides researched for their effects on satiety, glucose regulation, and body-weight reduction. These compounds are central to modern metabolic and cardiometabolic studies.",
-    categories: ["weight-metabolic"],
-    variants: [
-      createVariant("5mg", 40, "/products/label-glp1-5mg-3ml.png"),
     ],
   },
   {
@@ -299,10 +288,10 @@ const productDefinitions: ProductDefinition[] = [
   {
     name: "IGF-1 LR3",
     researchFocus: "Extended IGF signaling that supports muscle hyperplasia investigations.",
-    detailedDescription: "IGF-1 LR3 is a long-acting analog of insulin-like growth factor 1 designed to extend receptor interaction time. It's used in research on muscle hyperplasia, tissue repair, and cellular growth pathways.",
+    detailedDescription: "IGF-1 LR3 is a long-acting analog of insulin-like growth factor 1 designed to extend receptor interaction time. It's used in research on muscle hyperplasia, tissue repair, and cellular growth pathways. IGF-1 LR3 is a long, complex peptide, and due to its size, minor synthesis byproducts are normal. For this compound, 90–95% purity is widely accepted in research settings when the correct molecular weight and a dominant HPLC peak are present.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("1mg", 70, "/products/label-igf-1-lr3-1mg-3ml.png"),
+      createVariant("1mg", 70, {mockupLabel:"/products/label-igf-1-lr3-1mg-3ml.png",testResultUrl:"https://chromate.org/verify?c=30213_AFFORD62J2JY"}),
     ],
   },
   {

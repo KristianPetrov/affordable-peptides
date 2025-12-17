@@ -174,12 +174,12 @@ export const moleculesByProduct: MoleculeMap = {
             subtitle: "Copper tripeptide-1",
         }),
     ],
-    "GLP-1": [
-        createLocalMoleculeDefinition("glp-1", "GLP-1 (7-36) amide", {
-            format: "pdb",
-            fallback: rcsbSource("1D0R"),
-        }),
-    ],
+    // "GLP-1": [
+    //     createLocalMoleculeDefinition("glp-1", "GLP-1 (7-36) amide", {
+    //         format: "pdb",
+    //         fallback: rcsbSource("1D0R"),
+    //     }),
+    // ],
     Glutathione: [
         createLocalMoleculeDefinition(
             "glutathione",

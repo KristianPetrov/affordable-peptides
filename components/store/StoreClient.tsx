@@ -34,7 +34,6 @@ const POPULARITY_ORDER: string[] = [
   "Ipamorelin",
   "TB-500",
   "AOD 9604",
-  "GLP-1",
   "Tesamorelin",
   "BPC + TB Combo",
   "Vitamin B12 1mg/mL - 10ml Bottle",
