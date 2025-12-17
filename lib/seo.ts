@@ -45,6 +45,16 @@ export const siteMetadata = {
         "lab verified peptides",
         "tirzepatide",
         "retatrutide",
+        "peptide research company",
+        "affordable peptides research",
+        "affordable peptides online",
+        "buy research peptides",
+        "research peptides supplier",
+        "research peptides USA",
+        "research peptides for sale",
+        "laboratory research peptides",
+        "research grade peptides",
+        "peptides for scientific research"
         // "GLP-1",
     ],
     socialProfiles: {

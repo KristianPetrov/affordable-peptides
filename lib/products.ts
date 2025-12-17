@@ -167,7 +167,7 @@ const productDefinitions: ProductDefinition[] = [
       "This multidose vial delivers cyanocobalamin at 1mg/mL across a 10mL volume, giving labs a reliable source of injectable vitamin B12. It's commonly paired with metabolic, energy, liver-support, or methylation protocols where repeated sterile draws are required.",
     categories: ["support-essentials", "longevity-wellness"],
     variants: [
-      createVariant("10ml (1mg/mL)", 90, "/products/label-b12-10mg-10ml.png"),
+      createVariant("10ml (1mg/mL)", 60, "/products/label-b12-10mg-10ml.png"),
 
     ],
   },
@@ -234,7 +234,7 @@ const productDefinitions: ProductDefinition[] = [
     isFeatured: true,
     variants: [
       createVariant("50mg", 40, "/products/label-ghk-cu-50mg-3ml.png"),
-      createVariant("100mg", 70, "/products/label-ghk-cu-100mg-3ml.png"),
+      createVariant("100mg", 70, {mockupLabel:"/products/label-ghk-cu-100mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=30261_AFFORDARJ834"}),
     ],
   },
   {
