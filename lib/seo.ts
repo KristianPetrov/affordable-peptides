@@ -17,6 +17,22 @@ export type MarketingRoute = {
 
 const DEFAULT_SITE_NAME = "Affordable Peptides";
 const DEFAULT_SITE_URL = "https://affordablepeptides.life";
+
+function normalizeSiteUrl (input: string): string
+{
+    const trimmed = input.trim().replace(/\/+$/, "");
+    try {
+        const url = new URL(trimmed);
+        // Ensure we only keep the origin (no path/query/hash)
+        return url.origin;
+    } catch {
+        return DEFAULT_SITE_URL;
+    }
+}
+
+const SITE_URL = normalizeSiteUrl(
+    process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL,
+);
 const DEFAULT_DESCRIPTION =
     "Affordable Peptides delivers high-purity, research-grade peptides backed by transparent testing, fair pricing, and science-first integrity.";
 const DEFAULT_TAGLINE =
@@ -25,7 +41,10 @@ const DEFAULT_TAGLINE =
 export const siteMetadata = {
     name: DEFAULT_SITE_NAME,
     legalName: DEFAULT_SITE_NAME,
-    url: DEFAULT_SITE_URL,
+    // IMPORTANT: Keep this aligned with the *final* canonical domain Google should index.
+    // Set NEXT_PUBLIC_SITE_URL (e.g. https://www.example.com) to avoid sitemap/canonical URLs
+    // pointing at a host that immediately redirects (GSC: "Page with redirect").
+    url: SITE_URL,
     description: DEFAULT_DESCRIPTION,
     tagline: DEFAULT_TAGLINE,
     locale: "en-US",
@@ -84,8 +103,11 @@ export const robotsDisallowPaths = [
     "/account",
     "/account/",
     "/admin",
+    "/admin/",
     "/checkout",
+    "/checkout/",
     "/api",
+    "/api/",
 ] as const;
 
 const SCHEMA_CONTEXT = "https://schema.org";
