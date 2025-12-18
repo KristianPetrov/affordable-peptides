@@ -17,3 +17,5 @@ export default async function LegacyStoreProductsPage({ params }: PageProps) {
   permanentRedirect(`/store/product/${product.slug}`);
 }
 
+
+
