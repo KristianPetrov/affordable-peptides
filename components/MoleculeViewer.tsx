@@ -29,8 +29,10 @@ type ThreeDMolGlobal = {
   SurfaceType: Record<string, number>;
 };
 
-declare global {
-  interface Window {
+declare global
+{
+  interface Window
+  {
     $3Dmol?: ThreeDMolGlobal;
   }
 }
@@ -84,12 +86,13 @@ const spinnerDots = (
   </span>
 );
 
-export default function MoleculeViewer({
+export default function MoleculeViewer ({
   productName,
   molecules,
   variant = "card",
   className = "",
-}: MoleculeViewerProps) {
+}: MoleculeViewerProps)
+{
   const rootRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<GLViewerInstance | null>(null);
@@ -105,12 +108,14 @@ export default function MoleculeViewer({
     typeof window === "undefined" || typeof ResizeObserver === "undefined"
   );
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     if (isInView) {
       return;
     }
     const observer = new IntersectionObserver(
-      (entries) => {
+      (entries) =>
+      {
         if (entries.some((entry) => entry.isIntersecting)) {
           setIsInView(true);
           observer.disconnect();
@@ -124,7 +129,8 @@ export default function MoleculeViewer({
     return () => observer.disconnect();
   }, [isInView]);
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     if (typeof window === "undefined") {
       return;
     }
@@ -135,7 +141,8 @@ export default function MoleculeViewer({
     return () => mediaQuery.removeEventListener("change", handleChange);
   }, []);
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     if (typeof window === "undefined" || typeof ResizeObserver === "undefined") {
       return;
     }
@@ -161,20 +168,22 @@ export default function MoleculeViewer({
     };
   }, []);
 
-useEffect(() => {
-  const viewer = viewerRef.current;
-  if (!viewer) {
-    return;
-  }
+  useEffect(() =>
+  {
+    const viewer = viewerRef.current;
+    if (!viewer) {
+      return;
+    }
 
-  if (prefersReducedMotion) {
-    viewer.setSpin(false);
-  } else {
-    viewer.spin("y", 0.9);
-  }
-}, [prefersReducedMotion]);
+    if (prefersReducedMotion) {
+      viewer.setSpin(false);
+    } else {
+      viewer.spin("y", 0.9);
+    }
+  }, [prefersReducedMotion]);
 
-  const clampedIndex = useMemo(() => {
+  const clampedIndex = useMemo(() =>
+  {
     if (!molecules.length) {
       return 0;
     }
@@ -183,7 +192,8 @@ useEffect(() => {
 
   const activeMolecule = molecules.length ? molecules[clampedIndex] : null;
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     if (
       !isInView ||
       !activeMolecule ||
@@ -196,7 +206,8 @@ useEffect(() => {
     const abortController = new AbortController();
     let isMounted = true;
 
-    async function load() {
+    async function load ()
+    {
       setStatus("loading");
       setErrorMessage(null);
       try {
@@ -272,7 +283,8 @@ useEffect(() => {
 
     load();
 
-    return () => {
+    return () =>
+    {
       isMounted = false;
       abortController.abort();
     };
@@ -282,7 +294,8 @@ useEffect(() => {
 
   const config = variantConfig[variant];
 
-  const statusLabel = useMemo(() => {
+  const statusLabel = useMemo(() =>
+  {
     if (!molecules.length) {
       return "Structural data not configured";
     }
@@ -302,18 +315,29 @@ useEffect(() => {
 
   const showRetry = effectiveStatus === "error";
 
+  const overlayControls = variant === "card";
+  const showSelector = config.showControls && molecules.length > 1;
+
   return (
     <div
       ref={rootRef}
       className={`flex flex-col gap-3 ${variant === "hero" ? "h-full" : ""} ${className}`}
     >
-      <div className="relative flex-1 overflow-hidden rounded-[inherit] border border-purple-500/40 bg-gradient-to-br from-[#200532] via-[#0f001d] to-[#05000b]">
+      <div
+        className="relative flex-1 overflow-hidden rounded-[inherit] border border-purple-500/40 bg-gradient-to-br from-[#200532] via-[#0f001d] to-[#05000b]"
+      >
         <div
           ref={canvasRef}
           className="absolute inset-0"
           aria-label={`${productName} molecular visualization`}
           role="img"
         />
+        {overlayControls && showSelector && (
+          <div
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 via-black/35 to-transparent"
+            aria-hidden
+          />
+        )}
         {(effectiveStatus !== "ready" || !activeMolecule) && (
           <div
             className={`absolute inset-0 flex flex-col items-center justify-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] ${config.overlayTone}`}
@@ -335,27 +359,38 @@ useEffect(() => {
         )}
       </div>
 
-      {config.showControls && molecules.length > 1 && (
-        <div className="flex flex-wrap gap-2">
-          {molecules.map((molecule, index) => {
+      {showSelector && (<>
+        <div
+          className={
+            overlayControls
+              ? "absolute bottom-3 left-3 right-3 flex flex-nowrap items-center gap-2 overflow-x-auto rounded-2xl border border-purple-500/30 bg-black/35 p-2 backdrop-blur"
+              : "flex flex-wrap gap-2"
+          }
+        >
+          {molecules.map((molecule, index) =>
+          {
             const isActive = index === clampedIndex;
             return (
               <button
                 key={molecule.slug}
                 type="button"
-                className={`rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${
-                  isActive
-                    ? "border-purple-500 bg-purple-500/20 text-white shadow-[0_0_15px_rgba(168,85,247,0.35)]"
-                    : "border-purple-900/40 text-purple-200 hover:border-purple-400 hover:text-white"
-                }`}
+                className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${isActive
+                  ? "border-purple-500 bg-purple-500/20 text-white shadow-[0_0_15px_rgba(168,85,247,0.35)]"
+                  : "border-purple-900/40 text-purple-200 hover:border-purple-400 hover:text-white"
+                  }`}
                 onClick={() => setActiveIndex(index)}
                 aria-pressed={isActive}
               >
                 {molecule.displayName}
               </button>
             );
-          })}
-        </div>
+          })} </div>
+
+          <span className="text-xs text-purple-200">
+            {statusLabel}
+            {activeMolecule?.subtitle ? ` • ${activeMolecule.subtitle}` : ""}
+          </span>
+</>
       )}
 
       {config.showCaption && (
@@ -379,7 +414,8 @@ useEffect(() => {
   );
 }
 
-function load3DMol(): Promise<ThreeDMolGlobal> {
+function load3DMol (): Promise<ThreeDMolGlobal>
+{
   if (typeof window === "undefined") {
     return Promise.reject(new Error("3Dmol requires a browser environment"));
   }
@@ -390,13 +426,15 @@ function load3DMol(): Promise<ThreeDMolGlobal> {
 
   if (!moduleState.promise) {
     moduleState.promise = import("3dmol")
-      .then((module) => {
+      .then((module) =>
+      {
         const hydratedModule = module as unknown as ThreeDMolModule;
         const threeDMol = hydratedModule.default ?? hydratedModule;
         window.$3Dmol = threeDMol;
         return threeDMol;
       })
-      .catch((error) => {
+      .catch((error) =>
+      {
         moduleState.promise = null;
         throw (error instanceof Error
           ? error
@@ -407,10 +445,11 @@ function load3DMol(): Promise<ThreeDMolGlobal> {
   return moduleState.promise;
 }
 
-async function loadStructureData(
+async function loadStructureData (
   molecule: MoleculeDefinition,
   signal: AbortSignal
-): Promise<LoadedStructure> {
+): Promise<LoadedStructure>
+{
   const cacheKey = JSON.stringify([
     molecule.slug,
     molecule.source,
@@ -448,16 +487,18 @@ async function loadStructureData(
   return remoteResult;
 }
 
-function isRelativeLocalSource(
+function isRelativeLocalSource (
   source: MoleculeStructureSource
-): source is Extract<MoleculeStructureSource, { type: "url" }> {
+): source is Extract<MoleculeStructureSource, { type: "url" }>
+{
   return source.type === "url" && source.url.startsWith("/");
 }
 
-async function tryLoadLocalSource(
+async function tryLoadLocalSource (
   source: Extract<MoleculeStructureSource, { type: "url" }>,
   signal: AbortSignal
-): Promise<LoadedStructure | null> {
+): Promise<LoadedStructure | null>
+{
   try {
     const response = await fetch(source.url, { signal });
     if (!response.ok) {
@@ -477,10 +518,11 @@ async function tryLoadLocalSource(
   }
 }
 
-async function fetchStructureFromSource(
+async function fetchStructureFromSource (
   source: MoleculeStructureSource,
   signal: AbortSignal
-): Promise<LoadedStructure> {
+): Promise<LoadedStructure>
+{
   switch (source.type) {
     case "pubchem":
       return fetchFromPubChem(source, signal);
@@ -518,10 +560,11 @@ async function fetchStructureFromSource(
   }
 }
 
-async function fetchFromPubChem(
+async function fetchFromPubChem (
   source: Extract<MoleculeStructureSource, { type: "pubchem" }>,
   signal: AbortSignal
-): Promise<LoadedStructure> {
+): Promise<LoadedStructure>
+{
   const queryType = source.queryType ?? "name";
   const recordPreference = source.recordType ?? "auto";
   const recordTypes: ("3d" | "2d")[] =

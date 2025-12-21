@@ -92,7 +92,7 @@ const canonicalMolecules = {
     ghkCu: createLocalMoleculeDefinition("ghk-cu", "GHK-Cu", {
         fallback: pubchemSource("378611", {
             queryType: "cid",
-            recordType: "2d",
+            recordType: "3d",
         }),
     }),
     kpv: createLocalMoleculeDefinition("kpv", "KPV (Lys-Pro-Val)", {
@@ -225,27 +225,47 @@ export const moleculesByProduct: MoleculeMap = {
     ],
     "Lipo-C": [
         createLocalMoleculeDefinition("methionine", "Methionine", {
+            subtitle: "Included in both options",
             fallback: pubchemSource("Methionine"),
         }),
         createLocalMoleculeDefinition("inositol", "Inositol", {
+            subtitle: "Included in both options",
             fallback: pubchemSource("Inositol"),
         }),
         createLocalMoleculeDefinition("choline", "Choline", {
+            subtitle: "Included in both options",
             fallback: pubchemSource("Choline"),
         }),
+        {
+            slug: "l-carnitine",
+            displayName: "L-Carnitine",
+            subtitle: "Included in both options",
+            source: pubchemSource("10219816", {
+                queryType: "cid",
+                recordType: "2d",
+            }),
+        },
+        {
+            slug: "l-arginine",
+            displayName: "L-Arginine",
+            subtitle: "Included in both options",
+            source: pubchemSource("6322", {
+                queryType: "cid",
+                recordType: "3d",
+            }),
+        },
+        {
+            slug: "dexpanthenol",
+            displayName: "Dexpanthenol (Vitamin B5)",
+            subtitle: "Included in both options",
+            source: pubchemSource("131204", {
+                queryType: "cid",
+                recordType: "3d",
+            }),
+        },
         createLocalMoleculeDefinition("b12", "Cyanocobalamin (B12)", {
+            subtitle: "Included in With B12 option",
             fallback: pubchemSource("Cyanocobalamin"),
-        }),
-    ],
-    "Lipo-C (No B12)": [
-        createLocalMoleculeDefinition("methionine", "Methionine", {
-            fallback: pubchemSource("Methionine"),
-        }),
-        createLocalMoleculeDefinition("inositol", "Inositol", {
-            fallback: pubchemSource("Inositol"),
-        }),
-        createLocalMoleculeDefinition("choline", "Choline", {
-            fallback: pubchemSource("Choline"),
         }),
     ],
     "MOTS-C": [
@@ -272,6 +292,16 @@ export const moleculesByProduct: MoleculeMap = {
         createLocalMoleculeDefinition("semax", "Semax", {
             fallback: pubchemSource("9811102", { queryType: "cid" }),
         }),
+    ],
+    Sermorelin: [
+        {
+            slug: "sermorelin",
+            displayName: "Sermorelin",
+            source: pubchemSource("16132413", {
+                queryType: "cid",
+                recordType: "2d",
+            }),
+        },
     ],
     "SLU-PP-332": [
         createLocalMoleculeDefinition("slu-pp-332", "SLU-PP-332", {

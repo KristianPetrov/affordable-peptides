@@ -138,7 +138,7 @@ const productDefinitions: ProductDefinition[] = [
     isFeatured: true,
     variants: [
       createVariant("5mg", 50, { mockupLabel: "/products/label-aod9604-5mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29337_AFFORD2WY8BJ", }),
-      createVariant("10mg", 80, {mockupLabel:"/products/label-aod9604-10mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=30201_AFFORDQQB33U"}),
+      createVariant("10mg", 80, { mockupLabel: "/products/label-aod9604-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=30201_AFFORDQQB33U" }),
     ],
   },
   {
@@ -180,8 +180,10 @@ const productDefinitions: ProductDefinition[] = [
       createVariant(
         "20mg total (10mg each)",
         80,
-    {mockupLabel:"/products/label-bpc157-tb-500-20mg-3ml.png",
-       testResultUrl:"https://chromate.org/verify?c=29951_AFFORDL2DS59"}
+        {
+          mockupLabel: "/products/label-bpc157-tb-500-20mg-3ml.png",
+          testResultUrl: "https://chromate.org/verify?c=29951_AFFORDL2DS59"
+        }
       ),
     ],
   },
@@ -204,14 +206,14 @@ const productDefinitions: ProductDefinition[] = [
       createVariant(
         "No DAC + IPA (10mg)",
         70,
-        {mockupLabel:"/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png",testResultUrl:"https://chromate.org/verify?c=29949_AFFORD4YYW61"}
+        { mockupLabel: "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29949_AFFORD4YYW61" }
       ),
       createVariant("With DAC (5mg)", 50, "/products/label-cjc-1295-dac-5mg-3ml.png"),
-      createVariant("Without DAC (5mg)", 40, {mockupLabel:"/products/label-cjc-1295-wo-dac-5mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29953_AFFORD4C9564"}),
+      createVariant("Without DAC (5mg)", 40, { mockupLabel: "/products/label-cjc-1295-wo-dac-5mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29953_AFFORD4C9564" }),
       createVariant(
         "Without DAC (10mg)",
         70,
-       "/products/label-cjc-1295-wo-dac-10mg-3ml.png"
+        "/products/label-cjc-1295-wo-dac-10mg-3ml.png"
       ),
     ],
   },
@@ -234,7 +236,7 @@ const productDefinitions: ProductDefinition[] = [
     isFeatured: true,
     variants: [
       createVariant("50mg", 40, "/products/label-ghk-cu-50mg-3ml.png"),
-      createVariant("100mg", 70, {mockupLabel:"/products/label-ghk-cu-100mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=30261_AFFORDARJ834"}),
+      createVariant("100mg", 70, { mockupLabel: "/products/label-ghk-cu-100mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=30261_AFFORDARJ834" }),
     ],
   },
   {
@@ -258,8 +260,10 @@ const productDefinitions: ProductDefinition[] = [
       createVariant(
         "1500mg",
         50,
-        {mockupLabel:"/products/label-glutathione-1500mg-10ml.png",
-          testResultUrl:"https://chromate.org/verify?c=29998_AFFORDB3Z5T9"}
+        {
+          mockupLabel: "/products/label-glutathione-1500mg-10ml.png",
+          testResultUrl: "https://chromate.org/verify?c=29998_AFFORDB3Z5T9"
+        }
       ),
     ],
   },
@@ -271,8 +275,8 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant("10,000 IU", 60, {
         mockupLabel: "/products/label-hcg-10k-iu-3ml.png",
-         testResultUrl: "https://chromate.org/verify?c=29531_AFFORD8269U5"
-        }),
+        testResultUrl: "https://chromate.org/verify?c=29531_AFFORD8269U5"
+      }),
     ],
   },
   {
@@ -291,7 +295,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "IGF-1 LR3 is a long-acting analog of insulin-like growth factor 1 designed to extend receptor interaction time. It's used in research on muscle hyperplasia, tissue repair, and cellular growth pathways. IGF-1 LR3 is a long, complex peptide, and due to its size, minor synthesis byproducts are normal. For this compound, 90–95% purity is widely accepted in research settings when the correct molecular weight and a dominant HPLC peak are present.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("1mg", 70, {mockupLabel:"/products/label-igf-1-lr3-1mg-3ml.png",testResultUrl:"https://chromate.org/verify?c=30213_AFFORD62J2JY"}),
+      createVariant("1mg", 70, { mockupLabel: "/products/label-igf-1-lr3-1mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=30213_AFFORD62J2JY" }),
     ],
   },
   {
@@ -300,8 +304,20 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Ipamorelin is a selective growth hormone secretagogue (GHRP) studied for its ability to stimulate pulsatile GH release with minimal impact on cortisol and prolactin. It's frequently paired with GHRH analogs in research exploring physiologic GH patterns.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("5mg", 30, {mockupLabel:"/products/label-ipamorelin-5mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29950_AFFORDW7HC2Q"}),
+      createVariant("5mg", 30, { mockupLabel: "/products/label-ipamorelin-5mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29950_AFFORDW7HC2Q" }),
       createVariant("10mg", 50, "/products/label-ipamorelin-10mg-3ml.png"),
+    ],
+  },
+  {
+    name: "Sermorelin",
+    researchFocus:
+      "GHRH analog studied to support pulsatile growth hormone release and recovery signaling.",
+    detailedDescription:
+      "Sermorelin is a growth hormone–releasing hormone (GHRH) analog researched for promoting physiologic, pulsatile growth hormone secretion. It is commonly explored in endocrine and recovery-focused studies, including protocols that investigate sleep quality, body composition, and GH/IGF-1 axis dynamics.",
+    categories: ["hormone-growth", "recovery-performance"],
+    variants: [
+      createVariant("5mg", 40, "/products/label-sermorelin-5mg-3ml.png"),
+      createVariant("10mg", 70, "/products/label-sermorelin-10mg-3ml.png"),
     ],
   },
   {
@@ -312,7 +328,8 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant("80mg", 100, {
         mockupLabel: "/products/label-klow-80mg-3ml.png",
-         testResultUrl: "https://drive.google.com/file/d/1w18p5MiL1RLgvR6m6vP2r12Id2gV-V96/view" }),
+        testResultUrl: "https://drive.google.com/file/d/1w18p5MiL1RLgvR6m6vP2r12Id2gV-V96/view"
+      }),
     ],
   },
 
@@ -323,7 +340,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
       createVariant("5mg", 40, "/products/label-kpv-5mg-3ml.png"),
-      createVariant("10mg", 70, {mockupLabel:"/products/label-kpv-10mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=30115_AFFORDED7CA4"}),
+      createVariant("10mg", 70, { mockupLabel: "/products/label-kpv-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=30115_AFFORDED7CA4" }),
     ],
   },
   {
@@ -341,20 +358,12 @@ const productDefinitions: ProductDefinition[] = [
   },
   {
     name: "Lipo-C",
-    researchFocus: "MIC + B12 blend that mobilizes liver fat and supports methylation.",
-    detailedDescription: "Lipo-C combines methionine, inositol, choline (MIC), and vitamin B12, and is often used in research on liver fat metabolism and methylation support. It's a popular option in weight-management–oriented protocols in laboratory and clinical research settings.",
+    researchFocus: "MIC blend with optional B12 to support liver-fat metabolism and methylation research.",
+    detailedDescription: "Lipo-C is a MIC formula (methionine, inositol, choline) offered in two options: a classic MIC + B12 blend and a MIC-only option for protocols that avoid methyl donors or B vitamins. Researchers often include it in studies focused on liver fat metabolism, energy signaling, and methylation support.",
     categories: ["weight-metabolic"],
     variants: [
-      createVariant("10ml", 60, "/products/label-lipo-c-10ml.png"),
-    ],
-  },
-  {
-    name: "Lipo-C (No B12)",
-    researchFocus: "MIC-only formula for clients who avoid methyl donors or B vitamins.",
-    detailedDescription: "This Lipo-C variant provides methionine, inositol, and choline only, omitting B12 for researchers working with subjects who avoid methyl donors or B vitamins. It targets the same liver-fat and methylation pathways while allowing more protocol flexibility.",
-    categories: ["weight-metabolic"],
-    variants: [
-      createVariant("10ml", 60, "/products/label-lipo-c-wo-b12-10ml.png"),
+      createVariant("10ml (With B12)", 60, "/products/label-lipo-c-10ml.png"),
+      createVariant("10ml (No B12)", 60, "/products/label-lipo-c-wo-b12-10ml.png"),
     ],
   },
   {
@@ -363,8 +372,8 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "MOTS-C is a mitochondrial-derived peptide gaining attention for its role in insulin sensitivity, metabolic flexibility, and endurance in preclinical models. It's widely viewed as an \"exercise-mimetic\" candidate in longevity and performance research.",
     categories: ["weight-metabolic", "longevity-wellness"],
     variants: [
-      createVariant("10mg", 40, {mockupLabel:"/products/label-mots-c-10mg-3ml.png", testResultUrl:"https://chromate.org/verify?c=29956_AFFORDK61J7U"}),
-      createVariant("40mg", 100, {mockupLabel:"/products/label-mots-c-40mg-3ml.png",testResultUrl:"https://chromate.org/verify?c=29957_AFFORDT4658D"}),
+      createVariant("10mg", 40, { mockupLabel: "/products/label-mots-c-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29956_AFFORDK61J7U" }),
+      createVariant("40mg", 100, { mockupLabel: "/products/label-mots-c-40mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29957_AFFORDT4658D" }),
     ],
   },
   {
@@ -377,8 +386,8 @@ const productDefinitions: ProductDefinition[] = [
       createVariant("500mg", 60, "/products/label-nad-500mg-10ml.png"),
       createVariant("1000mg", 100, {
         mockupLabel: "/products/label-nad-1000mg-10ml.png",
-         testResultUrl: "https://chromate.org/verify?c=29420_AFFORDFJF486"
-        }),
+        testResultUrl: "https://chromate.org/verify?c=29420_AFFORDFJF486"
+      }),
     ],
 
   },
@@ -440,7 +449,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["hormone-growth", "weight-metabolic"],
     variants: [
       createVariant("10mg", 60, { mockupLabel: "/products/label-tesamorelin-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29111_AFFORDX6932D" }),
-      createVariant("20mg", 100, {mockupLabel:"/products/label-tesamorelin-20mg-3ml.png",testResultUrl:"https://chromate.org/verify?c=29952_AFFORDBP2149"}),
+      createVariant("20mg", 100, { mockupLabel: "/products/label-tesamorelin-20mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29952_AFFORDBP2149" }),
     ],
   },
   {
