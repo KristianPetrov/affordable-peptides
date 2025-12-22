@@ -293,15 +293,7 @@ export const moleculesByProduct: MoleculeMap = {
             fallback: pubchemSource("9811102", { queryType: "cid" }),
         }),
     ],
-    Sermorelin: [
-        {
-            slug: "sermorelin",
-            displayName: "Sermorelin",
-            source: pubchemSource("16132413", {
-                queryType: "cid",
-                recordType: "2d",
-            }),
-        },
+    Sermorelin: [createLocalMoleculeDefinition("sermorelin", "Sermorelin", {fallback: pubchemSource("16132413", { queryType: "cid", recordType: "2d" }) }),
     ],
     "SLU-PP-332": [
         createLocalMoleculeDefinition("slu-pp-332", "SLU-PP-332", {
