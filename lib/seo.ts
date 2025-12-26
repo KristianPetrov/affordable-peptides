@@ -81,6 +81,7 @@ export const siteMetadata = {
         instagram:
             "https://www.instagram.com/affordablepeptides/?utm_source=ig_web_button_share_sheet",
         youtube: "https://www.youtube.com/@AffordablePeptides",
+        facebook: "https://www.facebook.com/people/Affordable-Peptides/61584706591479/",
     },
 } as const;
 

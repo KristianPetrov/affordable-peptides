@@ -92,10 +92,12 @@ export const metadata: Metadata = {
       siteMetadata.socialProfiles.tiktok,
       siteMetadata.socialProfiles.instagram,
       siteMetadata.socialProfiles.youtube,
+      siteMetadata.socialProfiles.facebook,
     ].join(","),
     "social:tiktok": siteMetadata.socialProfiles.tiktok,
     "social:instagram": siteMetadata.socialProfiles.instagram,
     "social:youtube": siteMetadata.socialProfiles.youtube,
+    "social:facebook": siteMetadata.socialProfiles.facebook,
     // Additional meta tags for better SEO
     "og:image:secure_url": socialImage,
     "og:image:type": "image/png",

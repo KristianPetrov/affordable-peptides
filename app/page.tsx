@@ -10,7 +10,8 @@ import HeroShowcase from "@/components/home/HeroShowcase";
 import MissionSection from "@/components/home/MissionSection";
 import ResearchSection from "@/components/home/ResearchSection";
 import VisionSection from "@/components/home/VisionSection";
-import {
+import
+{
   featuredProducts,
   peptideProducts,
   type Product,
@@ -19,7 +20,8 @@ import { absoluteUrl, siteMetadata } from "@/lib/seo";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
-function TikTokIcon(props: IconProps) {
+function TikTokIcon (props: IconProps)
+{
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
       <path d="M21 7.5c-1.9-.1-3.7-.9-5.1-2.2v8.9c0 3.6-2.9 6.5-6.5 6.5S3 17.8 3 14.2c0-3.1 2.2-5.8 5.2-6.4v3.4c-1.1.5-1.8 1.6-1.8 3 0 1.8 1.4 3.2 3.2 3.2s3.2-1.4 3.2-3.2V2h3.6c.4 1.9 1.9 3.4 3.8 3.8V7.5z" />
@@ -27,7 +29,8 @@ function TikTokIcon(props: IconProps) {
   );
 }
 
-function InstagramIcon(props: IconProps) {
+function InstagramIcon (props: IconProps)
+{
   return (
     <svg
       viewBox="0 0 24 24"
@@ -44,11 +47,30 @@ function InstagramIcon(props: IconProps) {
   );
 }
 
-function YouTubeIcon(props: IconProps) {
+function YouTubeIcon (props: IconProps)
+{
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
+      <rect
+        x={3.25}
+        y={6.75}
+        width={17.5}
+        height={10.5}
+        rx={3}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+      />
+      <path d="m11 10 4 2-4 2v-4Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+function FacebookIcon (props: IconProps)
+{
   return (
     <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M21.6 8.2c-.2-1-1-1.8-2-2C17.8 6 12 6 12 6s-5.8 0-7.6.2c-1 .2-1.8 1-2 2C2 10 2 12 2 12s0 2 .4 3.8c.2 1 1 1.8 2 2 1.8.2 7.6.2 7.6.2s5.8 0 7.6-.2c1-.2 1.8-1 2-2 .4-1.8.4-3.8.4-3.8s0-2-.4-3.8Z" />
-      <path d="m10 9 5 3-5 3V9Z" opacity={0.9} />
+      <path d="M13.5 22v-8h2.7l.5-3h-3.2V9.1c0-.9.4-1.5 1.6-1.5H17V5.1c-.4-.1-1.6-.2-3-.2-3 0-5 1.8-5 5.2V11H6.3v3H9v8h4.5Z" />
     </svg>
   );
 }
@@ -60,7 +82,6 @@ type SocialLink = {
   label: string;
   handle: string;
   href: string;
-  description: string;
   Icon: (props: IconProps) => ReactElement;
 };
 
@@ -69,22 +90,25 @@ const socialLinks: SocialLink[] = [
     label: "TikTok",
     handle: "@affordable.peptides",
     href: siteMetadata.socialProfiles.tiktok,
-    description: "Behind-the-scenes lab drops",
     Icon: TikTokIcon,
   },
   {
     label: "Instagram",
     handle: "@affordablepeptides",
     href: siteMetadata.socialProfiles.instagram,
-    description: "Product spotlights & quality updates",
     Icon: InstagramIcon,
   },
   {
     label: "YouTube",
     handle: "@AffordablePeptides",
     href: siteMetadata.socialProfiles.youtube,
-    description: "Long-form education & walkthroughs",
     Icon: YouTubeIcon,
+  },
+  {
+    label: "Facebook",
+    handle: "Affordable Peptides",
+    href: siteMetadata.socialProfiles.facebook,
+    Icon: FacebookIcon,
   },
 ] as const;
 
@@ -118,7 +142,8 @@ export const metadata: Metadata = {
   },
 };
 
-function getShowcaseProducts(): Product[] {
+function getShowcaseProducts (): Product[]
+{
   const prioritySlug = "tirzepatide";
   const featured = [...featuredProducts];
   const priorityProduct = featured.find((product) => product.slug === prioritySlug);
@@ -138,7 +163,8 @@ function getShowcaseProducts(): Product[] {
   return [...selection, ...remainingPool.slice(0, 3 - selection.length)];
 }
 
-export default function Home() {
+export default function Home ()
+{
   const showcaseProducts = getShowcaseProducts();
 
   return (
@@ -283,20 +309,16 @@ export default function Home() {
                         href={link.href}
                         target="_blank"
                         rel="noreferrer noopener"
+                        aria-label={`${link.label} (${link.handle})`}
                         className="flex items-center justify-between gap-4 rounded-xl border border-purple-800/50 bg-purple-500/5 px-4 py-3 text-sm text-white transition hover:border-purple-400 hover:bg-purple-500/10"
                       >
                         <span className="flex items-center gap-3">
                           <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10 text-purple-200">
                             <Icon className="h-5 w-5" />
                           </span>
-                          <span>
-                            {link.label}
-                            <span className="block text-xs font-semibold uppercase tracking-[0.35em] text-purple-200">
-                              {link.handle}
-                            </span>
-                          </span>
+                          <span className="font-semibold text-white">{link.handle}</span>
                         </span>
-                        <span className="text-xs text-zinc-400">{link.description}</span>
+                        <span className="sr-only">{link.label}</span>
                       </Link>
                     ))}
                   </div>
