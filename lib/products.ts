@@ -294,8 +294,11 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Recombinant human growth hormone (HGH) has a long research history in growth-hormone deficiency, body composition, and recovery. Studies have explored its effects on lean mass, fat distribution, and performance-related endpoints under controlled conditions.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("10 IU kit", 200, { mockupLabel: "/products/label-hgh-10iu-3ml.png", testResultUrl: "https://chromate.org/verify?c=30364_AFFORD7CZE3V" }),
-      createVariant("15 IU kit", 250, "/products/label-hgh-15iu-3ml.png"),
+      createVariant("100 IU kit (10 bottles × 10 IU)", 200, {
+        mockupLabel: "/products/label-hgh-10iu-3ml.png",
+        testResultUrl: "https://chromate.org/verify?c=30364_AFFORD7CZE3V",
+      }),
+      createVariant("150 IU kit (10 bottles × 15 IU)", 250, "/products/label-hgh-15iu-3ml.png"),
     ],
   },
   {

@@ -100,7 +100,7 @@ export default function ProductMockup ({
       {glow ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute -inset-5 rounded-[40px] bg-[radial-linear(circle_at_top,_rgba(168,85,247,0.45),_transparent_65%)] blur-3xl opacity-70"
+          className="pointer-events-none absolute -inset-5 rounded-[40px] bg-[radial-linear(circle_at_top,_rgba(168,85,247,0.45), transparent_65%)] blur-3xl opacity-70"
         />
       ) : null}
       <div className="absolute inset-[6%] rounded-[36px] bg-linear-to-b from-[#12001f] via-[#06000b] to-black" />
