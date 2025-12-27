@@ -1,11 +1,12 @@
-export default function ResearchSection() {
+export default function ResearchSection ()
+{
   return (
     <section
       id="research"
       className="relative px-6 sm:px-12 lg:px-16"
       aria-labelledby="research-heading"
     >
-      <div className="relative mx-auto max-w-5xl space-y-10 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#0b0011] via-[#140024] to-[#1d0032] px-6 py-14 shadow-[0_22px_65px_rgba(55,0,105,0.45)] sm:px-12 sm:py-16">
+      <div className="relative mx-auto max-w-5xl space-y-10 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#0b0011] via-[#140024] to-[#1d0032] px-6 py-14 shadow-[0_22px_65px_rgba(55,0,105,0.45)] sm:px-12 sm:py-16">
         <div className="space-y-4 text-center">
           <span className="inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
             Research & Facts

@@ -2,11 +2,12 @@ import { redirect } from "next/navigation";
 import { auth, signIn } from "@/lib/auth";
 import NavBar from "@/components/NavBar";
 
-export default async function LoginPage({
+export default async function LoginPage ({
   searchParams,
 }: {
   searchParams: Promise<{ callbackUrl?: string; error?: string }>;
-}) {
+})
+{
   const session = await auth();
   const params = await searchParams;
 
@@ -23,7 +24,7 @@ export default async function LoginPage({
     <div className="min-h-screen bg-black text-zinc-100">
       <NavBar />
       <main className="flex min-h-[60vh] items-center justify-center px-6">
-        <div className="w-full max-w-md rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+        <div className="w-full max-w-md rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
           <h1 className="mb-6 text-2xl font-semibold text-white">
             Admin Login
           </h1>
@@ -33,7 +34,8 @@ export default async function LoginPage({
             </div>
           )}
           <form
-            action={async (formData) => {
+            action={async (formData) =>
+            {
               "use server";
               const email = formData.get("email");
               const password = formData.get("password");

@@ -5,10 +5,12 @@ import NavBar from "@/components/NavBar";
 import { AccountSidebar } from "@/components/account/AccountSidebar";
 import { auth, signOut } from "@/lib/auth";
 
-async function SignOutButton() {
+async function SignOutButton ()
+{
   return (
     <form
-      action={async () => {
+      action={async () =>
+      {
         "use server";
         await signOut({ redirectTo: "/" });
       }}
@@ -23,11 +25,12 @@ async function SignOutButton() {
   );
 }
 
-export default async function AccountLayout({
+export default async function AccountLayout ({
   children,
 }: {
   children: ReactNode;
-}) {
+})
+{
   const session = await auth();
 
   if (!session) {
@@ -39,7 +42,7 @@ export default async function AccountLayout({
       <NavBar />
       <main className="px-6 py-12 sm:px-12 lg:px-16">
         <div className="mx-auto max-w-6xl gap-6 lg:grid lg:grid-cols-[260px,1fr]">
-          <div className="mb-6 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)] lg:mb-0">
+          <div className="mb-6 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)] lg:mb-0">
             <AccountSidebar user={session.user} />
             <div className="mt-8">
               <SignOutButton />

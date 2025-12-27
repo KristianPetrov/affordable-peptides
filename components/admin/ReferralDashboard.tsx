@@ -160,7 +160,7 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
 
   return (
     <div className="space-y-10">
-      <section className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6">
+      <section className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6">
         <div className="flex flex-col gap-2 border-b border-purple-900/40 pb-4">
           <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
             Referral Program Overview
@@ -239,7 +239,7 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
       <section className="grid gap-6 lg:grid-cols-2">
         <form
           action={createReferralPartnerAction}
-          className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6"
+          className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6"
         >
           <div className="flex flex-col gap-2 border-b border-purple-900/40 pb-4">
             <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
@@ -345,7 +345,7 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
 
         <form
           action={createReferralCodeAction}
-          className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6"
+          className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6"
         >
           <div className="flex flex-col gap-2 border-b border-purple-900/40 pb-4">
             <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
@@ -525,7 +525,7 @@ export default function ReferralDashboard({ data }: ReferralDashboardProps) {
               return (
                 <article
                   key={partner.id}
-                  className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#0a0012] via-[#05000a] to-black p-6"
+                  className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#0a0012] via-[#05000a] to-black p-6"
                 >
                   <header className="flex flex-col gap-4 border-b border-purple-900/30 pb-4 lg:flex-row lg:items-start lg:justify-between">
                     <div>

@@ -44,7 +44,7 @@ const sizeImageMap: Record<ProductMockupSize, string> = {
   full: "(max-width: 768px) 95vw, 420px",
 };
 
-export default function ProductMockup({
+export default function ProductMockup ({
   labelSrc,
   productName,
   labelAlt,
@@ -59,8 +59,10 @@ export default function ProductMockup({
   labelRotation = 0,
   glow = true,
   labelVisibleWidth = DEFAULT_LABEL_VISIBLE_WIDTH,
-}: ProductMockupProps) {
-  const containerClassName = useMemo(() => {
+}: ProductMockupProps)
+{
+  const containerClassName = useMemo(() =>
+  {
     const base = "relative isolate aspect-[2/3] w-full";
     const sizeClass = sizeClassMap[size] ?? sizeClassMap.md;
     return [base, sizeClass, className].filter(Boolean).join(" ");
@@ -98,11 +100,11 @@ export default function ProductMockup({
       {glow ? (
         <div
           aria-hidden
-          className="pointer-events-none absolute -inset-5 rounded-[40px] bg-[radial-gradient(circle_at_top,_rgba(168,85,247,0.45),_transparent_65%)] blur-3xl opacity-70"
+          className="pointer-events-none absolute -inset-5 rounded-[40px] bg-[radial-linear(circle_at_top,_rgba(168,85,247,0.45),_transparent_65%)] blur-3xl opacity-70"
         />
       ) : null}
-      <div className="absolute inset-[6%] rounded-[36px] bg-gradient-to-b from-[#12001f] via-[#06000b] to-black" />
-      <div className="absolute inset-x-6 top-[10%] h-16 rounded-full bg-gradient-to-r from-transparent via-purple-500/30 to-transparent blur-3xl opacity-60" />
+      <div className="absolute inset-[6%] rounded-[36px] bg-linear-to-b from-[#12001f] via-[#06000b] to-black" />
+      <div className="absolute inset-x-6 top-[10%] h-16 rounded-full bg-linear-to-r from-transparent via-purple-500/30 to-transparent blur-3xl opacity-60" />
       <div className="absolute inset-0">
         <Image
           src={bottleSrc}
@@ -134,27 +136,27 @@ export default function ProductMockup({
             className="object-cover"
             priority={priority}
           />
-          <div className="pointer-events-none absolute inset-0 rounded-[6%/12%] bg-gradient-to-r from-black/35 via-transparent to-black/25 mix-blend-multiply" />
+          <div className="pointer-events-none absolute inset-0 rounded-[6%/12%] bg-linear-to-r from-black/35 via-transparent to-black/25 mix-blend-multiply" />
           <div
             className="pointer-events-none absolute inset-0 opacity-70"
             style={{
               background:
-                "linear-gradient(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.15), rgba(0,0,0,0.55))",
+                "linear-linear(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.15), rgba(0,0,0,0.55))",
               maskImage:
-                "radial-gradient(circle at left, transparent 45%, black 95%)",
+                "radial-linear(circle at left, transparent 45%, black 95%)",
               WebkitMaskImage:
-                "radial-gradient(circle at left, transparent 45%, black 95%)",
+                "radial-linear(circle at left, transparent 45%, black 95%)",
             }}
           />
           <div
             className="pointer-events-none absolute inset-0 opacity-70"
             style={{
               background:
-                "linear-gradient(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.15), rgba(0,0,0,0.55))",
+                "linear-linear(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.15), rgba(0,0,0,0.55))",
               maskImage:
-                "radial-gradient(circle at right, transparent 45%, black 95%)",
+                "radial-linear(circle at right, transparent 45%, black 95%)",
               WebkitMaskImage:
-                "radial-gradient(circle at right, transparent 45%, black 95%)",
+                "radial-linear(circle at right, transparent 45%, black 95%)",
             }}
           />
         </div>

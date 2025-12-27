@@ -38,9 +38,9 @@ body {
   inset: 0;
   border-radius: 46% 54% 40% 40% / 78% 78% 28% 28%;
   background:
-    radial-gradient(65% 90% at 50% 12%, rgba(248, 238, 255, 0.55), transparent 70%),
-    radial-gradient(55% 70% at 50% 55%, rgba(192, 132, 252, 0.7), transparent 95%),
-    radial-gradient(75% 90% at 50% 100%, rgba(76, 29, 149, 0.6), transparent 100%);
+    radial-linear(65% 90% at 50% 12%, rgba(248, 238, 255, 0.55), transparent 70%),
+    radial-linear(55% 70% at 50% 55%, rgba(192, 132, 252, 0.7), transparent 95%),
+    radial-linear(75% 90% at 50% 100%, rgba(76, 29, 149, 0.6), transparent 100%);
   filter: blur(36px);
   animation: heroFirePulse 6.2s ease-in-out infinite;
   opacity: 0.78;
@@ -50,9 +50,9 @@ body {
   inset: 12% 22% 16%;
   border-radius: 45% 55% 52% 52% / 62% 62% 42% 42%;
   background:
-    radial-gradient(70% 95% at 50% 18%, rgba(255, 245, 255, 0.7), transparent 68%),
-    radial-gradient(50% 55% at 50% 68%, rgba(168, 85, 247, 0.92), transparent 92%),
-    radial-gradient(60% 75% at 50% 100%, rgba(109, 40, 217, 0.5), transparent 100%);
+    radial-linear(70% 95% at 50% 18%, rgba(255, 245, 255, 0.7), transparent 68%),
+    radial-linear(50% 55% at 50% 68%, rgba(168, 85, 247, 0.92), transparent 92%),
+    radial-linear(60% 75% at 50% 100%, rgba(109, 40, 217, 0.5), transparent 100%);
   filter: blur(28px);
   animation: heroFireFlicker 3.4s ease-in-out infinite;
   opacity: 0.9;

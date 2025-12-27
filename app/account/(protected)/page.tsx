@@ -1,11 +1,12 @@
 import Link from "next/link";
 
 import { auth } from "@/lib/auth";
-import {
-  getCustomerProfile,
-  getOrdersForUser,
-  type CustomerProfile,
-} from "@/lib/db";
+import
+  {
+    getCustomerProfile,
+    getOrdersForUser,
+    type CustomerProfile,
+  } from "@/lib/db";
 import { formatOrderNumber } from "@/lib/orders";
 
 const formatCurrency = (value: number) =>
@@ -16,7 +17,8 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 2,
   }).format(value);
 
-function ProfileSummary({ profile }: { profile: CustomerProfile | null }) {
+function ProfileSummary ({ profile }: { profile: CustomerProfile | null })
+{
   if (!profile) {
     return (
       <p className="text-sm text-zinc-400">
@@ -55,7 +57,8 @@ function ProfileSummary({ profile }: { profile: CustomerProfile | null }) {
   );
 }
 
-export default async function AccountOverviewPage() {
+export default async function AccountOverviewPage ()
+{
   const session = await auth();
 
   if (!session) {
@@ -76,7 +79,7 @@ export default async function AccountOverviewPage() {
 
   return (
     <>
-      <section className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+      <section className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-purple-200">
@@ -98,7 +101,7 @@ export default async function AccountOverviewPage() {
         </div>
       </section>
 
-      <section className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+      <section className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-purple-200">

@@ -3,10 +3,11 @@ type DisclaimerProps = {
   variant?: "default" | "compact";
 };
 
-export default function Disclaimer({
+export default function Disclaimer ({
   className = "",
   variant = "default",
-}: DisclaimerProps) {
+}: DisclaimerProps)
+{
   if (variant === "compact") {
     return (
       <div
@@ -32,7 +33,7 @@ export default function Disclaimer({
 
   return (
     <section
-      className={`rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)] ${className}`}
+      className={`rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)] ${className}`}
     >
       <div className="space-y-4">
         <div className="flex items-center gap-3">

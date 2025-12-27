@@ -5,18 +5,20 @@ import OrderLookupClient from "@/components/orders/OrderLookupClient";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 
-function extractParam(value?: string | string[]): string {
+function extractParam (value?: string | string[]): string
+{
   if (!value) {
     return "";
   }
   return Array.isArray(value) ? value[0] ?? "" : value;
 }
 
-export default async function OrderLookupPage({
+export default async function OrderLookupPage ({
   searchParams,
 }: {
   searchParams?: Promise<SearchParams>;
-}) {
+})
+{
   const resolvedParams = searchParams ? await searchParams : undefined;
   const orderNumber = extractParam(resolvedParams?.orderNumber);
   const email = extractParam(resolvedParams?.email);
@@ -26,7 +28,7 @@ export default async function OrderLookupPage({
       <NavBar />
       <main className="px-6 py-12 sm:px-12 lg:px-16">
         <div className="mx-auto max-w-4xl">
-          <div className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-8 sm:p-12 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+          <div className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-8 sm:p-12 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
             <div className="mb-8 text-center">
               <p className="text-xs uppercase tracking-[0.2em] text-purple-200">
                 Self-Service Support

@@ -7,19 +7,22 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import MoleculeViewer from "@/components/MoleculeViewer";
 import ProductMockup from "@/components/ProductMockup";
 import Disclaimer from "@/components/Disclaimer";
-import {
+import
+{
   type AddToCartPayload,
   type CartItem,
   useStorefront,
 } from "@/components/store/StorefrontContext";
-import {
+import
+{
   productCategories,
   type Product,
   type ProductCategory,
   type ProductCategoryId,
   type Variant,
 } from "@/lib/products";
-import {
+import
+{
   getMoleculesForProduct,
   type MoleculeDefinition,
 } from "@/lib/molecules";
@@ -96,7 +99,7 @@ const productHasAvailableStock = (product: Product) =>
 const productHasTestResults = (product: Product) =>
   Boolean(
     product.testResultUrl ||
-      product.variants.some((variant) => variant.testResultUrl)
+    product.variants.some((variant) => variant.testResultUrl)
   );
 
 const formatCurrency = (value: number) =>
@@ -112,7 +115,8 @@ const parsePrice = (value: string) => Number(value.replace(/[^0-9.]/g, "")) || 0
 const parseQuantity = (value: string) =>
   Number(value.replace(/[^0-9.]/g, "")) || 0;
 
-const getBaseUnitPrice = (variant: Variant) => {
+const getBaseUnitPrice = (variant: Variant) =>
+{
   let bestUnitPrice: number | null = null;
   let bestQuantity = Infinity;
 
@@ -157,7 +161,7 @@ type ProductCardProps = {
   showModalLink?: boolean;
 };
 
-export function ProductCard({
+export function ProductCard ({
   product,
   molecules,
   cartItems,
@@ -166,7 +170,8 @@ export function ProductCard({
   forceExpanded,
   showExpandToggle = true,
   showModalLink = true,
-}: ProductCardProps) {
+}: ProductCardProps)
+{
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const expanded = typeof forceExpanded === "boolean" ? forceExpanded : isExpanded;
@@ -178,7 +183,8 @@ export function ProductCard({
     );
 
   const getUnitsReservedForVariant = (variantLabel: string) =>
-    cartItems.reduce((sum, item) => {
+    cartItems.reduce((sum, item) =>
+    {
       if (item.variantLabel !== variantLabel) {
         return sum;
       }
@@ -193,7 +199,8 @@ export function ProductCard({
 
   const [selectedTierIndexByVariant, setSelectedTierIndexByVariant] = useState<
     Record<string, number>
-  >(() => {
+  >(() =>
+  {
     const initial: Record<string, number> = {};
     for (const variant of product.variants) {
       const defaultIndex = getFirstValidTierIndex(variant);
@@ -204,7 +211,8 @@ export function ProductCard({
 
   const [pendingAddCountByVariant, setPendingAddCountByVariant] = useState<
     Record<string, number>
-  >(() => {
+  >(() =>
+  {
     const initial: Record<string, number> = {};
     for (const variant of product.variants) {
       initial[variant.label] = 1;
@@ -212,7 +220,8 @@ export function ProductCard({
     return initial;
   });
 
-  const resolveSelectedIndex = (variant: Variant) => {
+  const resolveSelectedIndex = (variant: Variant) =>
+  {
     const storedIndex = selectedTierIndexByVariant[variant.label];
     if (typeof storedIndex === "number") {
       return storedIndex;
@@ -224,7 +233,8 @@ export function ProductCard({
   const getPendingAddCount = (variantLabel: string) =>
     pendingAddCountByVariant[variantLabel] ?? 1;
 
-  const handleSelectTier = (variantLabel: string, tierIndex: number) => {
+  const handleSelectTier = (variantLabel: string, tierIndex: number) =>
+  {
     setSelectedTierIndexByVariant((prev) => ({
       ...prev,
       [variantLabel]: tierIndex,
@@ -236,8 +246,10 @@ export function ProductCard({
     delta: number,
     tierQuantity: number,
     remainingStock: number | null
-  ) => {
-    setPendingAddCountByVariant((prev) => {
+  ) =>
+  {
+    setPendingAddCountByVariant((prev) =>
+    {
       const current = prev[variant.label] ?? 1;
       const maxPacks =
         remainingStock === null || tierQuantity === 0
@@ -261,14 +273,16 @@ export function ProductCard({
     });
   };
 
-  const handleToggleExpansion = () => {
+  const handleToggleExpansion = () =>
+  {
     if (typeof forceExpanded === "boolean") {
       return;
     }
     setIsExpanded((prev) => !prev);
   };
 
-  const handleAddVariantToCart = (variant: Variant) => {
+  const handleAddVariantToCart = (variant: Variant) =>
+  {
     const selectedIndex = resolveSelectedIndex(variant);
     const selectedTier = variant.tiers[selectedIndex];
     if (!selectedTier) {
@@ -343,7 +357,7 @@ export function ProductCard({
   return (
     <article
       id={`product-${product.slug}`}
-      className="flex h-full flex-col overflow-hidden rounded-3xl border border-purple-900/60 bg-gradient-to-b from-[#13001f] via-[#090012] to-black shadow-[0_20px_60px_rgba(45,0,95,0.45)]"
+      className="flex h-full flex-col overflow-hidden rounded-3xl border border-purple-900/60 bg-linear-to-b from-[#13001f] via-[#090012] to-black shadow-[0_20px_60px_rgba(45,0,95,0.45)]"
     >
       <div className="relative h-64 w-full border-b border-purple-900/40 bg-black/40 p-4">
         <MoleculeViewer
@@ -366,18 +380,16 @@ export function ProductCard({
               >
                 <div className="flex items-start gap-2">
                   <p
-                    className={`text-sm text-purple-100 transition-colors group-hover:text-purple-50 ${
-                      isDescriptionExpanded ? "text-purple-200" : ""
-                    }`}
+                    className={`text-sm text-purple-100 transition-colors group-hover:text-purple-50 ${isDescriptionExpanded ? "text-purple-200" : ""
+                      }`}
                   >
                     {isDescriptionExpanded
                       ? product.detailedDescription
                       : product.researchFocus}
                   </p>
                   <svg
-                    className={`mt-0.5 h-4 w-4 flex-shrink-0 text-purple-300 transition-transform ${
-                      isDescriptionExpanded ? "rotate-180" : ""
-                    }`}
+                    className={`mt-0.5 h-4 w-4 flex-shrink-0 text-purple-300 transition-transform ${isDescriptionExpanded ? "rotate-180" : ""
+                      }`}
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
@@ -402,7 +414,8 @@ export function ProductCard({
             <p className="text-sm text-purple-100">{product.researchFocus}</p>
           )}
           <div className="flex flex-wrap gap-2">
-            {product.categories.map((categoryId) => {
+            {product.categories.map((categoryId) =>
+            {
               const category = CATEGORY_LOOKUP.get(categoryId);
               if (!category) {
                 return null;
@@ -424,7 +437,8 @@ export function ProductCard({
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
               Analytical Testing
             </p>
-            {(() => {
+            {(() =>
+            {
               const variantTestLinks = product.variants.filter(
                 (variant) => !!variant.testResultUrl
               );
@@ -565,7 +579,8 @@ export function ProductCard({
                 id={buyingOptionsId}
                 className="flex flex-1 flex-col gap-4"
               >
-                {product.variants.map((variant) => {
+                {product.variants.map((variant) =>
+                {
                   const baseUnitPrice = getBaseUnitPrice(variant);
                   const selectedIndex = resolveSelectedIndex(variant);
                   const selectedTier = variant.tiers[selectedIndex];
@@ -610,9 +625,9 @@ export function ProductCard({
                     maxAddablePacks === Number.POSITIVE_INFINITY
                       ? pendingAddCount
                       : Math.min(
-                          pendingAddCount,
-                          Math.max(maxAddablePacks, 1)
-                        );
+                        pendingAddCount,
+                        Math.max(maxAddablePacks, 1)
+                      );
                   const canIncreasePending =
                     maxAddablePacks === Number.POSITIVE_INFINITY
                       ? true
@@ -623,15 +638,15 @@ export function ProductCard({
                       key={`${product.slug}-${variant.label}`}
                       className="flex flex-col gap-4 rounded-2xl border border-purple-900/40 bg-black/60 p-4"
                     >
-                  {variant.mockupLabel ? (
-                    <div className="flex justify-center rounded-2xl border border-purple-900/30 bg-gradient-to-b from-[#1b0924] via-[#0b0014] to-black p-4">
-                      <ProductMockup
-                        labelSrc={variant.mockupLabel}
-                        productName={`${product.name} ${variant.label}`}
-                        size="md"
-                      />
-                    </div>
-                  ) : null}
+                      {variant.mockupLabel ? (
+                        <div className="flex justify-center rounded-2xl border border-purple-900/30 bg-linear-to-b from-[#1b0924] via-[#0b0014] to-black p-4">
+                          <ProductMockup
+                            labelSrc={variant.mockupLabel}
+                            productName={`${product.name} ${variant.label}`}
+                            size="md"
+                          />
+                        </div>
+                      ) : null}
                       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-purple-100">
                         <span className="font-semibold uppercase tracking-wide text-purple-200">
                           {variant.label}
@@ -645,12 +660,11 @@ export function ProductCard({
                           {variantStock === null
                             ? "Stock not set"
                             : remainingStock !== null
-                            ? `${remainingStock} of ${variantStock} units available${
-                                reservedUnits > 0
-                                  ? ` (${reservedUnits} in cart)`
-                                  : ""
+                              ? `${remainingStock} of ${variantStock} units available${reservedUnits > 0
+                                ? ` (${reservedUnits} in cart)`
+                                : ""
                               }`
-                            : "Stock not set"}
+                              : "Stock not set"}
                         </span>
                         {isOutOfStock && (
                           <span className="font-semibold uppercase tracking-wide text-red-300">
@@ -659,7 +673,8 @@ export function ProductCard({
                         )}
                       </div>
                       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        {variant.tiers.map((tier, index) => {
+                        {variant.tiers.map((tier, index) =>
+                        {
                           const tierQuantity = parseQuantity(tier.quantity);
                           const tierPrice = parsePrice(tier.price);
                           const tierPriceDisplay = tier.price.startsWith("$")
@@ -673,10 +688,10 @@ export function ProductCard({
                           const savingsPercent =
                             baseUnitPrice > 0 && perUnitPrice > 0
                               ? Math.round(
-                                  ((baseUnitPrice - perUnitPrice) /
-                                    baseUnitPrice) *
-                                    100
-                                )
+                                ((baseUnitPrice - perUnitPrice) /
+                                  baseUnitPrice) *
+                                100
+                              )
                               : 0;
 
                           return (
@@ -688,15 +703,13 @@ export function ProductCard({
                               onClick={() =>
                                 handleSelectTier(variant.label, index)
                               }
-                              className={`flex flex-col items-center justify-center rounded-xl border px-4 py-3 text-center text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
-                                isSelected
-                                  ? "border-purple-400 bg-purple-500/20 text-white shadow-[0_0_30px_rgba(120,48,255,0.35)]"
-                                  : "border-purple-900/30 bg-zinc-900/70 text-zinc-200 hover:border-purple-400 hover:bg-purple-500/10 hover:text-white"
-                              } ${
-                                isUnavailable
+                              className={`flex flex-col items-center justify-center rounded-xl border px-4 py-3 text-center text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isSelected
+                                ? "border-purple-400 bg-purple-500/20 text-white shadow-[0_0_30px_rgba(120,48,255,0.35)]"
+                                : "border-purple-900/30 bg-zinc-900/70 text-zinc-200 hover:border-purple-400 hover:bg-purple-500/10 hover:text-white"
+                                } ${isUnavailable
                                   ? "cursor-not-allowed opacity-40 hover:border-purple-900/30 hover:bg-zinc-900/70"
                                   : ""
-                              }`}
+                                }`}
                             >
                               <span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
                                 Qty {tier.quantity}
@@ -809,7 +822,7 @@ type FloatingCartButtonProps = {
   onRemove: (key: string) => void;
 };
 
-export function FloatingCartButton({
+export function FloatingCartButton ({
   subtotal,
   totalUnits,
   cartItems,
@@ -817,12 +830,15 @@ export function FloatingCartButton({
   onIncrement,
   onDecrement,
   onRemove,
-}: FloatingCartButtonProps) {
+}: FloatingCartButtonProps)
+{
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const variantUnitsInCart = useMemo(() => {
+  const variantUnitsInCart = useMemo(() =>
+  {
     const map = new Map<string, number>();
-    cartItems.forEach((item) => {
+    cartItems.forEach((item) =>
+    {
       const variantKey =
         item.variantKey ??
         `${item.productSlug ?? item.productName}|${item.variantLabel}`;
@@ -894,7 +910,8 @@ export function FloatingCartButton({
 
               {cartItems.length > 0 ? (
                 <ul className="space-y-4">
-                  {cartItems.map((item) => {
+                  {cartItems.map((item) =>
+                  {
                     const variantKeyForItem =
                       item.variantKey ??
                       `${item.productSlug ?? item.productName}|${item.variantLabel}`;
@@ -909,70 +926,70 @@ export function FloatingCartButton({
                       variantLimit !== null &&
                       totalUnitsForVariant + item.tierQuantity > variantLimit;
                     return (
-                    <li
-                      key={item.key}
-                      className="rounded-2xl border border-purple-900/40 bg-zinc-950/80 p-4"
-                    >
-                      <div className="space-y-1">
-                        <div className="text-sm font-semibold text-white">
-                          {item.productName}
-                        </div>
-                        <div className="text-xs uppercase tracking-[0.2em] text-purple-200">
-                          {item.variantLabel}
-                        </div>
-                        <div className="text-xs text-zinc-400">
-                          Qty {item.tierQuantity} • {item.count}×{" "}
-                          {formatCurrency(
-                            (lineItemTotals[item.key] ??
-                              item.tierPrice * item.count) / item.count
-                          )}{" "}
-                          {lineItemTotals[item.key] != null &&
-                          lineItemTotals[item.key] / item.count !==
-                            item.tierPrice ? (
-                            <span className="text-green-300">
-                              (Discounted from {item.tierPriceDisplay})
-                            </span>
-                          ) : null}
-                        </div>
-                        <div className="text-sm font-semibold text-white">
-                          {formatCurrency(
-                            lineItemTotals[item.key] ??
+                      <li
+                        key={item.key}
+                        className="rounded-2xl border border-purple-900/40 bg-zinc-950/80 p-4"
+                      >
+                        <div className="space-y-1">
+                          <div className="text-sm font-semibold text-white">
+                            {item.productName}
+                          </div>
+                          <div className="text-xs uppercase tracking-[0.2em] text-purple-200">
+                            {item.variantLabel}
+                          </div>
+                          <div className="text-xs text-zinc-400">
+                            Qty {item.tierQuantity} • {item.count}×{" "}
+                            {formatCurrency(
+                              (lineItemTotals[item.key] ??
+                                item.tierPrice * item.count) / item.count
+                            )}{" "}
+                            {lineItemTotals[item.key] != null &&
+                              lineItemTotals[item.key] / item.count !==
+                              item.tierPrice ? (
+                              <span className="text-green-300">
+                                (Discounted from {item.tierPriceDisplay})
+                              </span>
+                            ) : null}
+                          </div>
+                          <div className="text-sm font-semibold text-white">
+                            {formatCurrency(
+                              lineItemTotals[item.key] ??
                               item.tierPrice * item.count
-                          )}
+                            )}
+                          </div>
                         </div>
-                      </div>
-                      <div className="mt-3 flex items-center justify-between">
-                        <div className="inline-flex items-center gap-1 rounded-full border border-purple-500/60 bg-black/60 px-2 py-1">
-                          <button
-                            type="button"
-                            className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-purple-900/60"
-                            onClick={() => onDecrement(item.key)}
-                            disabled={item.count === 1}
-                            aria-label={`Decrease ${item.productName} ${item.variantLabel} quantity`}
-                          >
-                            -
-                          </button>
-                          <span className="px-2 text-sm font-semibold text-white">
-                            {item.count}
-                          </span>
-                          <button
-                            type="button"
-                            className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white"
-                            onClick={() => onIncrement(item.key)}
+                        <div className="mt-3 flex items-center justify-between">
+                          <div className="inline-flex items-center gap-1 rounded-full border border-purple-500/60 bg-black/60 px-2 py-1">
+                            <button
+                              type="button"
+                              className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-purple-900/60"
+                              onClick={() => onDecrement(item.key)}
+                              disabled={item.count === 1}
+                              aria-label={`Decrease ${item.productName} ${item.variantLabel} quantity`}
+                            >
+                              -
+                            </button>
+                            <span className="px-2 text-sm font-semibold text-white">
+                              {item.count}
+                            </span>
+                            <button
+                              type="button"
+                              className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white"
+                              onClick={() => onIncrement(item.key)}
                               disabled={incrementDisabled}
-                            aria-label={`Increase ${item.productName} ${item.variantLabel} quantity`}
+                              aria-label={`Increase ${item.productName} ${item.variantLabel} quantity`}
+                            >
+                              +
+                            </button>
+                          </div>
+                          <button
+                            type="button"
+                            className="text-xs font-semibold uppercase tracking-[0.2em] text-purple-200 transition hover:text-white"
+                            onClick={() => onRemove(item.key)}
                           >
-                            +
+                            Remove
                           </button>
                         </div>
-                        <button
-                          type="button"
-                          className="text-xs font-semibold uppercase tracking-[0.2em] text-purple-200 transition hover:text-white"
-                          onClick={() => onRemove(item.key)}
-                        >
-                          Remove
-                        </button>
-                      </div>
                         {incrementDisabled && (
                           <p className="mt-2 text-[11px] font-semibold text-amber-300">
                             Maximum stock reached for this variant.
@@ -995,7 +1012,8 @@ export function FloatingCartButton({
               {cartItems.length > 0 && (
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={() =>
+                  {
                     setIsOpen(false);
                     router.push("/checkout");
                   }}
@@ -1012,7 +1030,8 @@ export function FloatingCartButton({
   );
 }
 
-export default function StoreClient({ products }: StoreClientProps) {
+export default function StoreClient ({ products }: StoreClientProps)
+{
   const {
     cartItems,
     subtotal,
@@ -1037,31 +1056,35 @@ export default function StoreClient({ products }: StoreClientProps) {
   const suggestionListId = "product-search-suggestions";
   const searchHelperId = "product-search-helper";
 
-  useEffect(() => {
-    return () => {
+  useEffect(() =>
+  {
+    return () =>
+    {
       if (searchBlurTimeoutRef.current) {
         clearTimeout(searchBlurTimeoutRef.current);
       }
     };
   }, []);
 
-  const categoryTabs = useMemo<CategoryTab[]>(() => {
+  const categoryTabs = useMemo<CategoryTab[]>(() =>
+  {
     return [{
-        id: "all",
-        label: "All Products",
-        description: "View the entire catalog sorted by popularity.",
-      },
-      {
-        id: "featured",
-        label: "Featured",
-        description: "Our most requested products, curated for their popularity, reliability, and results.",
-      },
-      ...productCategories,
+      id: "all",
+      label: "All Products",
+      description: "View the entire catalog sorted by popularity.",
+    },
+    {
+      id: "featured",
+      label: "Featured",
+      description: "Our most requested products, curated for their popularity, reliability, and results.",
+    },
+    ...productCategories,
 
     ];
   }, []);
 
-  const categoryLabelLookup = useMemo(() => {
+  const categoryLabelLookup = useMemo(() =>
+  {
     const map = new Map<ProductCategoryId, string>();
     productCategories.forEach((category) => map.set(category.id, category.label));
     return map;
@@ -1072,16 +1095,19 @@ export default function StoreClient({ products }: StoreClientProps) {
     [categoryTabs, activeCategory]
   );
 
-  const searchTokens = useMemo(() => {
+  const searchTokens = useMemo(() =>
+  {
     const normalized = searchQuery.trim().toLowerCase();
     return normalized.length === 0
       ? []
       : normalized.split(/\s+/).filter(Boolean);
   }, [searchQuery]);
 
-  const productSearchIndex = useMemo(() => {
+  const productSearchIndex = useMemo(() =>
+  {
     const index = new Map<string, string>();
-    products.forEach((product) => {
+    products.forEach((product) =>
+    {
       const categoryLabels = product.categories.map(
         (categoryId) => categoryLabelLookup.get(categoryId) ?? categoryId
       );
@@ -1101,7 +1127,8 @@ export default function StoreClient({ products }: StoreClientProps) {
     return index;
   }, [products, categoryLabelLookup]);
 
-  const productMolecules = useMemo(() => {
+  const productMolecules = useMemo(() =>
+  {
     const map = new Map<string, MoleculeDefinition[]>();
     for (const product of products) {
       map.set(product.name, getMoleculesForProduct(product.name));
@@ -1109,36 +1136,44 @@ export default function StoreClient({ products }: StoreClientProps) {
     return map;
   }, [products]);
 
-  const popularityRank = useMemo(() => {
+  const popularityRank = useMemo(() =>
+  {
     const rankMap = new Map<string, number>();
-    POPULARITY_ORDER.forEach((name, index) => {
+    POPULARITY_ORDER.forEach((name, index) =>
+    {
       rankMap.set(name, index);
     });
     return rankMap;
   }, []);
 
-  const originalOrder = useMemo(() => {
+  const originalOrder = useMemo(() =>
+  {
     const map = new Map<string, number>();
-    products.forEach((product, index) => {
+    products.forEach((product, index) =>
+    {
       map.set(product.name, index);
     });
     return map;
   }, [products]);
 
-  const sortedProducts = useMemo(() => {
-    return [...products].sort((a, b) => {
+  const sortedProducts = useMemo(() =>
+  {
+    return [...products].sort((a, b) =>
+    {
       // Sort alphabetically by product name
       return a.name.localeCompare(b.name);
     });
   }, [products]);
 
-  const searchSuggestions = useMemo<SearchSuggestion[]>(() => {
+  const searchSuggestions = useMemo<SearchSuggestion[]>(() =>
+  {
     const normalized = searchQuery.trim().toLowerCase();
     if (normalized.length === 0) {
       return [];
     }
     return sortedProducts
-      .filter((product) => {
+      .filter((product) =>
+      {
         const haystack = productSearchIndex.get(product.slug);
         return haystack ? haystack.includes(normalized) : false;
       })
@@ -1156,7 +1191,8 @@ export default function StoreClient({ products }: StoreClientProps) {
 
   const showSuggestions = isSearchFocused && searchSuggestions.length > 0;
 
-  const categoryMatchedProducts = useMemo(() => {
+  const categoryMatchedProducts = useMemo(() =>
+  {
     if (activeCategory === "all") {
       return sortedProducts;
     }
@@ -1168,8 +1204,10 @@ export default function StoreClient({ products }: StoreClientProps) {
     );
   }, [sortedProducts, activeCategory]);
 
-  const filteredProducts = useMemo(() => {
-    return categoryMatchedProducts.filter((product) => {
+  const filteredProducts = useMemo(() =>
+  {
+    return categoryMatchedProducts.filter((product) =>
+    {
       if (searchTokens.length > 0) {
         const haystack = productSearchIndex.get(product.slug);
         if (!haystack) {
@@ -1204,7 +1242,8 @@ export default function StoreClient({ products }: StoreClientProps) {
     productSearchIndex,
   ]);
 
-  const handleSearchFocus = () => {
+  const handleSearchFocus = () =>
+  {
     if (searchBlurTimeoutRef.current) {
       clearTimeout(searchBlurTimeoutRef.current);
       searchBlurTimeoutRef.current = null;
@@ -1212,20 +1251,25 @@ export default function StoreClient({ products }: StoreClientProps) {
     setIsSearchFocused(true);
   };
 
-  const handleSearchBlur = () => {
-    searchBlurTimeoutRef.current = setTimeout(() => {
+  const handleSearchBlur = () =>
+  {
+    searchBlurTimeoutRef.current = setTimeout(() =>
+    {
       setIsSearchFocused(false);
     }, 120);
   };
 
-  const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
+  const handleSuggestionSelect = (suggestion: SearchSuggestion) =>
+  {
     setSearchQuery(suggestion.name);
     setActiveCategory("all");
     setIsSearchFocused(false);
   };
 
-  const toggleQuickFilter = (filterId: QuickFilterId) => {
-    setActiveQuickFilters((prev) => {
+  const toggleQuickFilter = (filterId: QuickFilterId) =>
+  {
+    setActiveQuickFilters((prev) =>
+    {
       const next = new Set(prev);
       if (next.has(filterId)) {
         next.delete(filterId);
@@ -1236,11 +1280,13 @@ export default function StoreClient({ products }: StoreClientProps) {
     });
   };
 
-  const handleClearSearch = () => {
+  const handleClearSearch = () =>
+  {
     setSearchQuery("");
   };
 
-  const handleClearAllFilters = () => {
+  const handleClearAllFilters = () =>
+  {
     setSearchQuery("");
     setActiveQuickFilters(() => new Set());
   };
@@ -1254,11 +1300,11 @@ export default function StoreClient({ products }: StoreClientProps) {
       <main className="space-y-16 pb-24">
         <section className="relative px-6 pt-24 pb-20 sm:px-12 lg:px-16">
           <div
-            className="absolute inset-0 bg-gradient-to-b from-black via-[#140018] to-black"
+            className="absolute inset-0 bg-linear-to-b from-black via-[#140018] to-black"
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,63,255,0.25),_transparent_65%)] mix-blend-screen"
+            className="pointer-events-none absolute inset-0 bg-[radial-linear(circle_at_top,_rgba(148,63,255,0.25),_transparent_65%)] mix-blend-screen"
             aria-hidden
           />
           <div className="relative mx-auto max-w-6xl space-y-8 text-center">
@@ -1377,7 +1423,8 @@ export default function StoreClient({ products }: StoreClientProps) {
                             type="button"
                             role="option"
                             aria-selected={false}
-                            onMouseDown={(event) => {
+                            onMouseDown={(event) =>
+                            {
                               event.preventDefault();
                               handleSuggestionSelect(suggestion);
                             }}
@@ -1406,7 +1453,8 @@ export default function StoreClient({ products }: StoreClientProps) {
                   )}
                 </div>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {QUICK_FILTERS.map((filter) => {
+                  {QUICK_FILTERS.map((filter) =>
+                  {
                     const isActive = activeQuickFilters.has(filter.id);
                     return (
                       <button
@@ -1415,11 +1463,10 @@ export default function StoreClient({ products }: StoreClientProps) {
                         onClick={() => toggleQuickFilter(filter.id)}
                         aria-pressed={isActive}
                         title={filter.description}
-                        className={`rounded-full border px-4 py-1 text-[0.55rem] font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
-                          isActive
-                            ? "border-purple-300 bg-purple-500/30 text-white shadow-[0_0_25px_rgba(120,48,255,0.35)]"
-                            : "border-purple-900/50 bg-black/60 text-purple-200 hover:border-purple-400 hover:text-white"
-                        }`}
+                        className={`rounded-full border px-4 py-1 text-[0.55rem] font-semibold uppercase tracking-[0.3em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isActive
+                          ? "border-purple-300 bg-purple-500/30 text-white shadow-[0_0_25px_rgba(120,48,255,0.35)]"
+                          : "border-purple-900/50 bg-black/60 text-purple-200 hover:border-purple-400 hover:text-white"
+                          }`}
                       >
                         {filter.label}
                       </button>
@@ -1431,10 +1478,9 @@ export default function StoreClient({ products }: StoreClientProps) {
                   {activeCategory === "featured"
                     ? "featured peptides"
                     : activeCategory === "all"
-                    ? "total peptides"
-                    : `${
-                        CATEGORY_LOOKUP.get(activeCategory as ProductCategoryId)
-                          ?.label ?? "peptides"
+                      ? "total peptides"
+                      : `${CATEGORY_LOOKUP.get(activeCategory as ProductCategoryId)
+                        ?.label ?? "peptides"
                       }`}
                   .
                   {showClearFilters && (
@@ -1460,7 +1506,8 @@ export default function StoreClient({ products }: StoreClientProps) {
                   aria-label="Product categories"
                   className="flex flex-wrap justify-center gap-3"
                 >
-                  {categoryTabs.map((tab) => {
+                  {categoryTabs.map((tab) =>
+                  {
                     const isActive = tab.id === activeCategory;
                     return (
                       <button
@@ -1468,11 +1515,10 @@ export default function StoreClient({ products }: StoreClientProps) {
                         type="button"
                         role="tab"
                         aria-selected={isActive}
-                        className={`rounded-full border px-4 py-2 text-[0.6rem] font-semibold uppercase tracking-[0.35em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
-                          isActive
-                            ? "border-purple-400 bg-purple-500/30 text-white shadow-[0_0_30px_rgba(120,48,255,0.35)]"
-                            : "border-purple-900/50 bg-black/60 text-purple-200 hover:border-purple-400 hover:text-white"
-                        }`}
+                        className={`rounded-full border px-4 py-2 text-[0.6rem] font-semibold uppercase tracking-[0.35em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isActive
+                          ? "border-purple-400 bg-purple-500/30 text-white shadow-[0_0_30px_rgba(120,48,255,0.35)]"
+                          : "border-purple-900/50 bg-black/60 text-purple-200 hover:border-purple-400 hover:text-white"
+                          }`}
                         onClick={() => setActiveCategory(tab.id)}
                       >
                         {tab.label}

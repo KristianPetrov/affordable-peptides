@@ -173,7 +173,7 @@ export default function Home ()
       <main className="space-y-24 pb-24">
         <section className="relative isolate overflow-hidden px-6 pt-28 pb-32 sm:px-12 lg:px-16">
           <div
-            className="absolute inset-0 bg-gradient-to-b from-black via-[#140018] to-black"
+            className="absolute inset-0 bg-linear-to-b from-black via-[#140018] to-black"
             aria-hidden
           />
           <div
@@ -181,7 +181,7 @@ export default function Home ()
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(148,63,255,0.25),_transparent_65%)] mix-blend-screen"
+            className="pointer-events-none absolute inset-0 bg-[radial-linear(circle_at_top,rgba(148,63,255,0.25),transparent_65%)] mix-blend-screen"
             aria-hidden
           />
 
@@ -261,7 +261,7 @@ export default function Home ()
         >
           <div className="relative mx-auto max-w-4xl">
             <div
-              className="absolute inset-0 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black shadow-[0_25px_70px_rgba(70,0,110,0.45)]"
+              className="absolute inset-0 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black shadow-[0_25px_70px_rgba(70,0,110,0.45)]"
               aria-hidden
             />
             <div className="relative space-y-6 px-6 py-14 text-center sm:px-12 sm:py-16">

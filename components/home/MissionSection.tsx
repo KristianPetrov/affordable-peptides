@@ -1,4 +1,5 @@
-export default function MissionSection() {
+export default function MissionSection ()
+{
   return (
     <section
       id="mission"
@@ -7,7 +8,7 @@ export default function MissionSection() {
     >
       <div className="relative mx-auto max-w-5xl">
         <div
-          className="absolute inset-0 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#13001f] via-[#080008] to-black shadow-[0_25px_70px_rgba(70,0,110,0.45)]"
+          className="absolute inset-0 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#13001f] via-[#080008] to-black shadow-[0_25px_70px_rgba(70,0,110,0.45)]"
           aria-hidden
         />
         <div className="relative space-y-6 px-6 py-14 sm:px-12 sm:py-16">

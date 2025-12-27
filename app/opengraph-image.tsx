@@ -10,7 +10,8 @@ export const size = {
 export const contentType = "image/png";
 export const runtime = "nodejs";
 
-export default async function OgImage() {
+export default async function OgImage ()
+{
   const logoBuffer = await readFile(
     join(
       process.cwd(),
@@ -35,7 +36,7 @@ export default async function OgImage() {
           padding: "72px 96px",
           color: "white",
           background:
-            "radial-gradient(circle at 20% 20%, rgba(138, 65, 220, 0.45), transparent 55%), radial-gradient(circle at 80% 30%, rgba(79, 29, 135, 0.6), transparent 60%), radial-gradient(circle at center, #040008, #010103 65%)",
+            "radial-linear(circle at 20% 20%, rgba(138, 65, 220, 0.45), transparent 55%), radial-linear(circle at 80% 30%, rgba(79, 29, 135, 0.6), transparent 60%), radial-linear(circle at center, #040008, #010103 65%)",
         }}
       >
         <div
@@ -54,7 +55,7 @@ export default async function OgImage() {
               alignItems: "center",
               justifyContent: "center",
               background:
-                "radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.18), rgba(129, 60, 209, 0.1))",
+                "radial-linear(circle at 50% 40%, rgba(255, 255, 255, 0.18), rgba(129, 60, 209, 0.1))",
               borderRadius: "36px",
               boxShadow: "0 45px 90px rgba(118, 41, 255, 0.45)",
               overflow: "hidden",

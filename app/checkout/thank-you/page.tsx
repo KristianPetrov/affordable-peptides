@@ -101,7 +101,7 @@ function ThankYouContent() {
       <NavBar />
       <main className="px-6 py-12 sm:px-12 lg:px-16">
         <div className="mx-auto max-w-3xl">
-          <div className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-8 sm:p-12 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+          <div className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-8 sm:p-12 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
             <div className="text-center">
               <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full bg-green-500/20">
                 <svg
@@ -136,7 +136,7 @@ function ThankYouContent() {
                 </h2>
                 <ol className="space-y-4 text-zinc-300">
                   <li className="flex gap-4">
-                    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-purple-500/20 font-semibold text-purple-200">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-500/20 font-semibold text-purple-200">
                       1
                     </span>
                     <div>
@@ -151,7 +151,7 @@ function ThankYouContent() {
                     </div>
                   </li>
                   <li className="flex gap-4">
-                    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-purple-500/20 font-semibold text-purple-200">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-500/20 font-semibold text-purple-200">
                       2
                     </span>
                     <div>
@@ -173,7 +173,7 @@ function ThankYouContent() {
                     </div>
                   </li>
                   <li className="flex gap-4">
-                    <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-purple-500/20 font-semibold text-purple-200">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-500/20 font-semibold text-purple-200">
                       3
                     </span>
                     <div>

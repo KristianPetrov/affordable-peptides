@@ -13,7 +13,8 @@ const links = [
   { href: "/#contact", label: "Contact" },
 ];
 
-export default function NavBar() {
+export default function NavBar ()
+{
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session } = useSession();
 
@@ -34,7 +35,7 @@ export default function NavBar() {
           className="group inline-flex items-center gap-3 text-sm font-semibold uppercase tracking-[0.3em] text-zinc-200 transition hover:text-white"
           onClick={closeMenu}
         >
-          <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-gradient-to-br from-purple-600/40 via-purple-500/10 to-purple-900/40 shadow-[0_10px_35px_rgba(88,28,135,0.45)]">
+          <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-purple-600/40 via-purple-500/10 to-purple-900/40 shadow-[0_10px_35px_rgba(88,28,135,0.45)]">
             <Image
               src="/affordable-peptides-logo-transparent.png"
               alt="Affordable Peptides"
@@ -108,11 +109,10 @@ export default function NavBar() {
 
       <div
         id="mobile-nav"
-        className={`md:hidden transition-all duration-200 ${
-          menuOpen
+        className={`md:hidden transition-all duration-200 ${menuOpen
             ? "pointer-events-auto max-h-96 opacity-100"
             : "pointer-events-none max-h-0 opacity-0"
-        }`}
+          }`}
       >
         <div className="mx-6 mb-6 flex flex-col gap-4 rounded-2xl border border-purple-900/40 bg-black/90 px-6 py-6 text-sm font-medium text-zinc-200 shadow-[0_18px_40px_rgba(60,0,100,0.45)] sm:mx-12 lg:mx-16">
           {links.map((link) => (

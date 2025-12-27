@@ -324,7 +324,7 @@ export default function MoleculeViewer ({
       className={`flex flex-col gap-3 ${variant === "hero" ? "h-full" : ""} ${className}`}
     >
       <div
-        className="relative flex-1 overflow-hidden rounded-[inherit] border border-purple-500/40 bg-gradient-to-br from-[#200532] via-[#0f001d] to-[#05000b]"
+        className="relative flex-1 overflow-hidden rounded-[inherit] border border-purple-500/40 bg-linear-to-br from-[#200532] via-[#0f001d] to-[#05000b]"
       >
         <div
           ref={canvasRef}
@@ -334,7 +334,7 @@ export default function MoleculeViewer ({
         />
         {overlayControls && showSelector && (
           <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/80 via-black/35 to-transparent"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-black/80 via-black/35 to-transparent"
             aria-hidden
           />
         )}
@@ -386,11 +386,11 @@ export default function MoleculeViewer ({
             );
           })} </div>
 
-          <span className="text-xs text-purple-200">
-            {statusLabel}
-            {activeMolecule?.subtitle ? ` • ${activeMolecule.subtitle}` : ""}
-          </span>
-</>
+        <span className="text-xs text-purple-200">
+          {statusLabel}
+          {activeMolecule?.subtitle ? ` • ${activeMolecule.subtitle}` : ""}
+        </span>
+      </>
       )}
 
       {config.showCaption && (

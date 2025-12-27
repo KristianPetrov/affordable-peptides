@@ -31,7 +31,8 @@ type CheckoutClientProps = {
   sessionUser: SessionUser;
 };
 
-export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
+export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
+{
   const router = useRouter();
   const { cartItems, subtotal, totalUnits, lineItemTotals, clearCart } = useStorefront();
   const [isPending, startTransition] = useTransition();
@@ -79,12 +80,14 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
 
   const isLoggedIn = Boolean(sessionUser);
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     const previousSubtotal = previousSubtotalRef.current;
     previousSubtotalRef.current = subtotal;
 
     if (appliedReferral && Math.abs(previousSubtotal - subtotal) > 0.01) {
-      const timeoutId = window.setTimeout(() => {
+      const timeoutId = window.setTimeout(() =>
+      {
         setReferralResult(null);
       }, 0);
       return () => window.clearTimeout(timeoutId);
@@ -111,14 +114,16 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  ) =>
+  {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
   };
 
-  const handleApplyReferral = () => {
+  const handleApplyReferral = () =>
+  {
     if (!formData.customerEmail.trim()) {
       setReferralResult({
         status: "error",
@@ -134,7 +139,8 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
       return;
     }
 
-    startReferralTransition(async () => {
+    startReferralTransition(async () =>
+    {
       const result = await applyReferralCodeAction({
         code: referralInput,
         customerEmail: formData.customerEmail,
@@ -148,16 +154,19 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
     });
   };
 
-  const handleClearReferral = () => {
+  const handleClearReferral = () =>
+  {
     setReferralResult(null);
     setReferralInput("");
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) =>
+  {
     e.preventDefault();
     setError(null);
 
-    startTransition(async () => {
+    startTransition(async () =>
+    {
       const result = await createOrderAction({
         items: cartItems,
         subtotal: discountedSubtotal,
@@ -215,7 +224,7 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+              <div className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
                 <h2 className="mb-6 text-xl font-semibold text-white">
                   Customer Information
                 </h2>
@@ -277,7 +286,7 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+              <div className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
                 <h2 className="mb-6 text-xl font-semibold text-white">
                   Shipping Address
                 </h2>
@@ -389,7 +398,7 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
                 )}
               </div>
 
-              <div className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+              <div className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-xl font-semibold text-white">
@@ -440,13 +449,12 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
                 </div>
                 {referralResult && (
                   <div
-                    className={`mt-4 rounded-xl border px-4 py-3 text-sm ${
-                      referralResult.status === "applied"
+                    className={`mt-4 rounded-xl border px-4 py-3 text-sm ${referralResult.status === "applied"
                         ? "border-green-500/30 bg-green-500/10 text-green-100"
                         : referralResult.status === "already-attributed"
-                        ? "border-blue-500/30 bg-blue-500/10 text-blue-100"
-                        : "border-red-500/30 bg-red-500/10 text-red-100"
-                    }`}
+                          ? "border-blue-500/30 bg-blue-500/10 text-blue-100"
+                          : "border-red-500/30 bg-red-500/10 text-red-100"
+                      }`}
                   >
                     {referralResult.message}
                   </div>
@@ -470,7 +478,7 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
           </div>
 
           <div className="lg:col-span-1">
-            <div className="sticky top-6 rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+            <div className="sticky top-6 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
               <h2 className="mb-4 text-lg font-semibold text-white">
                 Order Summary
               </h2>
@@ -492,7 +500,7 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
                       <div className="font-medium text-white">
                         {formatCurrency(
                           lineItemTotals[item.key] ??
-                            item.tierPrice * item.count
+                          item.tierPrice * item.count
                         )}
                       </div>
                     </div>

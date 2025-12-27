@@ -17,7 +17,8 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 2,
   }).format(value);
 
-export default async function AccountOrdersPage() {
+export default async function AccountOrdersPage ()
+{
   const session = await auth();
 
   if (!session) {
@@ -30,7 +31,7 @@ export default async function AccountOrdersPage() {
   );
 
   return (
-    <section className="rounded-3xl border border-purple-900/60 bg-gradient-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+    <section className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
       <div className="mb-6">
         <p className="text-xs uppercase tracking-[0.2em] text-purple-200">
           Order History
@@ -64,9 +65,8 @@ export default async function AccountOrdersPage() {
                   </p>
                 </div>
                 <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
-                    statusStyles[order.status] ?? "bg-purple-500/10 text-purple-200"
-                  }`}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${statusStyles[order.status] ?? "bg-purple-500/10 text-purple-200"
+                    }`}
                 >
                   {order.status.replace("_", " ")}
                 </span>
