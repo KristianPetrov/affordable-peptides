@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useMemo, Suspense } from "react";
+import { useEffect, useMemo, useRef, Suspense } from "react";
 
 import NavBar from "@/components/NavBar";
 import {
@@ -13,6 +13,7 @@ import {
   ZELLE_EMAIL,
   ZELLE_RECIPIENT_NAME,
 } from "@/lib/payment-links";
+import { createTikTokEventBase, tiktokTrack } from "@/lib/analytics/tiktok";
 
 const PHONE_NUMBER = "(951) 539-3821";
 
@@ -21,6 +22,7 @@ function ThankYouContent() {
   const orderNumber = searchParams.get("orderNumber");
   const orderId = searchParams.get("orderId");
   const orderAmountParam = searchParams.get("orderAmount");
+  const hasTrackedPurchaseRef = useRef(false);
   const orderAmount = useMemo(() => {
     if (!orderAmountParam) {
       return null;
@@ -74,6 +76,23 @@ function ThankYouContent() {
   const venmoLabel = venmoCharge
     ? `Pay via Venmo ($${venmoCharge.toFixed(2)})`
     : "Pay via Venmo";
+
+  useEffect(() => {
+    if (hasTrackedPurchaseRef.current) {
+      return;
+    }
+    if (!orderId || !orderAmount) {
+      return;
+    }
+    hasTrackedPurchaseRef.current = true;
+    tiktokTrack("Purchase", {
+      ...createTikTokEventBase(),
+      event_id: orderId,
+      currency: "USD",
+      value: orderAmount,
+      content_type: "product",
+    });
+  }, [orderId, orderAmount]);
 
   if (!orderNumber || !orderId) {
     return (

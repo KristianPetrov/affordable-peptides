@@ -9,6 +9,29 @@ import type { MoleculeDefinition } from "@/lib/molecules";
 import { ProductCard } from "@/components/store/StoreClient";
 import Disclaimer from "@/components/Disclaimer";
 import { useStorefront } from "@/components/store/StorefrontContext";
+import { createTikTokEventBase, tiktokTrack } from "@/lib/analytics/tiktok";
+
+const parsePrice = (value: string) => Number(value.replace(/[^0-9.]/g, "")) || 0;
+const parseQuantity = (value: string) =>
+  Number(value.replace(/[^0-9.]/g, "")) || 0;
+
+function getViewContentValue(product: Product): number {
+  let best: number | null = null;
+
+  for (const variant of product.variants) {
+    for (const tier of variant.tiers) {
+      const quantity = parseQuantity(tier.quantity);
+      const price = parsePrice(tier.price);
+      if (!quantity || !price) {
+        continue;
+      }
+      const candidate = quantity === 1 ? price : price;
+      best = best === null ? candidate : Math.min(best, candidate);
+    }
+  }
+
+  return best ?? 0;
+}
 
 type ProductModalProps = {
   product: Product;
@@ -28,6 +51,17 @@ export default function ProductModal({ product, molecules }: ProductModalProps) 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [router]);
+
+  useEffect(() => {
+    tiktokTrack("ViewContent", {
+      ...createTikTokEventBase(),
+      currency: "USD",
+      value: getViewContentValue(product),
+      content_id: product.slug,
+      content_type: "product",
+      content_name: product.name,
+    });
+  }, [product]);
 
   const handleClose = () => router.back();
 

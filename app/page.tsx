@@ -91,6 +91,11 @@ const socialLinks: SocialLink[] = [
     handle: "@affordable.peptides",
     href: siteMetadata.socialProfiles.tiktok,
     Icon: TikTokIcon,
+  },{
+    label: "Facebook",
+    handle: "Affordable Peptides",
+    href: siteMetadata.socialProfiles.facebook,
+    Icon: FacebookIcon,
   },
   {
     label: "Instagram",
@@ -104,12 +109,7 @@ const socialLinks: SocialLink[] = [
     href: siteMetadata.socialProfiles.youtube,
     Icon: YouTubeIcon,
   },
-  {
-    label: "Facebook",
-    handle: "Affordable Peptides",
-    href: siteMetadata.socialProfiles.facebook,
-    Icon: FacebookIcon,
-  },
+
 ] as const;
 
 export const metadata: Metadata = {

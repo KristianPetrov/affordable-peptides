@@ -10,6 +10,7 @@ import { applyReferralCodeAction } from "@/app/actions/referrals";
 import type { CustomerProfile } from "@/lib/db";
 import { calculateShippingCost } from "@/lib/shipping";
 import type { AppliedReferralResult } from "@/types/referrals";
+import { createTikTokEventBase, tiktokTrack } from "@/lib/analytics/tiktok";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -60,6 +61,7 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
     [discountedSubtotal, shippingCost]
   );
   const previousSubtotalRef = useRef(subtotal);
+  const hasTrackedCheckoutRef = useRef(false);
 
   const defaultFormValues = useMemo(
     () => ({
@@ -90,6 +92,23 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
       return () => window.clearTimeout(timeoutId);
     }
   }, [subtotal, appliedReferral]);
+
+  useEffect(() => {
+    if (hasTrackedCheckoutRef.current) {
+      return;
+    }
+    if (cartItems.length === 0) {
+      return;
+    }
+    hasTrackedCheckoutRef.current = true;
+    tiktokTrack("InitiateCheckout", {
+      ...createTikTokEventBase(),
+      currency: "USD",
+      value: total,
+      content_type: "product",
+      num_items: totalUnits,
+    });
+  }, [cartItems.length, total, totalUnits]);
 
   if (cartItems.length === 0) {
     return (
@@ -169,6 +188,14 @@ export function CheckoutClient({ profile, sessionUser }: CheckoutClientProps) {
       });
 
       if (result.success) {
+        tiktokTrack("PlaceAnOrder", {
+          ...createTikTokEventBase(),
+          event_id: result.orderId,
+          currency: "USD",
+          value: total,
+          content_type: "product",
+          num_items: totalUnits,
+        });
         clearCart();
         router.push(
           `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${total.toFixed(

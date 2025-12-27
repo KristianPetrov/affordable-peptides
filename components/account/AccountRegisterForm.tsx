@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 import Link from "next/link";
 
 import { registerCustomerAction } from "@/app/actions/customers";
+import { createTikTokEventBase, tiktokTrack } from "@/lib/analytics/tiktok";
 
 const initialState = {
   name: "",
@@ -46,6 +47,12 @@ export function AccountRegisterForm() {
         setError(result.error);
         return;
       }
+
+      tiktokTrack("CompleteRegistration", {
+        ...createTikTokEventBase(),
+        content_type: "customer",
+        content_name: "Account Registration",
+      });
 
       const loginResult = await signIn("credentials", {
         email: formData.email,

@@ -14,6 +14,7 @@ import {
   calculateVolumePricing,
   type PricingTier,
 } from "@/lib/cart-pricing";
+import { createTikTokEventBase, tiktokTrack } from "@/lib/analytics/tiktok";
 
 const CART_STORAGE_KEY = "affordable-peptides:cart:v1";
 
@@ -211,6 +212,19 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
         },
       ];
     });
+
+    if (addedCount > 0) {
+      tiktokTrack("AddToCart", {
+        ...createTikTokEventBase(),
+        currency: "USD",
+        value: tierPrice * addedCount,
+        content_id: normalizedSlug,
+        content_type: "product",
+        content_name: productName,
+        quantity: addedCount,
+      });
+    }
+
     return addedCount;
   }, []);
 

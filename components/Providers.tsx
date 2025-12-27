@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { SessionProvider } from "next-auth/react";
 
 import { StorefrontProvider } from "@/components/store/StorefrontContext";
+import { TikTokPixel } from "@/components/analytics/TikTokPixel";
 
 type ProvidersProps = {
   children: ReactNode;
@@ -12,7 +13,10 @@ type ProvidersProps = {
 export function Providers({ children }: ProvidersProps) {
   return (
     <SessionProvider>
-      <StorefrontProvider>{children}</StorefrontProvider>
+      <StorefrontProvider>
+        <TikTokPixel />
+        {children}
+      </StorefrontProvider>
     </SessionProvider>
   );
 }

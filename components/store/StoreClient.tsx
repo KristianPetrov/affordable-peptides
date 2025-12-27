@@ -23,6 +23,7 @@ import {
   getMoleculesForProduct,
   type MoleculeDefinition,
 } from "@/lib/molecules";
+import { createTikTokEventBase, tiktokTrack } from "@/lib/analytics/tiktok";
 
 const POPULARITY_ORDER: string[] = [
   "Tirzepatide",
@@ -1034,6 +1035,10 @@ export default function StoreClient({ products }: StoreClientProps) {
   const searchBlurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
   );
+  const searchTrackTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
+  const lastTrackedSearchRef = useRef<string>("");
   const suggestionListId = "product-search-suggestions";
   const searchHelperId = "product-search-helper";
 
@@ -1042,8 +1047,42 @@ export default function StoreClient({ products }: StoreClientProps) {
       if (searchBlurTimeoutRef.current) {
         clearTimeout(searchBlurTimeoutRef.current);
       }
+      if (searchTrackTimeoutRef.current) {
+        clearTimeout(searchTrackTimeoutRef.current);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (searchTrackTimeoutRef.current) {
+      clearTimeout(searchTrackTimeoutRef.current);
+      searchTrackTimeoutRef.current = null;
+    }
+
+    const normalized = searchQuery.trim().toLowerCase();
+    if (normalized.length < 3) {
+      return;
+    }
+
+    searchTrackTimeoutRef.current = setTimeout(() => {
+      if (lastTrackedSearchRef.current === normalized) {
+        return;
+      }
+      lastTrackedSearchRef.current = normalized;
+      tiktokTrack("Search", {
+        ...createTikTokEventBase(),
+        query: normalized,
+        content_type: "product",
+      });
+    }, 650);
+
+    return () => {
+      if (searchTrackTimeoutRef.current) {
+        clearTimeout(searchTrackTimeoutRef.current);
+        searchTrackTimeoutRef.current = null;
+      }
+    };
+  }, [searchQuery]);
 
   const categoryTabs = useMemo<CategoryTab[]>(() => {
     return [{
