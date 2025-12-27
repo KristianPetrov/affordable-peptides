@@ -3,7 +3,6 @@ import "server-only";
 import {
   getInventoryKey,
   getProductBySlug,
-  getProductSlugByName,
   peptideProducts,
   type Product,
 } from "./products";

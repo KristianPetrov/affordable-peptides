@@ -1,5 +1,3 @@
-import { getAllProductInventory } from "./db";
-
 export type Tier = {
   quantity: string;
   price: string;
@@ -240,6 +238,17 @@ const productDefinitions: ProductDefinition[] = [
     ],
   },
   {
+    name: "GHRP-2",
+    researchFocus:
+      "Classic growth hormone secretagogue researched for pulsatile GH release and recovery signaling.",
+    detailedDescription:
+      "GHRP-2 (Growth Hormone Releasing Peptide-2) is a well-known growth hormone secretagogue (GHS) frequently researched for its ability to stimulate pulsatile growth hormone release via the ghrelin receptor (GHS-R). It is commonly explored in recovery, body composition, and GH-axis investigations and is often paired with GHRH analogs in research stacks.",
+    categories: ["hormone-growth", "recovery-performance"],
+    variants: [
+      createVariant("10mg", 30, "/products/label-ghrp-2-10mg-3ml.png"),
+    ],
+  },
+  {
     name: "GLOW",
     researchFocus: "BPC/TB/GHK blend tailored for regenerative aesthetics and total-body recovery.",
     detailedDescription: "GLOW combines BPC-157 (10mg), TB-500 (10mg), and GHK-Cu (50mg) to create a regenerative-focused blend for aesthetic and recovery research. It's designed for investigators interested in both connective tissue support and skin quality optimization within a single formula.",
@@ -285,7 +294,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Recombinant human growth hormone (HGH) has a long research history in growth-hormone deficiency, body composition, and recovery. Studies have explored its effects on lean mass, fat distribution, and performance-related endpoints under controlled conditions.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("10 IU kit", 200, {mockupLabel:"/products/label-hgh-10iu-3ml.png",testResultUrl:"https://chromate.org/verify?c=30364_AFFORD7CZE3V"}),
+      createVariant("10 IU kit", 200, { mockupLabel: "/products/label-hgh-10iu-3ml.png", testResultUrl: "https://chromate.org/verify?c=30364_AFFORD7CZE3V" }),
       createVariant("15 IU kit", 250, "/products/label-hgh-15iu-3ml.png"),
     ],
   },

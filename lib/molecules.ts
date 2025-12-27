@@ -174,6 +174,11 @@ export const moleculesByProduct: MoleculeMap = {
             subtitle: "Copper tripeptide-1",
         }),
     ],
+    "GHRP-2": [
+        createLocalMoleculeDefinition("ghrp-2", "GHRP-2 (Growth Hormone Releasing Peptide-2)", {
+            fallback: pubchemSource("GHRP-2", { recordType: "2d" }),
+        }),
+    ],
     // "GLP-1": [
     //     createLocalMoleculeDefinition("glp-1", "GLP-1 (7-36) amide", {
     //         format: "pdb",
@@ -293,7 +298,7 @@ export const moleculesByProduct: MoleculeMap = {
             fallback: pubchemSource("9811102", { queryType: "cid" }),
         }),
     ],
-    Sermorelin: [createLocalMoleculeDefinition("sermorelin", "Sermorelin", {fallback: pubchemSource("16132413", { queryType: "cid", recordType: "2d" }) }),
+    Sermorelin: [createLocalMoleculeDefinition("sermorelin", "Sermorelin", { fallback: pubchemSource("16132413", { queryType: "cid", recordType: "2d" }) }),
     ],
     "SLU-PP-332": [
         createLocalMoleculeDefinition("slu-pp-332", "SLU-PP-332", {
