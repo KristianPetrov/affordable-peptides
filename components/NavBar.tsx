@@ -39,10 +39,11 @@ export default function NavBar ()
             <Image
               src="/affordable-peptides-logo-transparent.png"
               alt="Affordable Peptides"
-              width={80}
-              height={80}
+              width={48}
+              height={48}
+              sizes="48px"
+              fetchPriority="low"
               className="h-12 w-12 object-contain"
-              priority
             />
           </span>
           <span className="hidden sm:inline-flex text-xs font-semibold uppercase tracking-[0.35em] text-purple-200 transition group-hover:text-white">

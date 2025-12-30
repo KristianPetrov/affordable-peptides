@@ -34,7 +34,7 @@ export function AgeGate ({ initialStatus, action }: AgeGateProps)
 
   return (
     <div
-      className="fixed inset-0 z-120 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+      className="fixed inset-0 z-120 flex items-center justify-center bg-black/80"
       aria-hidden={false}
     >
       <div
@@ -42,7 +42,7 @@ export function AgeGate ({ initialStatus, action }: AgeGateProps)
         aria-modal="true"
         aria-labelledby="age-gate-heading"
         aria-describedby="age-gate-description"
-        className="mx-4 w-full max-w-lg rounded-3xl border border-purple-500/30 bg-linear-to-b from-[#120421] via-[#0d0318] to-[#05000a] p-8 text-purple-50 shadow-[0_0_35px_rgba(168,85,247,0.45)]"
+        className="mx-4 w-full max-w-lg rounded-3xl border border-purple-500/30 bg-linear-to-b from-[#120421] via-[#0d0318] to-[#05000a] p-8 text-purple-50 shadow-xl"
       >
         <form action={formAction} className="space-y-6">
           <div className="space-y-2 text-center">

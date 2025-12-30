@@ -41,7 +41,8 @@ body {
     radial-linear(65% 90% at 50% 12%, rgba(248, 238, 255, 0.55), transparent 70%),
     radial-linear(55% 70% at 50% 55%, rgba(192, 132, 252, 0.7), transparent 95%),
     radial-linear(75% 90% at 50% 100%, rgba(76, 29, 149, 0.6), transparent 100%);
-  filter: blur(36px);
+  filter: blur(36px) brightness(1.18) saturate(1.15);
+  will-change: transform, opacity;
   animation: heroFirePulse 6.2s ease-in-out infinite;
   opacity: 0.78;
 }
@@ -61,23 +62,23 @@ body {
 @keyframes heroFirePulse {
   0% {
     opacity: 0.66;
-    filter: blur(32px) brightness(1.05) saturate(1.1);
+    transform: scale(0.98);
   }
   28% {
     opacity: 0.88;
-    filter: blur(28px) brightness(1.25) saturate(1.2);
+    transform: scale(1.02);
   }
   56% {
     opacity: 0.72;
-    filter: blur(34px) brightness(1.12) saturate(1.08);
+    transform: scale(0.99);
   }
   82% {
     opacity: 0.9;
-    filter: blur(29px) brightness(1.28) saturate(1.18);
+    transform: scale(1.03);
   }
   100% {
     opacity: 0.66;
-    filter: blur(32px) brightness(1.05) saturate(1.1);
+    transform: scale(0.98);
   }
 }
 

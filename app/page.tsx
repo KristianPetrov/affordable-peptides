@@ -195,6 +195,9 @@ export default function Home ()
               width={720}
               height={360}
               priority
+              fetchPriority="high"
+              quality={70}
+              sizes="(max-width: 640px) 320px, (max-width: 1024px) 420px, 480px"
               className="h-auto w-full max-w-[480px] drop-shadow-[0_0_35px_rgba(168,85,247,0.45)]"
             />
             <h1 className="mt-10 max-w-3xl text-balance text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">
@@ -290,7 +293,7 @@ export default function Home ()
                   >
                     Text (951) 539-3821
                   </a>
-                  <p className="text-xs text-zinc-500">
+                  <p className="text-xs text-zinc-400">
                     Available daily 6am–9pm PST. Send a text after hours and we&apos;ll get
                     back to you promptly.
                   </p>

@@ -13,6 +13,7 @@ import
   type StockAdjustment,
 } from "@/lib/inventory";
 import { sendOrderPaidEmail, sendOrderShippedEmail } from "@/lib/email";
+import { sendTikTokCompletePayment } from "@/lib/tiktok-conversions";
 
 const ORDER_STATUSES: OrderStatus[] = [
   "PENDING_PAYMENT",
@@ -111,6 +112,13 @@ export async function updateOrderStatusAction (
         console.error("Failed to send PAID email:", emailError);
         // Don't fail the status update if email fails
       }
+    }
+
+    // TikTok Conversions API: only fire paid conversion when payment is first confirmed.
+    if (status === "PAID" && previousStatus === "PENDING_PAYMENT") {
+      sendTikTokCompletePayment(updated).catch((error) => {
+        console.error("Failed to send TikTok CompletePayment event:", error);
+      });
     }
 
     if (status === "SHIPPED" && previousStatus !== "SHIPPED") {

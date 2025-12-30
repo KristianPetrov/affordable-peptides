@@ -293,7 +293,7 @@ export const createProductJsonLd = ({
                         name: "Chromate certificate",
                         value: product.testResultUrl,
                     },
-                ]
+                ]    
                 : [];
 
             const combined = [...baseProperties, ...variantProperties];

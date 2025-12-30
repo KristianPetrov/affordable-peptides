@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
-import MoleculeViewer from "@/components/MoleculeViewer";
+import HeroMoleculePreview from "@/components/home/HeroMoleculePreview";
 import type { Product } from "@/lib/products";
 import { getMoleculesForProduct } from "@/lib/molecules";
 
@@ -82,10 +82,10 @@ export default function HeroShowcase ({ products }: HeroShowcaseProps)
               aria-hidden={!isActive}
             >
               <div className="relative h-56 w-56 overflow-hidden rounded-full border border-purple-500/60 bg-purple-500/10 shadow-[0_25px_80px_rgba(120,48,255,0.35)]">
-                <MoleculeViewer
+                <HeroMoleculePreview
                   productName={product.name}
                   molecules={molecules}
-                  variant="hero"
+                  active={isActive}
                   className="h-full rounded-full p-3"
                 />
               </div>

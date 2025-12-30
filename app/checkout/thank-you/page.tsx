@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useMemo, Suspense } from "react";
+import { useEffect, useMemo, useRef, Suspense } from "react";
 
 import NavBar from "@/components/NavBar";
 import {
@@ -21,6 +21,7 @@ function ThankYouContent() {
   const orderNumber = searchParams.get("orderNumber");
   const orderId = searchParams.get("orderId");
   const orderAmountParam = searchParams.get("orderAmount");
+  const hasTrackedCheckoutRef = useRef(false);
   const orderAmount = useMemo(() => {
     if (!orderAmountParam) {
       return null;
@@ -74,6 +75,27 @@ function ThankYouContent() {
   const venmoLabel = venmoCharge
     ? `Pay via Venmo ($${venmoCharge.toFixed(2)})`
     : "Pay via Venmo";
+
+  useEffect(() => {
+    if (hasTrackedCheckoutRef.current) {
+      return;
+    }
+    if (!orderId || !orderNumber) {
+      return;
+    }
+    hasTrackedCheckoutRef.current = true;
+
+    try {
+      window.ttq?.track?.("InitiateCheckout", {
+        order_id: orderId,
+        content_id: orderNumber,
+        value: orderAmount ?? undefined,
+        currency: "USD",
+      });
+    } catch {
+      // ignore
+    }
+  }, [orderAmount, orderId, orderNumber]);
 
   if (!orderNumber || !orderId) {
     return (

@@ -388,7 +388,7 @@ export function ProductCard ({
                       : product.researchFocus}
                   </p>
                   <svg
-                    className={`mt-0.5 h-4 w-4 flex-shrink-0 text-purple-300 transition-transform ${isDescriptionExpanded ? "rotate-180" : ""
+                    className={`mt-0.5 h-4 w-4 shrink-0 text-purple-300 transition-transform ${isDescriptionExpanded ? "rotate-180" : ""
                       }`}
                     fill="none"
                     viewBox="0 0 24 24"
@@ -1304,7 +1304,7 @@ export default function StoreClient ({ products }: StoreClientProps)
             aria-hidden
           />
           <div
-            className="pointer-events-none absolute inset-0 bg-[radial-linear(circle_at_top,_rgba(148,63,255,0.25),_transparent_65%)] mix-blend-screen"
+            className="pointer-events-none absolute inset-0 bg-[radial-linear(circle_at_top,_rgba(148,63,255,0.25), transparent_65%)] mix-blend-screen"
             aria-hidden
           />
           <div className="relative mx-auto max-w-6xl space-y-8 text-center">

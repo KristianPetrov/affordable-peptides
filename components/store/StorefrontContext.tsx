@@ -211,6 +211,28 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
         },
       ];
     });
+
+    if (
+      addedCount > 0 &&
+      typeof window !== "undefined" &&
+      window.ttq?.track
+    ) {
+      try {
+        // TikTok Pixel event: AddToCart
+        window.ttq.track("AddToCart", {
+          content_type: "product",
+          content_id: productSlug || productName,
+          content_name: productName,
+          quantity: addedCount,
+          price: tierPrice,
+          value: tierPrice * addedCount,
+          currency: "USD",
+        });
+      } catch {
+        // ignore
+      }
+    }
+
     return addedCount;
   }, []);
 

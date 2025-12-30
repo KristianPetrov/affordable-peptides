@@ -24,3 +24,5 @@ export default async function LegacyProductsProductPage({ params }: PageProps) {
 
 
 
+
+

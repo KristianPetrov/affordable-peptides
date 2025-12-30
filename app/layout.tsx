@@ -37,7 +37,7 @@ export default function RootLayout({
           <Providers>
             <div className="flex min-h-screen flex-col bg-black text-zinc-100">
               <div className="flex-1">{children}</div>
-              <footer className="border-t border-purple-900/40 bg-black/80 px-6 py-6 text-center text-xs text-zinc-500 sm:text-sm">
+              <footer className="border-t border-purple-900/40 bg-black/80 px-6 py-6 text-center text-xs text-zinc-400 sm:text-sm">
                 <p>
                   Website designed by{" "}
                   <a
