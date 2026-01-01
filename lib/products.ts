@@ -126,7 +126,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription:
       "5 Amino 1 Q mirrors the small-molecule peptide 5-Amino-1MQ, which is researched for inhibiting nicotinamide N-methyltransferase (NNMT). Scientists leverage it in metabolic studies aimed at improving insulin sensitivity, mobilizing stubborn adipose tissue, and pairing with incretin or mitochondrial-boosting stacks.",
     categories: ["weight-metabolic", "longevity-wellness"],
-    variants: [createVariant("10mg", 50, "/products/label-5amino1q-10mg-3ml.png"), createVariant("50mg", 150, "/products/label-5amino1q-50mg-3ml.png")],
+    variants: [createVariant("10mg", 50, { mockupLabel: "/products/label-5amino1q-10mg-3ml.png", testResultUrl: "https://drive.google.com/file/d/145NiDn1wXMZjvpwL--Wzdq1PyWMi3hD4/view" }), createVariant("50mg", 150, { mockupLabel: "/products/label-5amino1q-50mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1H3Toh9SEiaQgETKnBGliGKxB-0rx8SQc/view"})],
   },
   {
     name: "AOD 9604",
@@ -206,12 +206,12 @@ const productDefinitions: ProductDefinition[] = [
         70,
         { mockupLabel: "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29949_AFFORD4YYW61" }
       ),
-      createVariant("With DAC (5mg)", 50, "/products/label-cjc-1295-dac-5mg-3ml.png"),
+      createVariant("With DAC (5mg)", 50, { mockupLabel: "/products/label-cjc-1295-dac-5mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1VfIq4UXC_naklSqr34iZDloIPIlPRxSC/view"}),
       createVariant("Without DAC (5mg)", 40, { mockupLabel: "/products/label-cjc-1295-wo-dac-5mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29953_AFFORD4C9564" }),
       createVariant(
         "Without DAC (10mg)",
         70,
-        "/products/label-cjc-1295-wo-dac-10mg-3ml.png"
+        { mockupLabel: "/products/label-cjc-1295-wo-dac-10mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1UvOMT6y3PILAn2980d82JeLwQ4mVk8_E/view"}
       ),
     ],
   },
@@ -222,8 +222,8 @@ const productDefinitions: ProductDefinition[] = [
     After reconstitution, the solution may appear clear at room temperature and can crystallize or become slightly cloudy when refrigerated; a normal characteristic of this peptide. Simply place the vial in a cup of warm water to allow it to warm, and the solution will typically return to clear. If some cloudiness or light particles remain, this can be due to natural precipitation and does not automatically indicate a quality issue. Gently roll the vial to help the solution disperse evenly.This appearance is more common with the larger 50mg vial due to the higher peptide concentration. Customers who prefer to avoid this may select the 10mg vial option.`,
     categories: ["longevity-wellness"],
     variants: [
-      createVariant("10mg", 30, "/products/label-epithalon-10mg-3ml.png"),
-      createVariant("50mg", 80, "/products/label-epithalon-50mg-3ml.png"),
+      createVariant("10mg", 30, { mockupLabel: "/products/label-epithalon-10mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1sYZTMlBA_5NFVeHOEnrMfX608YNNcXRV/view"}),
+      createVariant("50mg", 80, { mockupLabel:"/products/label-epithalon-50mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1jKIEpHQ60ql3vpi_i_0pe5PpjYkfgTlB/view"}),
     ],
   },
   {
@@ -233,7 +233,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["longevity-wellness", "recovery-performance"],
     isFeatured: true,
     variants: [
-      createVariant("50mg", 40, "/products/label-ghk-cu-50mg-3ml.png"),
+      createVariant("50mg", 40, { mockupLabel: "/products/label-ghk-cu-50mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1OeobYQQKr0rpCfWHPrCt8y1bsA4PmuJz/view"}),
       createVariant("100mg", 70, { mockupLabel: "/products/label-ghk-cu-100mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=30261_AFFORDARJ834" }),
     ],
   },
@@ -317,7 +317,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
       createVariant("5mg", 30, { mockupLabel: "/products/label-ipamorelin-5mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29950_AFFORDW7HC2Q" }),
-      createVariant("10mg", 50, "/products/label-ipamorelin-10mg-3ml.png"),
+      createVariant("10mg", 50, { mockupLabel: "/products/label-ipamorelin-10mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/10OdGRiyx1sJpwBxQRTplGuIRxMhw8AGx/view"}),
     ],
   },
   {
@@ -329,7 +329,8 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
       createVariant("5mg", 40, "/products/label-sermorelin-5mg-3ml.png"),
-      createVariant("10mg", 70, "/products/label-sermorelin-10mg-3ml.png"),
+      createVariant("10mg", 70, { mockupLabel: "/products/label-sermorelin-10mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1dzJieOqtAX_MoTIexUpuMuClGpXbGC-b/view"}
+      ),
     ],
   },
   {
@@ -351,7 +352,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "KPV is an anti-inflammatory tripeptide derived from the α-MSH sequence and studied for its effects on gut lining support and immune modulation. Research models highlight its potential to help calm excessive inflammatory responses in barrier tissues.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("5mg", 40, "/products/label-kpv-5mg-3ml.png"),
+      createVariant("5mg", 40, { mockupLabel: "/products/label-kpv-5mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1jKfs0pnJSviK3BG1IiGF4c8GDMACEqmj/view"}),
       createVariant("10mg", 70, { mockupLabel: "/products/label-kpv-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=30115_AFFORDED7CA4" }),
     ],
   },
@@ -395,7 +396,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["longevity-wellness", "weight-metabolic"],
     isFeatured: true,
     variants: [
-      createVariant("500mg", 60, "/products/label-nad-500mg-10ml.png"),
+      createVariant("500mg", 60, { mockupLabel: "/products/label-nad-500mg-10ml.png", testResultUrl:"https://drive.google.com/file/d/1o36NSYAaZU81kX_UJRqSnB9ppZGhs9Cb/view"}),
       createVariant("1000mg", 100, {
         mockupLabel: "/products/label-nad-1000mg-10ml.png",
         testResultUrl: "https://chromate.org/verify?c=29420_AFFORDFJF486"
@@ -411,7 +412,7 @@ const productDefinitions: ProductDefinition[] = [
     isFeatured: true,
     variants: [
       createVariant("10mg", 100, { mockupLabel: "/products/label-retatrutide-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29097_AFFORD16FRWY" }),
-      createVariant("20mg", 160, "/products/label-retatrutide-20mg-3ml.png"),
+      createVariant("20mg", 160, { mockupLabel: "/products/label-retatrutide-20mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/14BUr6FwHo3E_Agd0dvKqBskB_o7W0eTe/view"}),
       createVariant("30mg", 200, {
         mockupLabel: "/products/label-retatrutide-30mg-3ml.png",
         testResultUrl: "https://chromate.org/verify?c=29895_AFFORD6895HN",
@@ -425,7 +426,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription:
       "Selank is a tuftsin-derived heptapeptide explored for its anxiolytic, nootropic, and immunomodulatory characteristics. Researchers deploy it in studies centered on focus, mood regulation, and helping the nervous and immune systems stay balanced under stress without sedative drawbacks.",
     categories: ["longevity-wellness", "recovery-performance"],
-    variants: [createVariant("10mg", 50, "/products/label-selank-10mg-3ml.png")],
+    variants: [createVariant("10mg", 50, { mockupLabel: "/products/label-selank-10mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1lOuwVwDTPG6lc93bAzYyAIalGEcqVTAq/view"})],
   },
   {
     name: "Semax",
@@ -434,7 +435,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription:
       "Semax traces back to melanocortin fragments that elevate BDNF and other neurotrophins in experimental models. It's widely investigated for sharpening attention, supporting post-stroke recovery, and buffering oxidative stress within brain-focused research protocols.",
     categories: ["longevity-wellness", "recovery-performance"],
-    variants: [createVariant("10mg", 50, "/products/label-semax-10mg-3ml.png")],
+    variants: [createVariant("10mg", 50, { mockupLabel: "/products/label-semax-10mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1tQPQQ6_cn_3wNvOs29PNIBffcbmQf-OU/view"})],
   },
   {
     name: "SLU-PP-332",
@@ -483,7 +484,7 @@ const productDefinitions: ProductDefinition[] = [
         mockupLabel: "/products/label-tirzepatide-30mg-3ml.png",
         testResultUrl: "https://chromate.org/verify?c=29890_AFFORDM7B9CJ",
       }),
-      createVariant("40mg", 200, "/products/label-tirzepatide-40mg-3ml.png")
+      createVariant("40mg", 200, { mockupLabel: "/products/label-tirzepatide-40mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1I4U_prQ2L1dMuwbw38linGLbkgjndryE/view"})
     ],
   },
 ];
