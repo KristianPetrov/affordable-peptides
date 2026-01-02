@@ -16,7 +16,7 @@ export default async function OgImage ()
     join(
       process.cwd(),
       "public",
-      "affordable-peptides-logo-transparent.png",
+      "affordable-peptides-new-logo-transparent.png",
     ),
     "base64"
   );

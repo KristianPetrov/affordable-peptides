@@ -37,7 +37,7 @@ export default function NavBar ()
         >
           <span className="relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-full bg-linear-to-br from-purple-600/40 via-purple-500/10 to-purple-900/40 shadow-[0_10px_35px_rgba(88,28,135,0.45)]">
             <Image
-              src="/affordable-peptides-logo-transparent.png"
+              src="/affordable-peptides-new-logo-transparent.png"
               alt="Affordable Peptides"
               width={48}
               height={48}

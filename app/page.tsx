@@ -190,7 +190,7 @@ export default function Home ()
               Lab-Grade Standards. Real-World Prices.
             </span>
             <Image
-              src="/affordable-peptides-logo-transparent.png"
+              src="/affordable-peptides-new-logo-transparent.png"
               alt="Affordable Peptides logo"
               width={720}
               height={360}

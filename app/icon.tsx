@@ -14,7 +14,7 @@ export default async function Icon() {
     join(
       process.cwd(),
       "public",
-      "affordable-peptides-logo-transparent.png",
+      "affordable-peptides-new-logo-transparent.png",
     )
   );
 

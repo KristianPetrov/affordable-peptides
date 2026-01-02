@@ -15,14 +15,14 @@ export default function manifest (): MetadataRoute.Manifest
     orientation: "portrait-primary",
     icons: [
       {
-        src: "/favicon.png",
-        sizes: "762x835",
+        src: "/affordable-peptides-new-logo-transparent.png",
+        sizes: "any",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/favicon.png",
-        sizes: "180x180",
+        src: "/affordable-peptides-new-logo-transparent.png",
+        sizes: "any",
         type: "image/png",
         purpose: "any",
       },

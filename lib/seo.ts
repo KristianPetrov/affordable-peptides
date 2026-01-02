@@ -52,7 +52,7 @@ export const siteMetadata = {
     phone: "+1-951-539-3821",
     phoneDisplay: "(951) 539-3821",
     smsLink: "sms:9515393821",
-    logoPath: "/affordable-peptides-logo-transparent.png",
+    logoPath: "/affordable-peptides-new-logo-transparent.png",
     socialImagePath: "/opengraph-image",
     keywords: [
         "peptides",
@@ -293,7 +293,7 @@ export const createProductJsonLd = ({
                         name: "Chromate certificate",
                         value: product.testResultUrl,
                     },
-                ]    
+                ]
                 : [];
 
             const combined = [...baseProperties, ...variantProperties];
