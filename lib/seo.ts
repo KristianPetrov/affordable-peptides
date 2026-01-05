@@ -49,9 +49,9 @@ export const siteMetadata = {
     tagline: DEFAULT_TAGLINE,
     locale: "en-US",
     localeOg: "en_US",
-    phone: "+1-951-539-3821",
-    phoneDisplay: "(951) 539-3821",
-    smsLink: "sms:9515393821",
+    phone: "+1 (307) 202-5965",
+    phoneDisplay: "+1 (307) 202-5965",
+    smsLink: "sms:+13072025965",
     logoPath: "/affordable-peptides-new-logo-transparent.png",
     socialImagePath: "/opengraph-image",
     keywords: [

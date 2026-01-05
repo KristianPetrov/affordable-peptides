@@ -288,10 +288,10 @@ export default function Home ()
                     Text
                   </span>
                   <a
-                    href="sms:9515393821"
+                    href="sms:+13072025965"
                     className="text-2xl font-semibold text-white transition hover:text-purple-200"
                   >
-                    Text (951) 539-3821
+                    Text +1 (307) 202-5965
                   </a>
                   <p className="text-xs text-zinc-400">
                     Available daily 6am–9pm PST. Send a text after hours and we&apos;ll get

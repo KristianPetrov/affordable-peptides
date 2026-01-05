@@ -14,7 +14,8 @@ import {
   ZELLE_RECIPIENT_NAME,
 } from "@/lib/payment-links";
 
-const PHONE_NUMBER = "(951) 539-3821";
+const PHONE_NUMBER_DISPLAY = "+1 (307) 202-5965";
+const PHONE_NUMBER_E164 = "+13072025965";
 
 function ThankYouContent() {
   const searchParams = useSearchParams();
@@ -180,10 +181,10 @@ function ThankYouContent() {
                       <p className="font-medium text-white">
                         Text{" "}
                         <Link
-                          href={`tel:${PHONE_NUMBER.replace(/\D/g, "")}`}
+                          href={`tel:${PHONE_NUMBER_E164}`}
                           className="text-purple-200 underline hover:text-purple-100"
                         >
-                          {PHONE_NUMBER}
+                          {PHONE_NUMBER_DISPLAY}
                         </Link>{" "}
                         with:
                       </p>
@@ -321,10 +322,10 @@ function ThankYouContent() {
                   If you have any questions about your order, please text us
                   at{" "}
                   <Link
-                    href={`sms:${PHONE_NUMBER.replace(/\D/g, "")}`}
+                    href={`sms:${PHONE_NUMBER_E164}`}
                     className="text-purple-200 underline hover:text-purple-100"
                   >
-                    {PHONE_NUMBER}
+                    {PHONE_NUMBER_DISPLAY}
                   </Link>{" "}
                   or reference your Order ID when reaching out.
                 </p>

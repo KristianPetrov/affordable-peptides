@@ -68,10 +68,10 @@ export default function NavBar ()
             {accountLink.label}
           </Link>
           <Link
-            href="sms:9515393821"
+            href="sms:+13072025965"
             className="rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-purple-200 shadow-[0_10px_25px_rgba(120,48,255,0.35)] transition hover:border-purple-400 hover:text-white"
           >
-            Text (951) 539-3821
+            Text +1 (307) 202-5965
           </Link>
         </div>
 
@@ -134,11 +134,11 @@ export default function NavBar ()
             {accountLink.label}
           </Link>
           <Link
-            href="sms:9515393821"
+            href="sms:+13072025965"
             className="rounded-2xl border border-purple-500/50 bg-purple-500/10 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.25em] text-purple-200 transition hover:border-purple-400 hover:text-white"
             onClick={closeMenu}
           >
-            Text (951) 539-3821
+            Text +1 (307) 202-5965
           </Link>
         </div>
       </div>

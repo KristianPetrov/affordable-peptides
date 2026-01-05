@@ -231,7 +231,7 @@ export default function OrderLookupClient({
           </div>
 
           <p className="mt-4 text-sm text-zinc-400">
-            Need help? Text (951) 539-3821 with
+            Need help? Text +1 (307) 202-5965 with
             your order number for the fastest response.
           </p>
         </div>

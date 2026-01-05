@@ -301,7 +301,7 @@ function formatCustomerReceiptEmail (
           <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
           <ol style="margin: 0; padding-left: 18px;">
             <li>Send payment via Cash App, Venmo, or Zelle using the options below.</li>
-            <li>Text (951) 539-3821 with your name, order number (${orderNumber}), and payment screenshot.</li>
+            <li>Text +1 (307) 202-5965 with your name, order number (${orderNumber}), and payment screenshot.</li>
             <li>We’ll confirm manually and follow up with shipping details.</li>
           </ol>
         </div>
@@ -373,7 +373,7 @@ function formatCustomerReceiptEmail (
           <small style="font-weight: normal; color: #6b7280;">${order.totalUnits} total unit${order.totalUnits === 1 ? "" : "s"}</small>
         </div>
 
-        <p style="margin-top: 24px;">Need anything? Text (951) 539-3821 and reference your order number (do not reply to this email).</p>
+        <p style="margin-top: 24px;">Need anything? Text +1 (307) 202-5965 and reference your order number (do not reply to this email).</p>
       </div>
     </div>
     <p class="footer">Affordable Peptides • View your order anytime: <a href="${receiptUrl}" style="color: #7c3aed;">${receiptUrl}</a></p>
@@ -417,7 +417,7 @@ function formatCustomerReceiptEmail (
     ``,
     `Next Steps:`,
     `1. Send payment via Cash App, Venmo, or Zelle.`,
-    `2. Text (951) 539-3821 with your order ${orderNumber}, and payment screenshot.`,
+    `2. Text +1 (307) 202-5965 with your order ${orderNumber}, and payment screenshot.`,
     `3. We'll confirm manually and update you once your order ships.`,
   ].join("\n");
 
@@ -562,10 +562,10 @@ function formatOrderPaidEmail (order: Order):
         </div>
 
         <div class="info-block" style="background: #fef3c7; border-color: #f59e0b;">
-          <p style="margin: 0; color: #92400e;"><strong>Important:</strong> Please do not reply to this email. For questions or support, please text us at (951) 539-3821.</p>
+          <p style="margin: 0; color: #92400e;"><strong>Important:</strong> Please do not reply to this email. For questions or support, please text us at +1 (307) 202-5965.</p>
         </div>
 
-        <p>Need anything? Text us at (951) 539-3821 and reference your order number (do not reply to this email).</p>
+        <p>Need anything? Text us at +1 (307) 202-5965 and reference your order number (do not reply to this email).</p>
       </div>
     </div>
     <p class="footer">Affordable Peptides • Thank you for your order!</p>
@@ -581,9 +581,9 @@ function formatOrderPaidEmail (order: Order):
     ``,
     `Your order will be shipped within 48 hours. You'll receive another email with tracking information once your order ships.`,
     ``,
-    `IMPORTANT: Please do not reply to this email. For questions or support, please text us at (951) 539-3821.`,
+    `IMPORTANT: Please do not reply to this email. For questions or support, please text us at +1 (307) 202-5965.`,
     ``,
-    `Need anything? Text us at (951) 539-3821 and reference your order number (do not reply to this email).`,
+    `Need anything? Text us at +1 (307) 202-5965 and reference your order number (do not reply to this email).`,
   ].join("\n");
 
   return {
@@ -669,10 +669,10 @@ function formatOrderShippedEmail (order: Order):
         ${order.notes ? `<div class="info-block"><p style="margin: 0;"><strong>Note:</strong> ${order.notes}</p></div>` : ''}
 
         <div class="info-block" style="background: #fef3c7; border-color: #f59e0b;">
-          <p style="margin: 0; color: #92400e;"><strong>Important:</strong> Please do not reply to this email. For questions or support, please text us at (951) 539-3821.</p>
+          <p style="margin: 0; color: #92400e;"><strong>Important:</strong> Please do not reply to this email. For questions or support, please text us at +1 (307) 202-5965.</p>
         </div>
 
-        <p>You can track your package using the tracking number above. Need anything? Text us at (951) 539-3821 (do not reply to this email).</p>
+        <p>You can track your package using the tracking number above. Need anything? Text us at +1 (307) 202-5965 (do not reply to this email).</p>
       </div>
     </div>
     <p class="footer">Affordable Peptides • Thank you for your order!</p>
@@ -701,9 +701,9 @@ function formatOrderShippedEmail (order: Order):
     ``,
     ...(order.notes ? [`Note: ${order.notes}`, ``] : []),
     ``,
-    `IMPORTANT: Please do not reply to this email. For questions or support, please text us at (951) 539-3821.`,
+    `IMPORTANT: Please do not reply to this email. For questions or support, please text us at +1 (307) 202-5965.`,
     ``,
-    `You can track your package using the tracking number above. Need anything? Text us at (951) 539-3821 (do not reply to this email).`,
+    `You can track your package using the tracking number above. Need anything? Text us at +1 (307) 202-5965 (do not reply to this email).`,
   ].join("\n");
 
   return {
