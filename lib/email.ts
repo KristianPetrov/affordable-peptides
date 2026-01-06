@@ -2,6 +2,7 @@ import type { Order } from "./orders";
 import { formatOrderNumber } from "./orders";
 import { Resend } from 'resend'
 import { calculateVolumePricing } from "./cart-pricing";
+import { calculateShippingCost } from "./shipping";
 import
 {
   buildCashAppLink,
@@ -77,9 +78,13 @@ export function formatOrderEmail (order: Order):
     timeStyle: "short",
   });
   const pricing = calculateVolumePricing(order.items);
+  const itemsSubtotal = pricing.subtotal;
   const referralDiscountAmount = order.referralDiscount ?? 0;
   const referralDiscountDisplay =
     referralDiscountAmount > 0 ? `$${referralDiscountAmount.toFixed(2)}` : null;
+  const shippingCost = calculateShippingCost(itemsSubtotal);
+  const totalWithShipping = order.subtotal + shippingCost;
+  const shippingDisplay = shippingCost === 0 ? "FREE" : `$${shippingCost.toFixed(2)}`;
   const hasReferralDetails =
     Boolean(order.referralPartnerName || order.referralCode) ||
     referralDiscountAmount > 0;
@@ -173,7 +178,11 @@ export function formatOrderEmail (order: Order):
           </tbody>
         </table>
         <div class="total">
-          Total: $${order.subtotal.toFixed(2)}<br>
+          Items Subtotal: $${itemsSubtotal.toFixed(2)}<br>
+          ${referralDiscountAmount > 0 ? `Referral Discount: -$${referralDiscountAmount.toFixed(2)}<br>` : ""}
+          Subtotal (After Discount): $${order.subtotal.toFixed(2)}<br>
+          Shipping: ${shippingDisplay}<br>
+          Total: $${totalWithShipping.toFixed(2)}<br>
           <small>Total Units: ${order.totalUnits}</small>
         </div>
       </div>
@@ -214,7 +223,11 @@ ${order.items
       )
       .join("\n")}
 
-Total: $${order.subtotal.toFixed(2)}
+Items Subtotal: $${itemsSubtotal.toFixed(2)}
+${referralDiscountAmount > 0 ? `Referral Discount: -$${referralDiscountAmount.toFixed(2)}` : ""}
+Subtotal (After Discount): $${order.subtotal.toFixed(2)}
+Shipping: ${shippingDisplay}
+Total: $${totalWithShipping.toFixed(2)}
 Total Units: ${order.totalUnits}
 
 Action Required: Customer will text payment confirmation. Please verify payment and update order status in the admin panel.
@@ -275,7 +288,7 @@ function formatCustomerReceiptEmail (
     body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; background: #f3f4f6; margin: 0; padding: 0; }
     .container { max-width: 640px; margin: 0 auto; padding: 24px; }
     .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(146, 64, 214, 0.15); }
-    .header { background: linear-linear(135deg, #7c3aed, #9333ea); color: white; padding: 32px; }
+    .header { background: linear-gradient(135deg, #7c3aed, #9333ea); color: white; padding: 32px; }
     .header h1 { margin: 0 0 12px 0; font-size: 28px; }
     .content { padding: 28px; }
     .cta { display: inline-block; margin: 16px 0; padding: 14px 28px; border-radius: 9999px; background: #7c3aed; color: white; text-decoration: none; font-weight: bold; }
@@ -539,7 +552,7 @@ function formatOrderPaidEmail (order: Order):
     body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; background: #f3f4f6; margin: 0; padding: 0; }
     .container { max-width: 640px; margin: 0 auto; padding: 24px; }
     .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(146, 64, 214, 0.15); }
-    .header { background: linear-linear(135deg, #059669, #10b981); color: white; padding: 32px; }
+    .header { background: linear-gradient(135deg, #059669, #10b981); color: white; padding: 32px; }
     .header h1 { margin: 0 0 12px 0; font-size: 28px; }
     .content { padding: 28px; }
     .info-block { background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid #d1fae5; }
@@ -633,7 +646,7 @@ function formatOrderShippedEmail (order: Order):
     body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; background: #f3f4f6; margin: 0; padding: 0; }
     .container { max-width: 640px; margin: 0 auto; padding: 24px; }
     .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(146, 64, 214, 0.15); }
-    .header { background: linear-linear(135deg, #2563eb, #3b82f6); color: white; padding: 32px; }
+    .header { background: linear-gradient(135deg, #2563eb, #3b82f6); color: white; padding: 32px; }
     .header h1 { margin: 0 0 12px 0; font-size: 28px; }
     .content { padding: 28px; }
     .info-block { background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid #dbeafe; }

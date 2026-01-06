@@ -141,7 +141,7 @@ export default function ProductMockup ({
             className="pointer-events-none absolute inset-0 opacity-70"
             style={{
               background:
-                "linear-linear(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.15), rgba(0,0,0,0.55))",
+                "linear-gradient(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.15), rgba(0,0,0,0.55))",
               maskImage:
                 "radial-linear(circle at left, transparent 45%, black 95%)",
               WebkitMaskImage:
@@ -152,7 +152,7 @@ export default function ProductMockup ({
             className="pointer-events-none absolute inset-0 opacity-70"
             style={{
               background:
-                "linear-linear(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.15), rgba(0,0,0,0.55))",
+                "linear-gradient(90deg, rgba(0,0,0,0.55), rgba(0,0,0,0.15), rgba(0,0,0,0.55))",
               maskImage:
                 "radial-linear(circle at right, transparent 45%, black 95%)",
               WebkitMaskImage:

@@ -11,6 +11,7 @@ import
   } from "@/app/actions/admin";
 import { auth, signOut } from "@/lib/auth";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
+import { calculateShippingCost } from "@/lib/shipping";
 import { getProductsWithInventory } from "@/lib/products.server";
 import { getReferralDashboardData } from "@/lib/referrals";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
@@ -322,12 +323,18 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
     (order) => order.status === "PENDING_PAYMENT"
   );
 
+  const calculateOrderTotal = (order: (typeof orders)[number]) => {
+    const itemsSubtotal = calculateVolumePricing(order.items).subtotal;
+    const shippingCost = calculateShippingCost(itemsSubtotal);
+    return order.subtotal + shippingCost;
+  };
+
   const totalPaidRevenue = paidOrdersForRevenue.reduce(
-    (sum, order) => sum + order.subtotal,
+    (sum, order) => sum + calculateOrderTotal(order),
     0
   );
   const potentialRevenue = pendingOrdersForRevenue.reduce(
-    (sum, order) => sum + order.subtotal,
+    (sum, order) => sum + calculateOrderTotal(order),
     0
   );
   const paidOrderCount = paidOrdersForRevenue.length;
@@ -355,9 +362,9 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
       }
       const bucket = bucketMap.get(bucketKey)!;
       if (order.status === "PENDING_PAYMENT") {
-        bucket.pending += order.subtotal;
+        bucket.pending += calculateOrderTotal(order);
       } else if (order.status === "PAID" || order.status === "SHIPPED") {
-        bucket.paid += order.subtotal;
+        bucket.paid += calculateOrderTotal(order);
       }
     });
     return Array.from(bucketMap.entries())
@@ -780,6 +787,11 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                   sortedOrders.map((order) =>
                   {
                     const pricing = calculateVolumePricing(order.items);
+                    const itemsSubtotal = pricing.subtotal;
+                    const referralDiscount = order.referralDiscount ?? 0;
+                    const discountedSubtotal = order.subtotal;
+                    const shippingCost = calculateShippingCost(itemsSubtotal);
+                    const orderTotal = discountedSubtotal + shippingCost;
                     const formattedOrderNumber = formatOrderNumber(order.orderNumber);
                     const formattedDate = new Date(
                       order.createdAt
@@ -866,9 +878,35 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                             <div className="rounded-2xl border border-purple-900/40 bg-black/60 p-4">
                               <div className="mb-4 space-y-2">
                                 <div className="flex justify-between text-sm">
-                                  <span className="text-zinc-400">Subtotal:</span>
+                                  <span className="text-zinc-400">Items Subtotal:</span>
                                   <span className="font-semibold text-white">
-                                    {formatCurrency(order.subtotal)}
+                                    {formatCurrency(itemsSubtotal)}
+                                  </span>
+                                </div>
+                                {referralDiscount > 0 && (
+                                  <div className="flex justify-between text-sm">
+                                    <span className="text-zinc-400">Referral Discount:</span>
+                                    <span className="font-semibold text-green-300">
+                                      -{formatCurrency(referralDiscount)}
+                                    </span>
+                                  </div>
+                                )}
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-zinc-400">Subtotal (After Discount):</span>
+                                  <span className="font-semibold text-white">
+                                    {formatCurrency(discountedSubtotal)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-zinc-400">Shipping:</span>
+                                  <span className="font-semibold text-white">
+                                    {shippingCost === 0 ? "FREE" : formatCurrency(shippingCost)}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                  <span className="text-zinc-400">Total:</span>
+                                  <span className="font-semibold text-white">
+                                    {formatCurrency(orderTotal)}
                                   </span>
                                 </div>
                                 <div className="flex justify-between text-sm">
