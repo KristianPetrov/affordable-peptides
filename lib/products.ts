@@ -328,7 +328,7 @@ const productDefinitions: ProductDefinition[] = [
       "Sermorelin is a growth hormone–releasing hormone (GHRH) analog researched for promoting physiologic, pulsatile growth hormone secretion. It is commonly explored in endocrine and recovery-focused studies, including protocols that investigate sleep quality, body composition, and GH/IGF-1 axis dynamics.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("5mg", 40, "/products/label-sermorelin-5mg-3ml.png"),
+      createVariant("5mg", 40, { mockupLabel: "/products/label-sermorelin-5mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1xmIT5mTQ6Tyw1qIkYRaREDNzA6ikRgIx/view"}),
       createVariant("10mg", 70, { mockupLabel: "/products/label-sermorelin-10mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1dzJieOqtAX_MoTIexUpuMuClGpXbGC-b/view"}
       ),
     ],

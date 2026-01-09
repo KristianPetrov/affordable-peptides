@@ -77,7 +77,7 @@ export const siteMetadata = {
         // "GLP-1",
     ],
     socialProfiles: {
-        tiktok: "https://www.tiktok.com/@affordable.peptides",
+        tiktok: "https://www.tiktok.com/@.affordablepeptides",
         instagram:
             "https://www.instagram.com/affordablepeptides/?utm_source=ig_web_button_share_sheet",
         youtube: "https://www.youtube.com/@AffordablePeptides",
