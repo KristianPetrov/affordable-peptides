@@ -18,6 +18,7 @@
     "3dmol": "^2.5.3",
     "@auth/drizzle-adapter": "^1.11.1",
     "@neondatabase/serverless": "^1.0.2",
+    "@vercel/analytics": "^1.6.1",
     "bcryptjs": "^3.0.3",
     "drizzle-orm": "^0.44.7",
     "next": "16.1.1",

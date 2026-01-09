@@ -9,7 +9,7 @@ import {
 } from "@/lib/seo";
 
 import "./globals.css";
-
+import { Analytics } from "@vercel/analytics/next"
 export { metadata } from "./metadata";
 export { viewport } from "./viewport";
 
@@ -60,6 +60,7 @@ export default function RootLayout({
               />
             ))}
           </Providers>
+          <Analytics />
         </AgeGateProvider>
       </body>
     </html>
