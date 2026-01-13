@@ -204,9 +204,9 @@ const productDefinitions: ProductDefinition[] = [
       createVariant(
         "No DAC + IPA (10mg)",
         70,
-        { mockupLabel: "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29949_AFFORD4YYW61" }
+        { mockupLabel: "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29953_AFFORD4C9564" }
       ),
-      createVariant("With DAC (5mg)", 50, { mockupLabel: "/products/label-cjc-1295-dac-5mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1VfIq4UXC_naklSqr34iZDloIPIlPRxSC/view"}),
+      createVariant("With DAC (5mg)", 50, "/products/label-cjc-1295-dac-5mg-3ml.png"),
       createVariant("Without DAC (5mg)", 40, { mockupLabel: "/products/label-cjc-1295-wo-dac-5mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29953_AFFORD4C9564" }),
       createVariant(
         "Without DAC (10mg)",
