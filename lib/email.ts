@@ -20,6 +20,24 @@ const ADMIN_SMS_EMAIL = process.env.ADMIN_SMS_EMAIL;
 
 const FALLBACK_SITE_URL = "http://localhost:3000";
 
+const PACIFIC_TIMEZONE = "America/Los_Angeles";
+
+function formatDateTimePacific (input: string | number | Date): string
+{
+  const date = input instanceof Date ? input : new Date(input);
+  if (Number.isNaN(date.getTime())) return "";
+
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: PACIFIC_TIMEZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  }).format(date);
+}
+
 function normalizeBaseUrl (input: string): string
 {
   const trimmed = input.trim();
@@ -73,10 +91,7 @@ export function formatOrderEmail (order: Order):
   }
 {
   const orderNumber = formatOrderNumber(order.orderNumber);
-  const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
-    dateStyle: "long",
-    timeStyle: "short",
-  });
+  const formattedDate = formatDateTimePacific(order.createdAt);
   const pricing = calculateVolumePricing(order.items);
   const itemsSubtotal = pricing.subtotal;
   const referralDiscountAmount = order.referralDiscount ?? 0;
@@ -251,10 +266,7 @@ function formatCustomerReceiptEmail (
   }
 {
   const orderNumber = formatOrderNumber(order.orderNumber);
-  const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
-    dateStyle: "long",
-    timeStyle: "short",
-  });
+  const formattedDate = formatDateTimePacific(order.createdAt);
   const pricing = calculateVolumePricing(order.items);
   const amountDisplay = order.subtotal.toFixed(2);
   const cashAppTotal = calculateCashAppTotal(order.subtotal) || order.subtotal;
@@ -538,10 +550,7 @@ function formatOrderPaidEmail (order: Order):
   }
 {
   const orderNumber = formatOrderNumber(order.orderNumber);
-  const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
-    dateStyle: "long",
-    timeStyle: "short",
-  });
+  const formattedDate = formatDateTimePacific(order.createdAt);
 
   const html = `
 <!DOCTYPE html>
@@ -614,10 +623,7 @@ function formatOrderShippedEmail (order: Order):
   }
 {
   const orderNumber = formatOrderNumber(order.orderNumber);
-  const formattedDate = new Date(order.createdAt).toLocaleString("en-US", {
-    dateStyle: "long",
-    timeStyle: "short",
-  });
+  const formattedDate = formatDateTimePacific(order.createdAt);
   const trackingNumber = order.trackingNumber || "Tracking number will be available soon";
 
   // Build tracking URL based on carrier
