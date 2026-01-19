@@ -179,28 +179,6 @@ function ThankYouContent() {
                     </span>
                     <div>
                       <p className="font-medium text-white">
-                        Text{" "}
-                        <Link
-                          href={`tel:${PHONE_NUMBER_E164}`}
-                          className="text-purple-200 underline hover:text-purple-100"
-                        >
-                          {PHONE_NUMBER_DISPLAY}
-                        </Link>{" "}
-                        with:
-                      </p>
-                      <ul className="mt-2 space-y-1 text-sm text-zinc-400">
-                        <li>• Your full name</li>
-                        <li>• Your Order ID: {formattedOrderNumber || orderNumber}</li>
-                        <li>• A screenshot of payment</li>
-                      </ul>
-                    </div>
-                  </li>
-                  <li className="flex gap-4">
-                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-purple-500/20 font-semibold text-purple-200">
-                      3
-                    </span>
-                    <div>
-                      <p className="font-medium text-white">
                         Your order ships after manual confirmation.
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
@@ -213,6 +191,13 @@ function ThankYouContent() {
                 <p className="mt-6 text-sm text-zinc-400">
                   If you do not receive an email confirmation, please check your spam
                   or junk folder before reaching out.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-blue-500/40 bg-blue-500/10 p-6 text-center">
+                <p className="text-2xl font-semibold text-blue-100 sm:text-3xl">
+                  If you need to use a credit card, you can check out using Venmo and
+                  use your credit card on there.
                 </p>
               </div>
 

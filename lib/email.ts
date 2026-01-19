@@ -326,7 +326,6 @@ function formatCustomerReceiptEmail (
           <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
           <ol style="margin: 0; padding-left: 18px;">
             <li>Send payment via Cash App, Venmo, or Zelle using the options below.</li>
-            <li>Text +1 (307) 202-5965 with your name, order number (${orderNumber}), and payment screenshot.</li>
             <li>We’ll confirm manually and follow up with shipping details.</li>
           </ol>
         </div>
@@ -442,8 +441,7 @@ function formatCustomerReceiptEmail (
     ``,
     `Next Steps:`,
     `1. Send payment via Cash App, Venmo, or Zelle.`,
-    `2. Text +1 (307) 202-5965 with your order ${orderNumber}, and payment screenshot.`,
-    `3. We'll confirm manually and update you once your order ships.`,
+    `2. We'll confirm manually and update you once your order ships.`,
   ].join("\n");
 
   return {
