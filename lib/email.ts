@@ -268,9 +268,19 @@ function formatCustomerReceiptEmail (
   const orderNumber = formatOrderNumber(order.orderNumber);
   const formattedDate = formatDateTimePacific(order.createdAt);
   const pricing = calculateVolumePricing(order.items);
-  const amountDisplay = order.subtotal.toFixed(2);
-  const cashAppTotal = calculateCashAppTotal(order.subtotal) || order.subtotal;
-  const venmoTotal = calculateVenmoTotal(order.subtotal) || order.subtotal;
+  const itemsSubtotal = pricing.subtotal;
+  const referralDiscountAmount = order.referralDiscount ?? 0;
+  // Free-shipping qualification is based on the pre-discount subtotal
+  // so that applying a referral discount doesn't remove free shipping.
+  const shippingCost = calculateShippingCost(itemsSubtotal);
+  const totalWithShipping = order.subtotal + shippingCost;
+  const shippingDisplay =
+    shippingCost === 0 ? "FREE" : `$${shippingCost.toFixed(2)}`;
+
+  const amountDisplay = totalWithShipping.toFixed(2);
+  const cashAppTotal =
+    calculateCashAppTotal(totalWithShipping) || totalWithShipping;
+  const venmoTotal = calculateVenmoTotal(totalWithShipping) || totalWithShipping;
   const cashAppDisplay = cashAppTotal.toFixed(2);
   const venmoDisplay = venmoTotal.toFixed(2);
   const cashAppLink = buildCashAppLink(cashAppTotal);
@@ -393,7 +403,11 @@ function formatCustomerReceiptEmail (
           </tbody>
         </table>
         <div class="total">
-          Total: $${order.subtotal.toFixed(2)}<br />
+          Items Subtotal: $${itemsSubtotal.toFixed(2)}<br />
+          ${referralDiscountAmount > 0 ? `Referral Discount: -$${referralDiscountAmount.toFixed(2)}<br />` : ""}
+          Subtotal (After Discount): $${order.subtotal.toFixed(2)}<br />
+          Shipping: ${shippingDisplay}<br />
+          Total: $${totalWithShipping.toFixed(2)}<br />
           <small style="font-weight: normal; color: #6b7280;">${order.totalUnits} total unit${order.totalUnits === 1 ? "" : "s"}</small>
         </div>
 
@@ -437,7 +451,13 @@ function formatCustomerReceiptEmail (
         `- ${item.productName} (${item.variantLabel}) • ${item.count} × Qty ${item.tierQuantity} = $${(pricing.lineItemTotals[item.key] ?? item.tierPrice * item.count).toFixed(2)}`
     ),
     ``,
-    `Total: $${order.subtotal.toFixed(2)} • ${order.totalUnits} units`,
+    `Items Subtotal: $${itemsSubtotal.toFixed(2)}`,
+    ...(referralDiscountAmount > 0
+      ? [`Referral Discount: -$${referralDiscountAmount.toFixed(2)}`]
+      : []),
+    `Subtotal (After Discount): $${order.subtotal.toFixed(2)}`,
+    `Shipping: ${shippingDisplay}`,
+    `Total: $${totalWithShipping.toFixed(2)} • ${order.totalUnits} units`,
     ``,
     `Next Steps:`,
     `1. Send payment via Cash App, Venmo, or Zelle.`,
