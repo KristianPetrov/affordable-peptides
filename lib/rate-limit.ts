@@ -193,4 +193,19 @@ export const orderCreationRateLimiter = createMemoryRateLimiter({
     max: ORDER_RATE_LIMIT_MAX_REQUESTS,
 });
 
+const PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS,
+    5
+);
+const PASSWORD_RESET_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.PASSWORD_RESET_RATE_LIMIT_WINDOW_MS,
+    15 * 60 * 1000
+);
+
+export const passwordResetRequestRateLimiter = createMemoryRateLimiter({
+    name: "password-reset-request",
+    windowMs: PASSWORD_RESET_RATE_LIMIT_WINDOW_MS,
+    max: PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS,
+});
+
 

@@ -61,6 +61,27 @@ export const verificationTokens = pgTable("verification_tokens", {
   compoundKey: primaryKey({ columns: [table.identifier, table.token] }),
 }));
 
+export const passwordResetTokens = pgTable(
+  "password_reset_tokens",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    tokenHash: text("token_hash").notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    usedAt: timestamp("used_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    tokenHashUnique: uniqueIndex(
+      "password_reset_tokens_token_hash_unique"
+    ).on(table.tokenHash),
+    userIdx: index("password_reset_tokens_user_idx").on(table.userId),
+    expiresIdx: index("password_reset_tokens_expires_idx").on(table.expiresAt),
+  })
+);
+
 export const customerProfiles = pgTable("customer_profiles", {
   userId: text("user_id")
     .primaryKey()

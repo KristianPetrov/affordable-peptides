@@ -1,17 +1,24 @@
 "use server";
 
-import { randomUUID } from "crypto";
+import { createHash, randomBytes, randomUUID } from "crypto";
 import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { and, eq, gt, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 
 import {
   db,
   upsertCustomerProfile,
   type CustomerProfileUpdate,
 } from "@/lib/db";
-import { users } from "@/lib/db/schema";
+import { passwordResetTokens, users } from "@/lib/db/schema";
 import { auth } from "@/lib/auth";
+import { sendPasswordResetEmail } from "@/lib/email";
+import
+{
+  extractClientIp,
+  passwordResetRequestRateLimiter,
+} from "@/lib/rate-limit";
 
 type RegisterCustomerInput = {
   name: string;
@@ -275,3 +282,147 @@ export async function changePasswordAction(
   }
 }
 
+type RequestPasswordResetInput = {
+  email: string;
+};
+
+export async function requestPasswordResetAction(
+  input: RequestPasswordResetInput
+): Promise<ActionResult>
+{
+  try {
+    const email = sanitizeInput(input.email);
+
+    if (!email) {
+      return { success: false, error: "Email is required." };
+    }
+
+    const headerList = await headers();
+    const clientIp = extractClientIp(headerList);
+    const rateCheck = passwordResetRequestRateLimiter.check([clientIp, email]);
+    if (!rateCheck.success) {
+      return {
+        success: false,
+        error: "Too many password reset requests. Please try again later.",
+      };
+    }
+
+    const normalizedEmail = normalizeEmail(email);
+    const [user] = await db
+      .select({ id: users.id, email: users.email, role: users.role })
+      .from(users)
+      .where(eq(users.email, normalizedEmail))
+      .limit(1);
+
+    // Always return success to avoid account enumeration.
+    if (!user) {
+      return { success: true };
+    }
+
+    // Admin sign-in uses environment credentials, not user passwords.
+    if ((user.role ?? "CUSTOMER") === "ADMIN") {
+      return { success: true };
+    }
+
+    await db
+      .delete(passwordResetTokens)
+      .where(eq(passwordResetTokens.userId, user.id));
+
+    const rawToken = randomBytes(32).toString("base64url");
+    const tokenHash = createHash("sha256").update(rawToken).digest("hex");
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+    await db.insert(passwordResetTokens).values({
+      id: randomUUID(),
+      userId: user.id,
+      tokenHash,
+      expiresAt,
+    });
+
+    await sendPasswordResetEmail(user.email, rawToken);
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to request password reset:", error);
+    // Still return success to avoid account enumeration.
+    return { success: true };
+  }
+}
+
+type ResetPasswordWithTokenInput = {
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
+};
+
+export async function resetPasswordWithTokenAction(
+  input: ResetPasswordWithTokenInput
+): Promise<ActionResult>
+{
+  try {
+    const token = sanitizeInput(input.token);
+    const newPassword = input.newPassword?.trim();
+    const confirmPassword = input.confirmPassword?.trim();
+
+    if (!token || !newPassword || !confirmPassword) {
+      return { success: false, error: "All fields are required." };
+    }
+
+    if (newPassword.length < 8) {
+      return {
+        success: false,
+        error: "Password must be at least 8 characters long.",
+      };
+    }
+
+    if (newPassword !== confirmPassword) {
+      return { success: false, error: "Passwords do not match." };
+    }
+
+    const tokenHash = createHash("sha256").update(token).digest("hex");
+    const now = new Date();
+
+    const hashedNewPassword = await bcrypt.hash(newPassword, 12);
+
+    // Consume the token in a single statement (prevents reuse).
+    const [consumed] = await db
+      .delete(passwordResetTokens)
+      .where(
+        and(
+          eq(passwordResetTokens.tokenHash, tokenHash),
+          isNull(passwordResetTokens.usedAt),
+          gt(passwordResetTokens.expiresAt, now)
+        )
+      )
+      .returning({ userId: passwordResetTokens.userId });
+
+    if (!consumed) {
+      return {
+        success: false,
+        error:
+          "This reset link is invalid or has expired. Please request a new one.",
+      };
+    }
+
+    await db
+      .update(users)
+      .set({
+        password: hashedNewPassword,
+        updatedAt: now,
+      })
+      .where(eq(users.id, consumed.userId));
+
+    // Clear any other outstanding reset tokens for this user.
+    await db
+      .delete(passwordResetTokens)
+      .where(eq(passwordResetTokens.userId, consumed.userId));
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to reset password:", error);
+    return {
+      success: false,
+      error: "Unable to reset password. Please try again.",
+    };
+  }
+}

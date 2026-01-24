@@ -67,6 +67,13 @@ function buildOrderLookupUrl (order: Order): string
   return url.toString();
 }
 
+function buildPasswordResetUrl (token: string): string
+{
+  const url = new URL("/account/reset-password", SITE_BASE_URL);
+  url.searchParams.set("token", token);
+  return url.toString();
+}
+
 function logEmailPreview (
   to: string,
   content: {
@@ -81,6 +88,74 @@ function logEmailPreview (
   console.log("=".repeat(60));
   console.log(content.text);
   console.log("=".repeat(60));
+}
+
+function formatPasswordResetEmail (resetUrl: string):
+  {
+    subject: string;
+    html: string;
+    text: string;
+  }
+{
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; background: #f3f4f6; margin: 0; padding: 0; }
+    .container { max-width: 640px; margin: 0 auto; padding: 24px; }
+    .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(146, 64, 214, 0.15); }
+    .header { background: linear-gradient(135deg, #7c3aed, #4f46e5); color: white; padding: 32px; }
+    .header h1 { margin: 0 0 12px 0; font-size: 26px; }
+    .content { padding: 28px; }
+    .button { display: inline-block; background: #7c3aed; color: white !important; text-decoration: none; padding: 12px 18px; border-radius: 999px; font-weight: 700; letter-spacing: 0.04em; }
+    .muted { color: #6b7280; font-size: 13px; }
+    .footer { font-size: 13px; color: #6b7280; text-align: center; margin-top: 24px; }
+    .note { background: #fef3c7; border: 1px solid #f59e0b; border-radius: 12px; padding: 14px; color: #92400e; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1>Reset your password</h1>
+        <p style="margin: 0; font-size: 15px;">We received a request to reset your account password.</p>
+      </div>
+      <div class="content">
+        <p>Click the button below to choose a new password. This link expires in 1 hour.</p>
+        <p style="margin: 22px 0;">
+          <a class="button" href="${resetUrl}" target="_blank" rel="noopener noreferrer">Reset Password</a>
+        </p>
+        <p class="muted">If the button doesn’t work, copy and paste this URL into your browser:</p>
+        <p class="muted" style="word-break: break-all;">${resetUrl}</p>
+        <div class="note">
+          <strong>Didn’t request this?</strong> You can safely ignore this email.
+        </div>
+        <p class="muted" style="margin-top: 16px;">Please do not reply to this email.</p>
+      </div>
+    </div>
+    <p class="footer">Affordable Peptides</p>
+  </div>
+</body>
+</html>
+  `;
+
+  const text = [
+    "Reset your password",
+    "",
+    "We received a request to reset your account password.",
+    "Use the link below to choose a new password (expires in 1 hour):",
+    resetUrl,
+    "",
+    "If you didn't request this, you can ignore this email.",
+  ].join("\n");
+
+  return {
+    subject: "Reset your password",
+    html,
+    text,
+  };
 }
 
 export function formatOrderEmail (order: Order):
@@ -810,3 +885,36 @@ export async function sendOrderShippedEmail (order: Order): Promise<void>
   }
 }
 
+export async function sendPasswordResetEmail (
+  to: string,
+  token: string
+): Promise<void>
+{
+  const resetUrl = buildPasswordResetUrl(token);
+  const emailContent = formatPasswordResetEmail(resetUrl);
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not configured. Email not sent.");
+    logEmailPreview(to, emailContent);
+    return;
+  }
+
+  try {
+    await resend.emails.send({
+      from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+      to,
+      subject: emailContent.subject,
+      html: emailContent.html,
+      text: emailContent.text,
+      replyTo: "noreply@affordablepeptides.life",
+      headers: {
+        "Reply-To": "noreply@affordablepeptides.life",
+        "X-Auto-Response-Suppress": "All",
+      },
+    });
+    console.log("PASSWORD RESET email sent successfully to", to);
+  } catch (error) {
+    console.error("Failed to send PASSWORD RESET email via Resend:", error);
+    throw error;
+  }
+}
