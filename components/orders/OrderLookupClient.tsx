@@ -1,9 +1,8 @@
 "use client";
 
 import type { ChangeEvent, FormEvent } from "react";
-import { useCallback, useEffect, useRef, useState, useTransition } from "react";
-import type { Order } from "@/lib/orders";
-import { formatOrderNumber } from "@/lib/orders";
+import { useCallback, useEffect, useRef, useState, useTransition, useMemo } from "react";
+import { calculateOrderTotals, formatOrderNumber, type Order } from "@/lib/orders";
 import { lookupOrderAction } from "@/app/actions/orders";
 
 const statusStyles: Record<Order["status"], string> = {
@@ -37,10 +36,11 @@ type LookupResultState = {
   hasSearched: boolean;
 };
 
-export default function OrderLookupClient({
+export default function OrderLookupClient ({
   defaultOrderNumber = "",
   defaultEmail = "",
-}: OrderLookupClientProps) {
+}: OrderLookupClientProps)
+{
   const [formData, setFormData] = useState<LookupFormState>({
     orderNumber: defaultOrderNumber,
     customerEmail: defaultEmail,
@@ -52,12 +52,18 @@ export default function OrderLookupClient({
   });
   const [isPending, startTransition] = useTransition();
   const autoSubmittedRef = useRef(false);
+  const orderTotals = useMemo(
+    () => (result.order ? calculateOrderTotals(result.order) : null),
+    [result.order]
+  );
 
   const runLookup = useCallback(
-    (payload?: LookupFormState) => {
+    (payload?: LookupFormState) =>
+    {
       const request = payload ?? formData;
 
-      startTransition(async () => {
+      startTransition(async () =>
+      {
         if (!request.orderNumber.trim()) {
           setResult({
             order: null,
@@ -90,7 +96,8 @@ export default function OrderLookupClient({
     [formData, startTransition]
   );
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     if (!autoSubmittedRef.current && defaultOrderNumber) {
       autoSubmittedRef.current = true;
       runLookup({
@@ -100,12 +107,14 @@ export default function OrderLookupClient({
     }
   }, [defaultOrderNumber, defaultEmail, runLookup]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) =>
+  {
     event.preventDefault();
     runLookup();
   };
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>): void => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>): void =>
+  {
     setFormData((prev) => ({
       ...prev,
       [event.target.name]: event.target.value,
@@ -207,7 +216,7 @@ export default function OrderLookupClient({
                 Total
               </p>
               <p className="mt-1 text-lg font-semibold text-white">
-                {formatCurrency(result.order.subtotal)}
+                {formatCurrency(orderTotals?.total ?? result.order.subtotal)}
               </p>
               <p className="text-sm text-zinc-400">
                 {result.order.totalUnits} unit

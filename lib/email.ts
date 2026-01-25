@@ -1,8 +1,6 @@
-import type { Order } from "./orders";
-import { formatOrderNumber } from "./orders";
 import { Resend } from 'resend'
 import { calculateVolumePricing } from "./cart-pricing";
-import { calculateShippingCost } from "./shipping";
+import { calculateOrderTotals, formatOrderNumber, type Order } from "./orders";
 import
 {
   buildCashAppLink,
@@ -172,8 +170,9 @@ export function formatOrderEmail (order: Order):
   const referralDiscountAmount = order.referralDiscount ?? 0;
   const referralDiscountDisplay =
     referralDiscountAmount > 0 ? `$${referralDiscountAmount.toFixed(2)}` : null;
-  const shippingCost = calculateShippingCost(itemsSubtotal);
-  const totalWithShipping = order.subtotal + shippingCost;
+  const totals = calculateOrderTotals(order);
+  const shippingCost = totals.shippingCost;
+  const totalWithShipping = totals.total;
   const shippingDisplay = shippingCost === 0 ? "FREE" : `$${shippingCost.toFixed(2)}`;
   const hasReferralDetails =
     Boolean(order.referralPartnerName || order.referralCode) ||
@@ -345,10 +344,9 @@ function formatCustomerReceiptEmail (
   const pricing = calculateVolumePricing(order.items);
   const itemsSubtotal = pricing.subtotal;
   const referralDiscountAmount = order.referralDiscount ?? 0;
-  // Free-shipping qualification is based on the pre-discount subtotal
-  // so that applying a referral discount doesn't remove free shipping.
-  const shippingCost = calculateShippingCost(itemsSubtotal);
-  const totalWithShipping = order.subtotal + shippingCost;
+  const totals = calculateOrderTotals(order);
+  const shippingCost = totals.shippingCost;
+  const totalWithShipping = totals.total;
   const shippingDisplay =
     shippingCost === 0 ? "FREE" : `$${shippingCost.toFixed(2)}`;
 
@@ -550,6 +548,7 @@ function formatOrderSms (order: Order): string
 {
   const orderNumber = formatOrderNumber(order.orderNumber);
   const shipping = order.shippingAddress;
+  const { total } = calculateOrderTotals(order);
   const itemsSummary = order.items
     .map(
       (item) =>
@@ -561,7 +560,7 @@ function formatOrderSms (order: Order): string
     `New Order ${orderNumber}`,
     `${order.customerName} | ${order.customerPhone}`,
     `${shipping.city}, ${shipping.state} ${shipping.zipCode}`,
-    `Total $${order.subtotal.toFixed(2)} | Units ${order.totalUnits}`,
+    `Total $${total.toFixed(2)} | Units ${order.totalUnits}`,
     itemsSummary ? `Items: ${itemsSummary}` : "",
   ]
     .filter(Boolean)

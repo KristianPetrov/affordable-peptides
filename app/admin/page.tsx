@@ -4,14 +4,13 @@ import { redirect } from "next/navigation";
 import NavBar from "@/components/NavBar";
 import ReferralDashboard from "@/components/admin/ReferralDashboard";
 import { getAllOrders } from "@/lib/db";
-import { formatOrderNumber } from "@/lib/orders";
+import { calculateOrderTotals, formatOrderNumber } from "@/lib/orders";
 import
   {
     updateProductStockAction,
   } from "@/app/actions/admin";
 import { auth, signOut } from "@/lib/auth";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
-import { calculateShippingCost } from "@/lib/shipping";
 import { getProductsWithInventory } from "@/lib/products.server";
 import { getReferralDashboardData } from "@/lib/referrals";
 import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
@@ -323,11 +322,8 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
     (order) => order.status === "PENDING_PAYMENT"
   );
 
-  const calculateOrderTotal = (order: (typeof orders)[number]) => {
-    const itemsSubtotal = calculateVolumePricing(order.items).subtotal;
-    const shippingCost = calculateShippingCost(itemsSubtotal);
-    return order.subtotal + shippingCost;
-  };
+  const calculateOrderTotal = (order: (typeof orders)[number]) =>
+    calculateOrderTotals(order).total;
 
   const totalPaidRevenue = paidOrdersForRevenue.reduce(
     (sum, order) => sum + calculateOrderTotal(order),
@@ -790,8 +786,9 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                     const itemsSubtotal = pricing.subtotal;
                     const referralDiscount = order.referralDiscount ?? 0;
                     const discountedSubtotal = order.subtotal;
-                    const shippingCost = calculateShippingCost(itemsSubtotal);
-                    const orderTotal = discountedSubtotal + shippingCost;
+                    const totals = calculateOrderTotals(order);
+                    const shippingCost = totals.shippingCost;
+                    const orderTotal = totals.total;
                     const formattedOrderNumber = formatOrderNumber(order.orderNumber);
                     const formattedDate = new Date(
                       order.createdAt

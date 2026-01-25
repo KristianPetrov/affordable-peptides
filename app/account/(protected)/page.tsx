@@ -7,7 +7,7 @@ import
     getOrdersForUser,
     type CustomerProfile,
   } from "@/lib/db";
-import { formatOrderNumber } from "@/lib/orders";
+import { calculateOrderTotals, formatOrderNumber } from "@/lib/orders";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -144,7 +144,7 @@ export default async function AccountOverviewPage ()
                 </div>
                 <div className="mt-3 flex flex-wrap justify-between text-sm text-zinc-300">
                   <span>{order.totalUnits} units</span>
-                  <span>{formatCurrency(order.subtotal)}</span>
+                  <span>{formatCurrency(calculateOrderTotals(order).total)}</span>
                 </div>
               </div>
             ))

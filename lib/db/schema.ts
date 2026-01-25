@@ -191,6 +191,8 @@ export const orders = pgTable("orders", {
   }>(),
   items: jsonb("items").notNull().$type<CartItem[]>(),
   subtotal: numeric("subtotal", { precision: 10, scale: 2 }).notNull(),
+  shippingCost: numeric("shipping_cost", { precision: 10, scale: 2 }),
+  totalAmount: numeric("total_amount", { precision: 10, scale: 2 }),
   totalUnits: integer("total_units").notNull(),
   notes: text("notes"),
   trackingNumber: text("tracking_number"),

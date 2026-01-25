@@ -1,4 +1,6 @@
 import type { CartItem } from "@/components/store/StorefrontContext";
+import { calculateVolumePricing } from "@/lib/cart-pricing";
+import { calculateShippingCost } from "@/lib/shipping";
 
 export type OrderStatus = "PENDING_PAYMENT" | "PAID" | "SHIPPED" | "CANCELLED";
 
@@ -19,6 +21,8 @@ export type Order = {
   };
   items: CartItem[];
   subtotal: number;
+  shippingCost?: number;
+  totalAmount?: number;
   totalUnits: number;
   createdAt: string;
   updatedAt: string;
@@ -34,6 +38,32 @@ export type Order = {
   referralCommissionPercent?: number;
   referralCommissionAmount?: number;
 };
+
+export type OrderTotals = {
+  itemsSubtotal: number;
+  shippingCost: number;
+  total: number;
+};
+
+export function calculateOrderTotals (
+  order: Pick<Order, "items" | "subtotal"> &
+    Partial<Pick<Order, "shippingCost" | "totalAmount">>
+): OrderTotals
+{
+  const itemsSubtotal = calculateVolumePricing(order.items).subtotal;
+  const shippingCost =
+    typeof order.shippingCost === "number"
+      ? order.shippingCost
+      : typeof order.totalAmount === "number"
+        ? Math.max(0, order.totalAmount - order.subtotal)
+        : calculateShippingCost(itemsSubtotal);
+  const total =
+    typeof order.totalAmount === "number"
+      ? order.totalAmount
+      : order.subtotal + shippingCost;
+
+  return { itemsSubtotal, shippingCost, total };
+}
 
 export function generateOrderNumber (): string
 {

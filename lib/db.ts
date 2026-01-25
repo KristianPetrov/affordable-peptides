@@ -25,6 +25,10 @@ function dbRowToOrder (row: typeof orders.$inferSelect): Order
     shippingAddress: row.shippingAddress,
     items: row.items,
     subtotal: parseFloat(row.subtotal),
+    shippingCost:
+      row.shippingCost === null ? undefined : parseFloat(row.shippingCost),
+    totalAmount:
+      row.totalAmount === null ? undefined : parseFloat(row.totalAmount),
     totalUnits: row.totalUnits,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -62,6 +66,14 @@ function orderToDbRow (order: Order): typeof orders.$inferInsert
     shippingAddress: order.shippingAddress,
     items: order.items,
     subtotal: order.subtotal.toString(),
+    shippingCost:
+      typeof order.shippingCost === "number"
+        ? order.shippingCost.toString()
+        : null,
+    totalAmount:
+      typeof order.totalAmount === "number"
+        ? order.totalAmount.toString()
+        : null,
     totalUnits: order.totalUnits,
     notes: order.notes || null,
     trackingNumber: order.trackingNumber || null,

@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { getOrdersForUser } from "@/lib/db";
-import { formatOrderNumber } from "@/lib/orders";
+import { calculateOrderTotals, formatOrderNumber } from "@/lib/orders";
 
 const statusStyles: Record<string, string> = {
   PENDING_PAYMENT: "text-yellow-200 bg-yellow-500/10",
@@ -89,7 +89,7 @@ export default async function AccountOrdersPage ()
                     Total
                   </p>
                   <p className="mt-1 text-lg font-semibold text-white">
-                    {formatCurrency(order.subtotal)}
+                    {formatCurrency(calculateOrderTotals(order).total)}
                   </p>
                   <p className="text-sm text-zinc-400">
                     {order.totalUnits} unit{order.totalUnits === 1 ? "" : "s"}

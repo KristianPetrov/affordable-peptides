@@ -21,6 +21,7 @@ import
 } from "@/lib/rate-limit";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
 import { auth } from "@/lib/auth";
+import { calculateShippingCost } from "@/lib/shipping";
 import
 {
   applyInventoryAdjustments,
@@ -249,6 +250,9 @@ export async function createOrderAction (
       };
     }
 
+    const shippingCost = calculateShippingCost(calculatedSubtotal);
+    const totalAmount = finalSubtotal + shippingCost;
+
     const order = await createOrder({
       id: randomUUID(),
       orderNumber,
@@ -266,6 +270,8 @@ export async function createOrderAction (
       },
       items: input.items,
       subtotal: finalSubtotal,
+      shippingCost,
+      totalAmount,
       totalUnits: input.totalUnits,
       createdAt: now,
       updatedAt: now,
