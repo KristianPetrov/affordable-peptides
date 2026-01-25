@@ -50,67 +50,120 @@ export default async function AccountOrdersPage ()
         </div>
       ) : (
         <div className="space-y-4">
-          {sorted.map((order) => (
-            <div
-              key={order.id}
-              className="rounded-2xl border border-purple-900/40 bg-black/40 p-5"
-            >
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-sm font-semibold text-white">
-                    Order {formatOrderNumber(order.orderNumber)}
-                  </p>
-                  <p className="text-xs text-zinc-500">
-                    {new Date(order.createdAt).toLocaleString()}
-                  </p>
+          {sorted.map((order) =>
+          {
+            const totals = calculateOrderTotals(order);
+            const referralDiscount = order.referralDiscount ?? 0;
+            const hasReferralDiscount = referralDiscount > 0;
+            const subtotalLabel = hasReferralDiscount
+              ? "Subtotal (After Discount)"
+              : "Subtotal";
+            const shippingDisplay =
+              totals.shippingCost === 0
+                ? "FREE"
+                : formatCurrency(totals.shippingCost);
+
+            return (
+              <div
+                key={order.id}
+                className="rounded-2xl border border-purple-900/40 bg-black/40 p-5"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      Order {formatOrderNumber(order.orderNumber)}
+                    </p>
+                    <p className="text-xs text-zinc-500">
+                      {new Date(order.createdAt).toLocaleString()}
+                    </p>
+                  </div>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${statusStyles[order.status] ?? "bg-purple-500/10 text-purple-200"
+                      }`}
+                  >
+                    {order.status.replace("_", " ")}
+                  </span>
                 </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${statusStyles[order.status] ?? "bg-purple-500/10 text-purple-200"
-                    }`}
-                >
-                  {order.status.replace("_", " ")}
-                </span>
-              </div>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                    Shipping To
-                  </p>
-                  <p className="mt-1 text-sm text-white">
-                    {order.customerName}
-                  </p>
-                  <p className="text-sm text-zinc-400">
-                    {order.shippingAddress.street}, {order.shippingAddress.city},{" "}
-                    {order.shippingAddress.state} {order.shippingAddress.zipCode}
-                  </p>
+                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+                      Shipping To
+                    </p>
+                    <p className="mt-1 text-sm text-white">
+                      {order.customerName}
+                    </p>
+                    <p className="text-sm text-zinc-400">
+                      {order.shippingAddress.street}, {order.shippingAddress.city},{" "}
+                      {order.shippingAddress.state} {order.shippingAddress.zipCode}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
+                      Total
+                    </p>
+                    <p className="mt-1 text-lg font-semibold text-white">
+                      {formatCurrency(totals.total)}
+                    </p>
+                    <p className="text-sm text-zinc-400">
+                      {order.totalUnits} unit{order.totalUnits === 1 ? "" : "s"}
+                    </p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">
-                    Total
+                <div className="mt-4 rounded-xl border border-purple-900/30 bg-black/30 p-4 text-sm text-zinc-300">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
+                    Items
                   </p>
-                  <p className="mt-1 text-lg font-semibold text-white">
-                    {formatCurrency(calculateOrderTotals(order).total)}
+                  <ul className="space-y-1">
+                    {order.items.map((item, index) => (
+                      <li key={`${order.id}-${index}`}>
+                        {item.productName} ({item.variantLabel}) — {item.count}× Qty{" "}
+                        {item.tierQuantity}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="mt-4 rounded-xl border border-purple-900/30 bg-black/30 p-4 text-sm text-zinc-300">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
+                    Cost Breakdown
                   </p>
-                  <p className="text-sm text-zinc-400">
-                    {order.totalUnits} unit{order.totalUnits === 1 ? "" : "s"}
-                  </p>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-400">Items Subtotal</span>
+                      <span className="font-semibold text-white">
+                        {formatCurrency(totals.itemsSubtotal)}
+                      </span>
+                    </div>
+                    {hasReferralDiscount && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-zinc-400">Referral Discount</span>
+                        <span className="font-semibold text-white">
+                          -{formatCurrency(referralDiscount)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-400">{subtotalLabel}</span>
+                      <span className="font-semibold text-white">
+                        {formatCurrency(order.subtotal)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-zinc-400">Shipping</span>
+                      <span className="font-semibold text-white">
+                        {shippingDisplay}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-base">
+                      <span className="text-zinc-300">Total</span>
+                      <span className="font-semibold text-white">
+                        {formatCurrency(totals.total)}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="mt-4 rounded-xl border border-purple-900/30 bg-black/30 p-4 text-sm text-zinc-300">
-                <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
-                  Items
-                </p>
-                <ul className="space-y-1">
-                  {order.items.map((item, index) => (
-                    <li key={`${order.id}-${index}`}>
-                      {item.productName} ({item.variantLabel}) — {item.count}× Qty{" "}
-                      {item.tierQuantity}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>

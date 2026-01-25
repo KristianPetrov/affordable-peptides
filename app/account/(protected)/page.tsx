@@ -124,30 +124,78 @@ export default async function AccountOverviewPage ()
               No orders yet. Your purchases will appear here.
             </p>
           ) : (
-            recentOrders.map((order) => (
-              <div
-                key={order.id}
-                className="rounded-2xl border border-purple-900/40 bg-black/40 p-4"
-              >
-                <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div>
-                    <p className="text-sm font-semibold text-white">
-                      Order {formatOrderNumber(order.orderNumber)}
-                    </p>
-                    <p className="text-xs text-zinc-500">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </p>
+            recentOrders.map((order) =>
+            {
+              const totals = calculateOrderTotals(order);
+              const referralDiscount = order.referralDiscount ?? 0;
+              const hasReferralDiscount = referralDiscount > 0;
+              const subtotalLabel = hasReferralDiscount
+                ? "Subtotal (After Discount)"
+                : "Subtotal";
+              const shippingDisplay =
+                totals.shippingCost === 0
+                  ? "FREE"
+                  : formatCurrency(totals.shippingCost);
+
+              return (
+                <div
+                  key={order.id}
+                  className="rounded-2xl border border-purple-900/40 bg-black/40 p-4"
+                >
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        Order {formatOrderNumber(order.orderNumber)}
+                      </p>
+                      <p className="text-xs text-zinc-500">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <span className="rounded-full border border-purple-500/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
+                      {order.status.replace("_", " ")}
+                    </span>
                   </div>
-                  <span className="rounded-full border border-purple-500/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
-                    {order.status.replace("_", " ")}
-                  </span>
+                  <div className="mt-3 space-y-2 text-sm text-zinc-300">
+                    <div className="flex items-center justify-between">
+                      <span>Items Subtotal</span>
+                      <span className="font-semibold text-white">
+                        {formatCurrency(totals.itemsSubtotal)}
+                      </span>
+                    </div>
+                    {hasReferralDiscount && (
+                      <div className="flex items-center justify-between">
+                        <span>Referral Discount</span>
+                        <span className="font-semibold text-white">
+                          -{formatCurrency(referralDiscount)}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span>{subtotalLabel}</span>
+                      <span className="font-semibold text-white">
+                        {formatCurrency(order.subtotal)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Shipping</span>
+                      <span className="font-semibold text-white">
+                        {shippingDisplay}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span>Total</span>
+                      <span className="font-semibold text-white">
+                        {formatCurrency(totals.total)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-zinc-500">
+                      <span>Total Units</span>
+                      <span>{order.totalUnits}</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-3 flex flex-wrap justify-between text-sm text-zinc-300">
-                  <span>{order.totalUnits} units</span>
-                  <span>{formatCurrency(calculateOrderTotals(order).total)}</span>
-                </div>
-              </div>
-            ))
+              );
+            })
           )}
         </div>
       </section>

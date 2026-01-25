@@ -56,6 +56,11 @@ export default function OrderLookupClient ({
     () => (result.order ? calculateOrderTotals(result.order) : null),
     [result.order]
   );
+  const referralDiscount = result.order?.referralDiscount ?? 0;
+  const hasReferralDiscount = referralDiscount > 0;
+  const subtotalLabel = hasReferralDiscount
+    ? "Subtotal (After Discount)"
+    : "Subtotal";
 
   const runLookup = useCallback(
     (payload?: LookupFormState) =>
@@ -238,6 +243,49 @@ export default function OrderLookupClient ({
               ))}
             </ul>
           </div>
+          {orderTotals && (
+            <div className="mt-4 rounded-xl border border-purple-900/30 bg-black/50 p-4 text-sm text-zinc-300">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
+                Cost Breakdown
+              </p>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-zinc-400">Items Subtotal</span>
+                  <span className="font-semibold text-white">
+                    {formatCurrency(orderTotals.itemsSubtotal)}
+                  </span>
+                </div>
+                {hasReferralDiscount && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-zinc-400">Referral Discount</span>
+                    <span className="font-semibold text-white">
+                      -{formatCurrency(referralDiscount)}
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-zinc-400">{subtotalLabel}</span>
+                  <span className="font-semibold text-white">
+                    {formatCurrency(result.order.subtotal)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-zinc-400">Shipping</span>
+                  <span className="font-semibold text-white">
+                    {orderTotals.shippingCost === 0
+                      ? "FREE"
+                      : formatCurrency(orderTotals.shippingCost)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-base">
+                  <span className="text-zinc-300">Total</span>
+                  <span className="font-semibold text-white">
+                    {formatCurrency(orderTotals.total)}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
 
           <p className="mt-4 text-sm text-zinc-400">
             Need help? Text +1 (307) 202-5965 with
