@@ -3,7 +3,7 @@ const VENMO_USER = "payaffordablepeptides";
 const CASH_APP_URL = `https://cash.app/$${CASH_APP_TAG}`;
 const VENMO_URL = `https://venmo.com/u/${VENMO_USER}`;
 const ZELLE_EMAIL = "payaffordablepeptides@gmail.com";
-const ZELLE_RECIPIENT_NAME = "Vincent Thayer";
+const ZELLE_RECIPIENT_NAME = "Affordable Holdings, Inc";
 
 
 
