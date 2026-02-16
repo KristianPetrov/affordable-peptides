@@ -10,6 +10,8 @@ import
   ZELLE_EMAIL,
   ZELLE_RECIPIENT_NAME,
 } from "./payment-links";
+import { SUPPORT_PHONE_DISPLAY } from "./support";
+import { BUSINESS_REVIEW_URL } from "./reviews";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -484,7 +486,7 @@ function formatCustomerReceiptEmail (
           <small style="font-weight: normal; color: #6b7280;">${order.totalUnits} total unit${order.totalUnits === 1 ? "" : "s"}</small>
         </div>
 
-        <p style="margin-top: 24px;">Need anything? Text +1 (307) 202-5965 and reference your order number (do not reply to this email).</p>
+        <p style="margin-top: 24px;">Need anything? Text ${SUPPORT_PHONE_DISPLAY} and reference your order number (do not reply to this email).</p>
       </div>
     </div>
     <p class="footer">Affordable Peptides • View your order anytime: <a href="${receiptUrl}" style="color: #7c3aed;">${receiptUrl}</a></p>
@@ -676,10 +678,10 @@ function formatOrderPaidEmail (order: Order):
         </div>
 
         <div class="info-block" style="background: #fef3c7; border-color: #f59e0b;">
-          <p style="margin: 0; color: #92400e;"><strong>Important:</strong> Please do not reply to this email. For questions or support, please text us at +1 (307) 202-5965.</p>
+          <p style="margin: 0; color: #92400e;"><strong>Important:</strong> Please do not reply to this email. For questions or support, please text us at ${SUPPORT_PHONE_DISPLAY}.</p>
         </div>
 
-        <p>Need anything? Text us at +1 (307) 202-5965 and reference your order number (do not reply to this email).</p>
+        <p>Need anything? Text us at ${SUPPORT_PHONE_DISPLAY} and reference your order number (do not reply to this email).</p>
       </div>
     </div>
     <p class="footer">Affordable Peptides • Thank you for your order!</p>
@@ -695,9 +697,9 @@ function formatOrderPaidEmail (order: Order):
     ``,
     `Your order will be shipped within 48 hours. You'll receive another email with tracking information once your order ships.`,
     ``,
-    `IMPORTANT: Please do not reply to this email. For questions or support, please text us at +1 (307) 202-5965.`,
+    `IMPORTANT: Please do not reply to this email. For questions or support, please text us at ${SUPPORT_PHONE_DISPLAY}.`,
     ``,
-    `Need anything? Text us at +1 (307) 202-5965 and reference your order number (do not reply to this email).`,
+    `Need anything? Text us at ${SUPPORT_PHONE_DISPLAY} and reference your order number (do not reply to this email).`,
   ].join("\n");
 
   return {
@@ -734,6 +736,15 @@ function formatOrderShippedEmail (order: Order):
   const trackingInfo = order.trackingNumber && trackingUrl
     ? `<p style="margin: 8px 0 0 0; font-size: 18px; font-weight: bold;"><a href="${trackingUrl}" target="_blank" rel="noopener noreferrer" style="color: #059669; text-decoration: none; border-bottom: 2px solid #059669; padding-bottom: 2px;">${trackingNumber}</a></p><p style="margin: 8px 0 0 0; font-size: 14px; color: #6b7280;"><a href="${trackingUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Track on ${carrierName}.com →</a></p>`
     : `<p style="margin: 8px 0 0 0; color: #6b7280;">Tracking number will be available soon</p>`;
+  const reviewCtaHtml = BUSINESS_REVIEW_URL
+    ? `<div class="info-block" style="background: #ecfdf5; border-color: #10b981;"><p style="margin: 0 0 8px 0;"><strong>Enjoying your experience?</strong> Once your order arrives, we'd love a quick review for Affordable Peptides.</p><p style="margin: 0;"><a href="${BUSINESS_REVIEW_URL}" target="_blank" rel="noopener noreferrer" style="color: #047857; font-weight: bold; text-decoration: underline;">Leave a review</a></p></div>`
+    : "";
+  const reviewCtaText = BUSINESS_REVIEW_URL
+    ? [
+      "",
+      `If everything looks great once your order arrives, we'd appreciate a quick review: ${BUSINESS_REVIEW_URL}`,
+    ]
+    : [];
 
   const html = `
 <!DOCTYPE html>
@@ -778,12 +789,13 @@ function formatOrderShippedEmail (order: Order):
         </div>
 
         ${order.notes ? `<div class="info-block"><p style="margin: 0;"><strong>Note:</strong> ${order.notes}</p></div>` : ''}
+        ${reviewCtaHtml}
 
         <div class="info-block" style="background: #fef3c7; border-color: #f59e0b;">
-          <p style="margin: 0; color: #92400e;"><strong>Important:</strong> Please do not reply to this email. For questions or support, please text us at +1 (307) 202-5965.</p>
+          <p style="margin: 0; color: #92400e;"><strong>Important:</strong> Please do not reply to this email. For questions or support, please text us at ${SUPPORT_PHONE_DISPLAY}.</p>
         </div>
 
-        <p>You can track your package using the tracking number above. Need anything? Text us at +1 (307) 202-5965 (do not reply to this email).</p>
+        <p>You can track your package using the tracking number above. Need anything? Text us at ${SUPPORT_PHONE_DISPLAY} (do not reply to this email).</p>
       </div>
     </div>
     <p class="footer">Affordable Peptides • Thank you for your order!</p>
@@ -811,10 +823,11 @@ function formatOrderShippedEmail (order: Order):
     `${order.shippingAddress.country}`,
     ``,
     ...(order.notes ? [`Note: ${order.notes}`, ``] : []),
+    ...reviewCtaText,
     ``,
-    `IMPORTANT: Please do not reply to this email. For questions or support, please text us at +1 (307) 202-5965.`,
+    `IMPORTANT: Please do not reply to this email. For questions or support, please text us at ${SUPPORT_PHONE_DISPLAY}.`,
     ``,
-    `You can track your package using the tracking number above. Need anything? Text us at +1 (307) 202-5965 (do not reply to this email).`,
+    `You can track your package using the tracking number above. Need anything? Text us at ${SUPPORT_PHONE_DISPLAY} (do not reply to this email).`,
   ].join("\n");
 
   return {

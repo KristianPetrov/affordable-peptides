@@ -180,7 +180,7 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
       if (result.success) {
         clearCart();
         router.push(
-          `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${total.toFixed(
+          `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${result.totalAmount.toFixed(
             2
           )}`
         );
@@ -450,10 +450,10 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
                 {referralResult && (
                   <div
                     className={`mt-4 rounded-xl border px-4 py-3 text-sm ${referralResult.status === "applied"
-                        ? "border-green-500/30 bg-green-500/10 text-green-100"
-                        : referralResult.status === "already-attributed"
-                          ? "border-blue-500/30 bg-blue-500/10 text-blue-100"
-                          : "border-red-500/30 bg-red-500/10 text-red-100"
+                      ? "border-green-500/30 bg-green-500/10 text-green-100"
+                      : referralResult.status === "already-attributed"
+                        ? "border-blue-500/30 bg-blue-500/10 text-blue-100"
+                        : "border-red-500/30 bg-red-500/10 text-red-100"
                       }`}
                   >
                     {referralResult.message}

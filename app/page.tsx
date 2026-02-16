@@ -9,6 +9,7 @@ import NavBar from "@/components/NavBar";
 import HeroShowcase from "@/components/home/HeroShowcase";
 import MissionSection from "@/components/home/MissionSection";
 import ResearchSection from "@/components/home/ResearchSection";
+import ReviewsSection from "@/components/home/ReviewsSection";
 import VisionSection from "@/components/home/VisionSection";
 import
 {
@@ -17,6 +18,7 @@ import
   type Product,
 } from "@/lib/products";
 import { absoluteUrl, siteMetadata } from "@/lib/seo";
+import { SUPPORT_PHONE_DISPLAY, SUPPORT_SMS_LINK } from "@/lib/support";
 
 type IconProps = SVGProps<SVGSVGElement>;
 
@@ -252,6 +254,7 @@ export default function Home ()
             <HeroShowcase products={showcaseProducts} />
           </div>
         </section>
+        <ReviewsSection />
         <ResearchSection />
         <MissionSection />
         <VisionSection />
@@ -288,10 +291,10 @@ export default function Home ()
                     Text
                   </span>
                   <a
-                    href="sms:+13072025965"
+                    href={SUPPORT_SMS_LINK}
                     className="text-2xl font-semibold text-white transition hover:text-purple-200"
                   >
-                    Text +1 (307) 202-5965
+                    Text {SUPPORT_PHONE_DISPLAY}
                   </a>
                   <p className="text-xs text-zinc-400">
                     Available daily 6am–9pm PST. Send a text after hours and we&apos;ll get

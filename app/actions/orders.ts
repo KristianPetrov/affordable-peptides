@@ -52,7 +52,13 @@ type CreateOrderInput = {
 };
 
 export type CreateOrderResult =
-  | { success: true; orderId: string; orderNumber: string }
+  | {
+    success: true;
+    orderId: string;
+    orderNumber: string;
+    shippingCost: number;
+    totalAmount: number;
+  }
   | {
     success: false;
     error: string;
@@ -333,6 +339,8 @@ export async function createOrderAction (
       success: true,
       orderId: order.id,
       orderNumber: order.orderNumber,
+      shippingCost,
+      totalAmount,
     };
   } catch (error) {
     console.error("Error creating order:", error);

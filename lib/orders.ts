@@ -47,20 +47,49 @@ export type OrderTotals = {
 
 export function calculateOrderTotals (
   order: Pick<Order, "items" | "subtotal"> &
-    Partial<Pick<Order, "shippingCost" | "totalAmount">>
+    Partial<Pick<Order, "shippingCost" | "totalAmount" | "status">>
 ): OrderTotals
 {
   const itemsSubtotal = calculateVolumePricing(order.items).subtotal;
-  const shippingCost =
-    typeof order.shippingCost === "number"
-      ? order.shippingCost
-      : typeof order.totalAmount === "number"
-        ? Math.max(0, order.totalAmount - order.subtotal)
-        : calculateShippingCost(itemsSubtotal);
-  const total =
-    typeof order.totalAmount === "number"
+  const shippingPolicyBaseSubtotal = Math.max(itemsSubtotal, order.subtotal);
+  const policyShippingCost = calculateShippingCost(shippingPolicyBaseSubtotal);
+  const storedTotal =
+    typeof order.totalAmount === "number" && Number.isFinite(order.totalAmount)
       ? order.totalAmount
-      : order.subtotal + shippingCost;
+      : null;
+  const storedShipping =
+    typeof order.shippingCost === "number" && Number.isFinite(order.shippingCost)
+      ? order.shippingCost
+      : null;
+  const shippingFromTotal =
+    storedTotal === null ? null : Math.max(0, storedTotal - order.subtotal);
+
+  let shippingCost =
+    storedShipping !== null
+      ? storedShipping
+      : shippingFromTotal !== null
+        ? shippingFromTotal
+        : policyShippingCost;
+
+  let total =
+    storedTotal !== null && storedTotal > 0 ? storedTotal : order.subtotal + shippingCost;
+
+  // Ensure the order can't accidentally become "free shipping" if it doesn't qualify.
+  // This guards against legacy/migrated orders that stored totals without shipping.
+  const shouldEnforceShipping = order.status !== "CANCELLED";
+  if (shouldEnforceShipping && policyShippingCost > 0) {
+    const minimumTotal = order.subtotal + policyShippingCost;
+    const missingShipping = total < minimumTotal - 0.01;
+
+    if (missingShipping) {
+      shippingCost = policyShippingCost;
+      total = minimumTotal;
+    } else if (shippingCost <= 0) {
+      // If the total implies shipping was included but the shipping field is missing,
+      // keep the cost breakdown consistent.
+      shippingCost = Math.max(policyShippingCost, Math.max(0, total - order.subtotal));
+    }
+  }
 
   return { itemsSubtotal, shippingCost, total };
 }

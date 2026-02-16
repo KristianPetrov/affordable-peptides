@@ -4,6 +4,7 @@ import type { ChangeEvent, FormEvent } from "react";
 import { useCallback, useEffect, useRef, useState, useTransition, useMemo } from "react";
 import { calculateOrderTotals, formatOrderNumber, type Order } from "@/lib/orders";
 import { lookupOrderAction } from "@/app/actions/orders";
+import { SUPPORT_PHONE_DISPLAY } from "@/lib/support";
 
 const statusStyles: Record<Order["status"], string> = {
   PENDING_PAYMENT: "text-yellow-200 bg-yellow-500/10",
@@ -288,7 +289,7 @@ export default function OrderLookupClient ({
           )}
 
           <p className="mt-4 text-sm text-zinc-400">
-            Need help? Text +1 (307) 202-5965 with
+            Need help? Text {SUPPORT_PHONE_DISPLAY} with
             your order number for the fastest response.
           </p>
         </div>

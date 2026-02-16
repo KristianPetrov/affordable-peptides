@@ -1,4 +1,6 @@
 import type { Product, Variant } from "./products";
+import { SUPPORT_PHONE_DISPLAY, SUPPORT_SMS_LINK } from "./support";
+import { BUSINESS_REVIEW_URL } from "./reviews";
 
 type SitemapChangeFrequency =
     | "always"
@@ -49,9 +51,10 @@ export const siteMetadata = {
     tagline: DEFAULT_TAGLINE,
     locale: "en-US",
     localeOg: "en_US",
-    phone: "+1 (307) 202-5965",
-    phoneDisplay: "+1 (307) 202-5965",
-    smsLink: "sms:+13072025965",
+    phone: SUPPORT_PHONE_DISPLAY,
+    phoneDisplay: SUPPORT_PHONE_DISPLAY,
+    smsLink: SUPPORT_SMS_LINK,
+    reviewLink: BUSINESS_REVIEW_URL,
     logoPath: "/affordable-peptides-new-logo-transparent.png",
     socialImagePath: "/opengraph-image",
     keywords: [

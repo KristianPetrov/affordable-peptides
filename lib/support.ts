@@ -1,0 +1,4 @@
+export const SUPPORT_PHONE_DISPLAY = "+1 (307) 202-5965";
+export const SUPPORT_PHONE_E164 = "+13072025965";
+export const SUPPORT_SMS_LINK = `sms:${SUPPORT_PHONE_E164}`;
+

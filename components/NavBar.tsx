@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
 
+import { SUPPORT_PHONE_DISPLAY, SUPPORT_SMS_LINK } from "@/lib/support";
+
 const links = [
   { href: "/store", label: "Store" },
   { href: "/order-lookup", label: "Find Order" },
@@ -68,10 +70,10 @@ export default function NavBar ()
             {accountLink.label}
           </Link>
           <Link
-            href="sms:+13072025965"
+            href={SUPPORT_SMS_LINK}
             className="rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-purple-200 shadow-[0_10px_25px_rgba(120,48,255,0.35)] transition hover:border-purple-400 hover:text-white"
           >
-            Text +1 (307) 202-5965
+            Text {SUPPORT_PHONE_DISPLAY}
           </Link>
         </div>
 
@@ -111,8 +113,8 @@ export default function NavBar ()
       <div
         id="mobile-nav"
         className={`md:hidden transition-all duration-200 ${menuOpen
-            ? "pointer-events-auto max-h-96 opacity-100"
-            : "pointer-events-none max-h-0 opacity-0"
+          ? "pointer-events-auto max-h-96 opacity-100"
+          : "pointer-events-none max-h-0 opacity-0"
           }`}
       >
         <div className="mx-6 mb-6 flex flex-col gap-4 rounded-2xl border border-purple-900/40 bg-black/90 px-6 py-6 text-sm font-medium text-zinc-200 shadow-[0_18px_40px_rgba(60,0,100,0.45)] sm:mx-12 lg:mx-16">
@@ -134,11 +136,11 @@ export default function NavBar ()
             {accountLink.label}
           </Link>
           <Link
-            href="sms:+13072025965"
+            href={SUPPORT_SMS_LINK}
             className="rounded-2xl border border-purple-500/50 bg-purple-500/10 px-4 py-3 text-center text-xs font-semibold uppercase tracking-[0.25em] text-purple-200 transition hover:border-purple-400 hover:text-white"
             onClick={closeMenu}
           >
-            Text +1 (307) 202-5965
+            Text {SUPPORT_PHONE_DISPLAY}
           </Link>
         </div>
       </div>

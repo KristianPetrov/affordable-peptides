@@ -5,25 +5,31 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, Suspense } from "react";
 
 import NavBar from "@/components/NavBar";
-import {
-  buildCashAppLink,
-  buildVenmoLink,
-  calculateCashAppTotal,
-  calculateVenmoTotal,
-  ZELLE_EMAIL,
-  ZELLE_RECIPIENT_NAME,
-} from "@/lib/payment-links";
+import
+  {
+    buildCashAppLink,
+    buildVenmoLink,
+    calculateCashAppTotal,
+    calculateVenmoTotal,
+    ZELLE_EMAIL,
+    ZELLE_RECIPIENT_NAME,
+  } from "@/lib/payment-links";
+import
+  {
+    SUPPORT_PHONE_DISPLAY,
+    SUPPORT_SMS_LINK,
+  } from "@/lib/support";
+import { BUSINESS_REVIEW_URL } from "@/lib/reviews";
 
-const PHONE_NUMBER_DISPLAY = "+1 (307) 202-5965";
-const PHONE_NUMBER_E164 = "+13072025965";
-
-function ThankYouContent() {
+function ThankYouContent ()
+{
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("orderNumber");
   const orderId = searchParams.get("orderId");
   const orderAmountParam = searchParams.get("orderAmount");
   const hasTrackedCheckoutRef = useRef(false);
-  const orderAmount = useMemo(() => {
+  const orderAmount = useMemo(() =>
+  {
     if (!orderAmountParam) {
       return null;
     }
@@ -33,7 +39,8 @@ function ThankYouContent() {
     }
     return null;
   }, [orderAmountParam]);
-  const formattedOrderNumber = useMemo(() => {
+  const formattedOrderNumber = useMemo(() =>
+  {
     if (!orderNumber) {
       return "";
     }
@@ -77,7 +84,8 @@ function ThankYouContent() {
     ? `Pay via Venmo ($${venmoCharge.toFixed(2)})`
     : "Pay via Venmo";
 
-  useEffect(() => {
+  useEffect(() =>
+  {
     if (hasTrackedCheckoutRef.current) {
       return;
     }
@@ -307,10 +315,10 @@ function ThankYouContent() {
                   If you have any questions about your order, please text us
                   at{" "}
                   <Link
-                    href={`sms:${PHONE_NUMBER_E164}`}
+                    href={SUPPORT_SMS_LINK}
                     className="text-purple-200 underline hover:text-purple-100"
                   >
-                    {PHONE_NUMBER_DISPLAY}
+                    {SUPPORT_PHONE_DISPLAY}
                   </Link>{" "}
                   or reference your Order ID when reaching out.
                 </p>
@@ -340,6 +348,28 @@ function ThankYouContent() {
                 </div>
               </div>
 
+              {BUSINESS_REVIEW_URL && (
+                <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-6">
+                  <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-200">
+                    Share Your Experience
+                  </h3>
+                  <p className="text-sm text-zinc-200">
+                    After your order arrives, leave a quick review for Affordable
+                    Peptides to help other researchers shop with confidence.
+                  </p>
+                  <div className="mt-4">
+                    <Link
+                      href={BUSINESS_REVIEW_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex rounded-full bg-emerald-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-400"
+                    >
+                      Leave a Review
+                    </Link>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-wrap justify-center gap-4 pt-4">
                 <Link
                   href="/store"
@@ -362,7 +392,8 @@ function ThankYouContent() {
   );
 }
 
-export default function ThankYouPage() {
+export default function ThankYouPage ()
+{
   return (
     <Suspense
       fallback={
