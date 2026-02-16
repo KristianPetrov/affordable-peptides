@@ -16,40 +16,28 @@ const TRUSTPILOT_ICON_URL = "https://images-static.trustpilot.com/api/icons/230x
 /*  Trustpilot branding helpers                                        */
 /* ------------------------------------------------------------------ */
 
-function StarIcon ({ filled, half }: { filled?: boolean; half?: boolean })
+function StarIcon ({ fillFraction }: { fillFraction: number })
 {
-  if (half) {
-    return (
-      <span className="relative inline-flex h-5 w-5 rounded-[3px]" aria-hidden="true">
+  const clampedFill = Math.min(1, Math.max(0, fillFraction));
+  return (
+    <span className="relative inline-flex h-5 w-5 rounded-[3px]" aria-hidden="true">
+      <img
+        src={TRUSTPILOT_ICON_URL}
+        alt=""
+        className="absolute inset-0 h-5 w-5 rounded-[3px] opacity-25 grayscale"
+        loading="lazy"
+        decoding="async"
+      />
+      <span className="relative h-full overflow-hidden" style={{ width: `${clampedFill * 100}%` }}>
         <img
           src={TRUSTPILOT_ICON_URL}
           alt=""
-          className="absolute inset-0 h-5 w-5 rounded-[3px] opacity-25 grayscale"
+          className="h-5 w-5 max-w-none rounded-[3px]"
           loading="lazy"
           decoding="async"
         />
-        <span className="relative h-full w-1/2 overflow-hidden">
-          <img
-            src={TRUSTPILOT_ICON_URL}
-            alt=""
-            className="h-5 w-5 max-w-none"
-            loading="lazy"
-            decoding="async"
-          />
-        </span>
       </span>
-    );
-  }
-
-  return (
-    <img
-      src={TRUSTPILOT_ICON_URL}
-      alt=""
-      aria-hidden="true"
-      className={`h-5 w-5 rounded-[3px] ${filled ? "" : "opacity-25 grayscale"}`}
-      loading="lazy"
-      decoding="async"
-    />
+    </span>
   );
 }
 
@@ -69,18 +57,14 @@ function TrustpilotLogoIcon ({ className }: { className?: string })
 
 function Stars ({ rating }: { rating: number })
 {
-  const full = Math.floor(rating);
-  const hasHalf = rating - full >= 0.25 && rating - full < 0.75;
-  const roundUp = rating - full >= 0.75;
-  const totalFull = roundUp ? full + 1 : full;
+  const normalizedRating = Math.min(5, Math.max(0, rating));
 
   return (
     <span className="inline-flex gap-0.5">
       {Array.from({ length: 5 }, (_, i) =>
       {
-        if (i < totalFull) return <StarIcon key={i} filled />;
-        if (i === totalFull && hasHalf) return <StarIcon key={i} half />;
-        return <StarIcon key={i} />;
+        const fillFraction = Math.min(1, Math.max(0, normalizedRating - i));
+        return <StarIcon key={i} fillFraction={fillFraction} />;
       })}
     </span>
   );
