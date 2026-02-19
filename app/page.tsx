@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactElement, SVGProps } from "react";
-
 import Image from "next/image";
 import Link from "next/link";
-
 import Disclaimer from "@/components/Disclaimer";
 import NavBar from "@/components/NavBar";
 import HeroShowcase from "@/components/home/HeroShowcase";
@@ -19,9 +17,7 @@ import
 } from "@/lib/products";
 import { absoluteUrl, siteMetadata } from "@/lib/seo";
 import { SUPPORT_PHONE_DISPLAY, SUPPORT_SMS_LINK } from "@/lib/support";
-
 type IconProps = SVGProps<SVGSVGElement>;
-
 function TikTokIcon (props: IconProps)
 {
   return (
@@ -186,7 +182,6 @@ export default function Home ()
             className="pointer-events-none absolute inset-0 bg-[radial-linear(circle_at_top,rgba(148,63,255,0.25),transparent_65%)] mix-blend-screen"
             aria-hidden
           />
-
           <div className="relative mx-auto flex max-w-5xl flex-col items-center text-center">
             <span className="mb-6 inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
               Lab-Grade Standards. Real-World Prices.
@@ -227,7 +222,6 @@ export default function Home ()
             </div>
           </div>
         </section>
-
         <section
           id="featured"
           className="relative px-6 sm:px-12 lg:px-16"
@@ -250,7 +244,6 @@ export default function Home ()
                 the full store.
               </p>
             </div>
-
             <HeroShowcase products={showcaseProducts} />
           </div>
         </section>
@@ -258,8 +251,6 @@ export default function Home ()
         <ResearchSection />
         <MissionSection />
         <VisionSection />
-
-
         <section
           id="contact"
           className="relative px-6 sm:px-12 lg:px-16"
@@ -333,7 +324,6 @@ export default function Home ()
             </div>
           </div>
         </section>
-
         <section className="px-6 sm:px-12 lg:px-16">
           <div className="mx-auto max-w-6xl">
             <Disclaimer />
