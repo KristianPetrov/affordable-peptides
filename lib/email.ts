@@ -16,6 +16,11 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "admin@affordablepeptides.life";
 const ADMIN_SMS_EMAIL = process.env.ADMIN_SMS_EMAIL;
+const DEFAULT_FROM_EMAIL = "orders@mail.affordablepeptides.life";
+const DEFAULT_REPLY_TO_EMAIL = "support@mail.affordablepeptides.life";
+const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || DEFAULT_FROM_EMAIL;
+const REPLY_TO_EMAIL = process.env.RESEND_REPLY_TO_EMAIL || DEFAULT_REPLY_TO_EMAIL;
+const FROM_LABEL = process.env.RESEND_FROM_LABEL || "Affordable Peptides";
 
 const FALLBACK_SITE_URL = "http://localhost:3000";
 
@@ -58,6 +63,15 @@ const SITE_BASE_URL = (() =>
   return normalizeBaseUrl(candidates[0] ?? FALLBACK_SITE_URL);
 })();
 
+function getFromAddress (): string
+{
+  if (FROM_EMAIL.includes("<") || FROM_EMAIL.includes(">")) {
+    return FROM_EMAIL;
+  }
+
+  return `${FROM_LABEL} <${FROM_EMAIL}>`;
+}
+
 function buildOrderLookupUrl (order: Order): string
 {
   const url = new URL("/order-lookup", SITE_BASE_URL);
@@ -71,6 +85,18 @@ function buildPasswordResetUrl (token: string): string
   const url = new URL("/account/reset-password", SITE_BASE_URL);
   url.searchParams.set("token", token);
   return url.toString();
+}
+
+function buildBrandedRedirectUrl (destination: string): string
+{
+  try {
+    const parsedDestination = new URL(destination);
+    const url = new URL("/r", SITE_BASE_URL);
+    url.searchParams.set("to", parsedDestination.toString());
+    return url.toString();
+  } catch {
+    return destination;
+  }
 }
 
 function logEmailPreview (
@@ -356,11 +382,13 @@ function formatCustomerReceiptEmail (
   const venmoTotal = calculateVenmoTotal(totalWithShipping) || totalWithShipping;
   const cashAppDisplay = cashAppTotal.toFixed(2);
   const venmoDisplay = venmoTotal.toFixed(2);
-  const cashAppLink = buildCashAppLink(cashAppTotal);
-  const venmoLink = buildVenmoLink({
+  const cashAppExternalLink = buildCashAppLink(cashAppTotal);
+  const venmoExternalLink = buildVenmoLink({
     amount: venmoTotal,
     note: `Order ${orderNumber}`,
   });
+  const cashAppLink = buildBrandedRedirectUrl(cashAppExternalLink);
+  const venmoLink = buildBrandedRedirectUrl(venmoExternalLink);
   const itemsHtml = order.items
     .map(
       (item) => `
@@ -593,28 +621,46 @@ export async function sendOrderEmail (order: Order): Promise<void>
   try {
     const sendOperations = [
       resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+        from: getFromAddress(),
         to: ADMIN_EMAIL,
         subject: adminEmailContent.subject,
         html: adminEmailContent.html,
         text: adminEmailContent.text,
+        replyTo: REPLY_TO_EMAIL,
+        headers: {
+          "Reply-To": REPLY_TO_EMAIL,
+          "X-Auto-Response-Suppress": "All",
+          "Auto-Submitted": "auto-generated",
+        },
       }),
       resend.emails.send({
-        from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+        from: getFromAddress(),
         to: order.customerEmail,
         subject: customerEmailContent.subject,
         html: customerEmailContent.html,
         text: customerEmailContent.text,
+        replyTo: REPLY_TO_EMAIL,
+        headers: {
+          "Reply-To": REPLY_TO_EMAIL,
+          "X-Auto-Response-Suppress": "All",
+          "Auto-Submitted": "auto-generated",
+        },
       }),
     ];
 
     if (ADMIN_SMS_EMAIL && smsContent) {
       sendOperations.push(
         resend.emails.send({
-          from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+          from: getFromAddress(),
           to: ADMIN_SMS_EMAIL,
           subject: `New Order SMS: ${formatOrderNumber(order.orderNumber)}`,
           text: smsContent,
+          replyTo: REPLY_TO_EMAIL,
+          headers: {
+            "Reply-To": REPLY_TO_EMAIL,
+            "X-Auto-Response-Suppress": "All",
+            "Auto-Submitted": "auto-generated",
+          },
         })
       );
     }
@@ -701,7 +747,7 @@ function formatOrderPaidEmail (order: Order):
   ].join("\n");
 
   return {
-    subject: `Payment Confirmed - Order ${orderNumber}`,
+    subject: `Payment confirmed for order ${orderNumber}`,
     html,
     text,
   };
@@ -719,17 +765,20 @@ function formatOrderShippedEmail (order: Order):
   const trackingNumber = order.trackingNumber || "Tracking number will be available soon";
 
   // Build tracking URL based on carrier
-  let trackingUrl: string | null = null;
+  let trackingExternalUrl: string | null = null;
   let carrierName = "";
   if (order.trackingNumber && order.trackingCarrier) {
     if (order.trackingCarrier === "UPS") {
-      trackingUrl = `https://www.ups.com/track?tracknum=${encodeURIComponent(order.trackingNumber)}`;
+      trackingExternalUrl = `https://www.ups.com/track?tracknum=${encodeURIComponent(order.trackingNumber)}`;
       carrierName = "UPS";
     } else if (order.trackingCarrier === "USPS") {
-      trackingUrl = `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(order.trackingNumber)}`;
+      trackingExternalUrl = `https://tools.usps.com/go/TrackConfirmAction?tLabels=${encodeURIComponent(order.trackingNumber)}`;
       carrierName = "USPS";
     }
   }
+  const trackingUrl = trackingExternalUrl
+    ? buildBrandedRedirectUrl(trackingExternalUrl)
+    : null;
 
   const trackingInfo = order.trackingNumber && trackingUrl
     ? `<p style="margin: 8px 0 0 0; font-size: 18px; font-weight: bold;"><a href="${trackingUrl}" target="_blank" rel="noopener noreferrer" style="color: #059669; text-decoration: none; border-bottom: 2px solid #059669; padding-bottom: 2px;">${trackingNumber}</a></p><p style="margin: 8px 0 0 0; font-size: 14px; color: #6b7280;"><a href="${trackingUrl}" target="_blank" rel="noopener noreferrer" style="color: #2563eb; text-decoration: underline;">Track on ${carrierName}.com →</a></p>`
@@ -816,7 +865,7 @@ function formatOrderShippedEmail (order: Order):
   ].join("\n");
 
   return {
-    subject: `Order ${orderNumber} Has Shipped!`,
+    subject: `Your order ${orderNumber} has shipped`,
     html,
     text,
   };
@@ -834,15 +883,16 @@ export async function sendOrderPaidEmail (order: Order): Promise<void>
 
   try {
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+      from: getFromAddress(),
       to: order.customerEmail,
       subject: emailContent.subject,
       html: emailContent.html,
       text: emailContent.text,
-      replyTo: "noreply@affordablepeptides.life",
+      replyTo: REPLY_TO_EMAIL,
       headers: {
-        "Reply-To": "noreply@affordablepeptides.life",
+        "Reply-To": REPLY_TO_EMAIL,
         "X-Auto-Response-Suppress": "All",
+        "Auto-Submitted": "auto-generated",
       },
     });
     console.log("PAID email sent successfully to", order.customerEmail);
@@ -864,15 +914,16 @@ export async function sendOrderShippedEmail (order: Order): Promise<void>
 
   try {
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+      from: getFromAddress(),
       to: order.customerEmail,
       subject: emailContent.subject,
       html: emailContent.html,
       text: emailContent.text,
-      replyTo: "noreply@affordablepeptides.life",
+      replyTo: REPLY_TO_EMAIL,
       headers: {
-        "Reply-To": "noreply@affordablepeptides.life",
+        "Reply-To": REPLY_TO_EMAIL,
         "X-Auto-Response-Suppress": "All",
+        "Auto-Submitted": "auto-generated",
       },
     });
     console.log("SHIPPED email sent successfully to", order.customerEmail);
@@ -898,15 +949,16 @@ export async function sendPasswordResetEmail (
 
   try {
     await resend.emails.send({
-      from: process.env.RESEND_FROM_EMAIL || "orders@affordablepeptides.life",
+      from: getFromAddress(),
       to,
       subject: emailContent.subject,
       html: emailContent.html,
       text: emailContent.text,
-      replyTo: "noreply@affordablepeptides.life",
+      replyTo: REPLY_TO_EMAIL,
       headers: {
-        "Reply-To": "noreply@affordablepeptides.life",
+        "Reply-To": REPLY_TO_EMAIL,
         "X-Auto-Response-Suppress": "All",
+        "Auto-Submitted": "auto-generated",
       },
     });
     console.log("PASSWORD RESET email sent successfully to", to);
