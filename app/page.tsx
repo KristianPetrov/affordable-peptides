@@ -191,8 +191,7 @@ export default function Home ()
               alt="Affordable Peptides logo"
               width={720}
               height={360}
-              priority
-              fetchPriority="high"
+              loading="lazy"
               quality={70}
               sizes="(max-width: 640px) 320px, (max-width: 1024px) 420px, 480px"
               className="h-auto w-full max-w-[480px] drop-shadow-[0_0_35px_rgba(168,85,247,0.45)]"
