@@ -10,7 +10,8 @@ import
   type Review,
 } from "@/lib/reviews";
 
-const TRUSTPILOT_ICON_URL = "https://images-static.trustpilot.com/api/icons/230x230.png";
+const TRUSTPILOT_STAR_PATH =
+  "M12 17.27L18.18 21 16.54 13.97 22 9.24 14.81 8.63 12 2 9.19 8.63 2 9.24 7.46 13.97 5.82 21z";
 
 /* ------------------------------------------------------------------ */
 /*  Trustpilot branding helpers                                        */
@@ -20,22 +21,24 @@ function StarIcon ({ fillFraction }: { fillFraction: number })
 {
   const clampedFill = Math.min(1, Math.max(0, fillFraction));
   return (
-    <span className="relative inline-flex h-5 w-5 rounded-[3px]" aria-hidden="true">
-      <img
-        src={TRUSTPILOT_ICON_URL}
-        alt=""
-        className="absolute inset-0 h-5 w-5 rounded-[3px] opacity-25 grayscale"
-        loading="lazy"
-        decoding="async"
-      />
+    <span className="relative inline-flex h-5 w-5" aria-hidden="true">
+      <svg
+        viewBox="0 0 24 24"
+        className="absolute inset-0 h-5 w-5 text-zinc-700/70"
+        fill="currentColor"
+        aria-hidden="true"
+      >
+        <path d={TRUSTPILOT_STAR_PATH} />
+      </svg>
       <span className="relative h-full overflow-hidden" style={{ width: `${clampedFill * 100}%` }}>
-        <img
-          src={TRUSTPILOT_ICON_URL}
-          alt=""
-          className="h-5 w-5 max-w-none rounded-[3px]"
-          loading="lazy"
-          decoding="async"
-        />
+        <svg
+          viewBox="0 0 24 24"
+          className="h-5 w-5 max-w-none text-[#00b67a]"
+          fill="currentColor"
+          aria-hidden="true"
+        >
+          <path d={TRUSTPILOT_STAR_PATH} />
+        </svg>
       </span>
     </span>
   );
@@ -44,14 +47,14 @@ function StarIcon ({ fillFraction }: { fillFraction: number })
 function TrustpilotLogoIcon ({ className }: { className?: string })
 {
   return (
-    <img
-      src={TRUSTPILOT_ICON_URL}
-      alt=""
+    <svg
+      viewBox="0 0 24 24"
       aria-hidden="true"
-      className={className ?? "h-4 w-4 rounded-[2px]"}
-      loading="lazy"
-      decoding="async"
-    />
+      className={className ?? "h-4 w-4 text-[#00b67a]"}
+      fill="currentColor"
+    >
+      <path d={TRUSTPILOT_STAR_PATH} />
+    </svg>
   );
 }
 

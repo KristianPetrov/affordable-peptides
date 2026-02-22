@@ -18,7 +18,7 @@ export type MarketingRoute = {
 };
 
 const DEFAULT_SITE_NAME = "Affordable Peptides";
-const DEFAULT_SITE_URL = "https://affordablepeptides.life";
+const DEFAULT_SITE_URL = "https://www.affordablepeptides.life";
 
 function normalizeSiteUrl (input: string): string
 {

@@ -126,7 +126,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription:
       "5 Amino 1 Q mirrors the small-molecule peptide 5-Amino-1MQ, which is researched for inhibiting nicotinamide N-methyltransferase (NNMT). Scientists leverage it in metabolic studies aimed at improving insulin sensitivity, mobilizing stubborn adipose tissue, and pairing with incretin or mitochondrial-boosting stacks.",
     categories: ["weight-metabolic", "longevity-wellness"],
-    variants: [createVariant("10mg", 50, { mockupLabel: "/products/label-5amino1q-10mg-3ml.png", testResultUrl: "https://drive.google.com/file/d/145NiDn1wXMZjvpwL--Wzdq1PyWMi3hD4/view" }), createVariant("50mg", 150, { mockupLabel: "/products/label-5amino1q-50mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1H3Toh9SEiaQgETKnBGliGKxB-0rx8SQc/view"})],
+    variants: [createVariant("10mg", 50, { mockupLabel: "/products/label-5amino1q-10mg-3ml.png", testResultUrl: "https://drive.google.com/file/d/145NiDn1wXMZjvpwL--Wzdq1PyWMi3hD4/view" }), createVariant("50mg", 100, { mockupLabel: "/products/label-5amino1q-50mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1H3Toh9SEiaQgETKnBGliGKxB-0rx8SQc/view"})],
   },
   {
     name: "AOD 9604",

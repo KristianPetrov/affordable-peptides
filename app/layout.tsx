@@ -32,6 +32,18 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <head>
+        <link
+          rel="preconnect"
+          href="https://www.setfreedigitaldisciples.com"
+          crossOrigin=""
+        />
+        <link
+          rel="preconnect"
+          href="https://images-static.trustpilot.com"
+          crossOrigin=""
+        />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AgeGateProvider>
           <Providers>
@@ -56,6 +68,7 @@ export default function RootLayout({
               <script
                 key={`global-jsonld-${String(schema["@type"])}`}
                 type="application/ld+json"
+                defer
                 dangerouslySetInnerHTML={{ __html: serializeJsonLd(schema) }}
               />
             ))}

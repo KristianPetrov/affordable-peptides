@@ -22,7 +22,7 @@ const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || DEFAULT_FROM_EMAIL;
 const REPLY_TO_EMAIL = process.env.RESEND_REPLY_TO_EMAIL || DEFAULT_REPLY_TO_EMAIL;
 const FROM_LABEL = process.env.RESEND_FROM_LABEL || "Affordable Peptides";
 
-const FALLBACK_SITE_URL = "http://localhost:3000";
+const FALLBACK_SITE_URL = "http://affordablepeptides.life";
 
 const PACIFIC_TIMEZONE = "America/Los_Angeles";
 

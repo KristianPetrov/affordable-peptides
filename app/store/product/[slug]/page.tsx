@@ -94,6 +94,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       <ProductDetailStandalone product={product} molecules={molecules} />
       <script
         type="application/ld+json"
+        defer
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(productJsonLd) }}
       />
     </div>
