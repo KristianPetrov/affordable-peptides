@@ -58,7 +58,7 @@ const SITE_BASE_URL = (() =>
     process.env.APP_URL,
     process.env.APP_BASE_URL,
     process.env.VERCEL_URL,
-  ].filter(Boolean) as string[];
+  ].filter(val=>!!val?.includes("affordablepeptides.life")) as string[];
 
   return normalizeBaseUrl(candidates[0] ?? FALLBACK_SITE_URL);
 })();
