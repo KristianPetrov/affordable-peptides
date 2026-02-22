@@ -20,7 +20,56 @@
       "idx": 2,
       "version": "7",
       "when": 1764633600000,
+      "tag": "0002_add_tracking_number",
+      "breakpoints": false
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1764633601000,
+      "tag": "0003_add_tracking_carrier",
+      "breakpoints": false
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1764633602000,
       "tag": "0004_referrals",
+      "breakpoints": false
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1764633603000,
+      "tag": "0005_referral_code_min_order_subtotal",
+      "breakpoints": false
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1764633604000,
+      "tag": "0006_referral_partner_commission",
+      "breakpoints": false
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1764633605000,
+      "tag": "0007_password_reset_tokens",
+      "breakpoints": false
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1764633606000,
+      "tag": "0008_add_order_shipping_totals",
+      "breakpoints": false
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1764633607000,
+      "tag": "0009_order_communication_status",
       "breakpoints": false
     }
   ]

@@ -1,4 +1,4 @@
-CREATE TABLE "referral_partners" (
+CREATE TABLE IF NOT EXISTS "referral_partners" (
   "id" text PRIMARY KEY NOT NULL,
   "name" text NOT NULL,
   "contact_name" text,
@@ -12,9 +12,9 @@ CREATE TABLE "referral_partners" (
   "updated_at" timestamp NOT NULL DEFAULT now()
 );
 
-CREATE UNIQUE INDEX "referral_partners_contact_email_idx" ON "referral_partners" ("contact_email");
+CREATE UNIQUE INDEX IF NOT EXISTS "referral_partners_contact_email_idx" ON "referral_partners" ("contact_email");
 
-CREATE TABLE "referral_codes" (
+CREATE TABLE IF NOT EXISTS "referral_codes" (
   "id" text PRIMARY KEY NOT NULL,
   "partner_id" text NOT NULL REFERENCES "referral_partners"("id") ON DELETE cascade,
   "code" varchar(64) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE "referral_codes" (
   CONSTRAINT "referral_codes_code_unique" UNIQUE ("code")
 );
 
-CREATE TABLE "referral_attributions" (
+CREATE TABLE IF NOT EXISTS "referral_attributions" (
   "id" text PRIMARY KEY NOT NULL,
   "partner_id" text NOT NULL REFERENCES "referral_partners"("id") ON DELETE cascade,
   "code_id" text REFERENCES "referral_codes"("id") ON DELETE set null,
@@ -52,14 +52,14 @@ CREATE TABLE "referral_attributions" (
   CONSTRAINT "referral_attributions_customer_email_unique" UNIQUE ("customer_email")
 );
 
-CREATE INDEX "referral_attributions_partner_idx" ON "referral_attributions" ("partner_id");
-CREATE INDEX "referral_codes_partner_idx" ON "referral_codes" ("partner_id");
+CREATE INDEX IF NOT EXISTS "referral_attributions_partner_idx" ON "referral_attributions" ("partner_id");
+CREATE INDEX IF NOT EXISTS "referral_codes_partner_idx" ON "referral_codes" ("partner_id");
 
-ALTER TABLE "orders" ADD COLUMN "referral_partner_id" text REFERENCES "referral_partners"("id") ON DELETE set null;
-ALTER TABLE "orders" ADD COLUMN "referral_partner_name" text;
-ALTER TABLE "orders" ADD COLUMN "referral_code_id" text REFERENCES "referral_codes"("id") ON DELETE set null;
-ALTER TABLE "orders" ADD COLUMN "referral_code_value" text;
-ALTER TABLE "orders" ADD COLUMN "referral_attribution_id" text;
-ALTER TABLE "orders" ADD COLUMN "referral_discount" numeric(10, 2) NOT NULL DEFAULT 0;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "referral_partner_id" text REFERENCES "referral_partners"("id") ON DELETE set null;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "referral_partner_name" text;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "referral_code_id" text REFERENCES "referral_codes"("id") ON DELETE set null;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "referral_code_value" text;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "referral_attribution_id" text;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "referral_discount" numeric(10, 2) NOT NULL DEFAULT 0;
 
 

@@ -1,2 +1,2 @@
-ALTER TABLE "orders" ADD COLUMN "tracking_carrier" varchar(10);
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "tracking_carrier" varchar(10);
 

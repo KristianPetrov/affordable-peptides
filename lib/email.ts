@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 import { calculateVolumePricing } from "./cart-pricing";
 import { calculateOrderTotals, formatOrderNumber, type Order } from "./orders";
+import { setOrderCommunicationSent } from "./db";
 import
 {
   buildCashAppLink,
@@ -62,6 +63,21 @@ const SITE_BASE_URL = (() =>
 
   return normalizeBaseUrl(candidates[0] ?? FALLBACK_SITE_URL);
 })();
+
+function extractResendEmailId (result: unknown): string | null
+{
+  if (!result || typeof result !== "object") {
+    return null;
+  }
+
+  const maybeData = (result as { data?: unknown }).data;
+  if (!maybeData || typeof maybeData !== "object") {
+    return null;
+  }
+
+  const maybeId = (maybeData as { id?: unknown }).id;
+  return typeof maybeId === "string" && maybeId.length > 0 ? maybeId : null;
+}
 
 function getFromAddress (): string
 {
@@ -665,10 +681,14 @@ export async function sendOrderEmail (order: Order): Promise<void>
       );
     }
 
-    await Promise.all(sendOperations).then((results) =>
+    await Promise.all(sendOperations).then(async (results) =>
     {
       console.log("Email sent successfully");
       console.log(JSON.stringify(results));
+      const customerReceiptEmailId = extractResendEmailId(results[1]);
+      if (customerReceiptEmailId) {
+        await setOrderCommunicationSent(order.id, "receipt", customerReceiptEmailId);
+      }
     }).catch((error) =>
     {
       console.error("Failed to send email via Resend:", error);
@@ -882,7 +902,7 @@ export async function sendOrderPaidEmail (order: Order): Promise<void>
   }
 
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: getFromAddress(),
       to: order.customerEmail,
       subject: emailContent.subject,
@@ -895,6 +915,10 @@ export async function sendOrderPaidEmail (order: Order): Promise<void>
         "Auto-Submitted": "auto-generated",
       },
     });
+    const paidEmailId = extractResendEmailId(result);
+    if (paidEmailId) {
+      await setOrderCommunicationSent(order.id, "paid", paidEmailId);
+    }
     console.log("PAID email sent successfully to", order.customerEmail);
   } catch (error) {
     console.error("Failed to send PAID email via Resend:", error);
@@ -913,7 +937,7 @@ export async function sendOrderShippedEmail (order: Order): Promise<void>
   }
 
   try {
-    await resend.emails.send({
+    const result = await resend.emails.send({
       from: getFromAddress(),
       to: order.customerEmail,
       subject: emailContent.subject,
@@ -926,6 +950,10 @@ export async function sendOrderShippedEmail (order: Order): Promise<void>
         "Auto-Submitted": "auto-generated",
       },
     });
+    const shippedEmailId = extractResendEmailId(result);
+    if (shippedEmailId) {
+      await setOrderCommunicationSent(order.id, "shipped", shippedEmailId);
+    }
     console.log("SHIPPED email sent successfully to", order.customerEmail);
   } catch (error) {
     console.error("Failed to send SHIPPED email via Resend:", error);

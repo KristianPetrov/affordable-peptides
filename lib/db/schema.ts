@@ -227,6 +227,15 @@ export const orders = pgTable("orders", {
   })
     .notNull()
     .default("0"),
+  orderReceiptEmailId: text("order_receipt_email_id"),
+  orderReceiptEmailStatus: text("order_receipt_email_status"),
+  orderReceiptEmailUpdatedAt: timestamp("order_receipt_email_updated_at"),
+  orderPaidEmailId: text("order_paid_email_id"),
+  orderPaidEmailStatus: text("order_paid_email_status"),
+  orderPaidEmailUpdatedAt: timestamp("order_paid_email_updated_at"),
+  orderShippedEmailId: text("order_shipped_email_id"),
+  orderShippedEmailStatus: text("order_shipped_email_status"),
+  orderShippedEmailUpdatedAt: timestamp("order_shipped_email_updated_at"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

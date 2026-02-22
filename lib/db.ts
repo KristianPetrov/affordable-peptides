@@ -11,6 +11,8 @@ import type { Order } from "./orders";
 
 export const db = drizzleDb;
 
+export type OrderEmailChannel = "receipt" | "paid" | "shipped";
+
 // Convert database row to Order type
 function dbRowToOrder (row: typeof orders.$inferSelect): Order
 {
@@ -49,6 +51,21 @@ function dbRowToOrder (row: typeof orders.$inferSelect): Order
     referralCommissionAmount: row.referralCommissionAmount
       ? parseFloat(row.referralCommissionAmount)
       : 0,
+    orderReceiptEmailId: row.orderReceiptEmailId || undefined,
+    orderReceiptEmailStatus: row.orderReceiptEmailStatus || undefined,
+    orderReceiptEmailUpdatedAt: row.orderReceiptEmailUpdatedAt
+      ? row.orderReceiptEmailUpdatedAt.toISOString()
+      : undefined,
+    orderPaidEmailId: row.orderPaidEmailId || undefined,
+    orderPaidEmailStatus: row.orderPaidEmailStatus || undefined,
+    orderPaidEmailUpdatedAt: row.orderPaidEmailUpdatedAt
+      ? row.orderPaidEmailUpdatedAt.toISOString()
+      : undefined,
+    orderShippedEmailId: row.orderShippedEmailId || undefined,
+    orderShippedEmailStatus: row.orderShippedEmailStatus || undefined,
+    orderShippedEmailUpdatedAt: row.orderShippedEmailUpdatedAt
+      ? row.orderShippedEmailUpdatedAt.toISOString()
+      : undefined,
   };
 }
 
@@ -86,6 +103,21 @@ function orderToDbRow (order: Order): typeof orders.$inferInsert
     referralDiscount: (order.referralDiscount ?? 0).toString(),
     referralCommissionPercent: (order.referralCommissionPercent ?? 0).toString(),
     referralCommissionAmount: (order.referralCommissionAmount ?? 0).toString(),
+    orderReceiptEmailId: order.orderReceiptEmailId ?? null,
+    orderReceiptEmailStatus: order.orderReceiptEmailStatus ?? null,
+    orderReceiptEmailUpdatedAt: order.orderReceiptEmailUpdatedAt
+      ? new Date(order.orderReceiptEmailUpdatedAt)
+      : null,
+    orderPaidEmailId: order.orderPaidEmailId ?? null,
+    orderPaidEmailStatus: order.orderPaidEmailStatus ?? null,
+    orderPaidEmailUpdatedAt: order.orderPaidEmailUpdatedAt
+      ? new Date(order.orderPaidEmailUpdatedAt)
+      : null,
+    orderShippedEmailId: order.orderShippedEmailId ?? null,
+    orderShippedEmailStatus: order.orderShippedEmailStatus ?? null,
+    orderShippedEmailUpdatedAt: order.orderShippedEmailUpdatedAt
+      ? new Date(order.orderShippedEmailUpdatedAt)
+      : null,
     createdAt: new Date(order.createdAt),
     updatedAt: new Date(order.updatedAt),
   };
@@ -162,6 +194,94 @@ export async function updateOrderStatus (
       updatedAt: new Date(),
     })
     .where(eq(orders.id, id))
+    .returning();
+
+  return updated ? dbRowToOrder(updated) : null;
+}
+
+export async function setOrderCommunicationSent (
+  orderId: string,
+  channel: OrderEmailChannel,
+  emailId: string
+): Promise<Order | null>
+{
+  const baseSet = { updatedAt: new Date() };
+  const timestamp = new Date();
+  const setValues =
+    channel === "receipt"
+      ? {
+        ...baseSet,
+        orderReceiptEmailId: emailId,
+        orderReceiptEmailStatus: "email.sent",
+        orderReceiptEmailUpdatedAt: timestamp,
+      }
+      : channel === "paid"
+        ? {
+          ...baseSet,
+          orderPaidEmailId: emailId,
+          orderPaidEmailStatus: "email.sent",
+          orderPaidEmailUpdatedAt: timestamp,
+        }
+        : {
+          ...baseSet,
+          orderShippedEmailId: emailId,
+          orderShippedEmailStatus: "email.sent",
+          orderShippedEmailUpdatedAt: timestamp,
+        };
+
+  const [updated] = await db
+    .update(orders)
+    .set(setValues)
+    .where(eq(orders.id, orderId))
+    .returning();
+
+  return updated ? dbRowToOrder(updated) : null;
+}
+
+export async function applyOrderCommunicationEvent (
+  resendEmailId: string,
+  eventType: string,
+  eventAt?: Date
+): Promise<Order | null>
+{
+  const timestamp = eventAt ?? new Date();
+  const [matchedOrder] = await db
+    .select()
+    .from(orders)
+    .where(
+      or(
+        eq(orders.orderReceiptEmailId, resendEmailId),
+        eq(orders.orderPaidEmailId, resendEmailId),
+        eq(orders.orderShippedEmailId, resendEmailId)
+      )
+    )
+    .limit(1);
+
+  if (!matchedOrder) {
+    return null;
+  }
+
+  const updatePayload: Partial<typeof orders.$inferInsert> = {
+    updatedAt: new Date(),
+  };
+
+  if (matchedOrder.orderReceiptEmailId === resendEmailId) {
+    updatePayload.orderReceiptEmailStatus = eventType;
+    updatePayload.orderReceiptEmailUpdatedAt = timestamp;
+  } else if (matchedOrder.orderPaidEmailId === resendEmailId) {
+    updatePayload.orderPaidEmailStatus = eventType;
+    updatePayload.orderPaidEmailUpdatedAt = timestamp;
+  } else if (matchedOrder.orderShippedEmailId === resendEmailId) {
+    updatePayload.orderShippedEmailStatus = eventType;
+    updatePayload.orderShippedEmailUpdatedAt = timestamp;
+  } else {
+    return null;
+  }
+
+  const [updated] = await db
+    .update(orders)
+    .set(updatePayload)
+    .where(eq(orders.id, matchedOrder.id))
     .returning();
 
   return updated ? dbRowToOrder(updated) : null;

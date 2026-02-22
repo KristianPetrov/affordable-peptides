@@ -1,4 +1,4 @@
-CREATE TABLE "accounts" (
+CREATE TABLE IF NOT EXISTS "accounts" (
 	"user_id" text NOT NULL,
 	"type" text NOT NULL,
 	"provider" text NOT NULL,
@@ -10,10 +10,11 @@ CREATE TABLE "accounts" (
 	"scope" text,
 	"id_token" text,
 	"session_state" text,
-	CONSTRAINT "accounts_provider_provider_account_id_pk" PRIMARY KEY("provider","provider_account_id")
+	CONSTRAINT "accounts_provider_provider_account_id_pk" PRIMARY KEY("provider","provider_account_id"),
+	CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE "customer_profiles" (
+CREATE TABLE IF NOT EXISTS "customer_profiles" (
 	"user_id" text PRIMARY KEY NOT NULL,
 	"full_name" text,
 	"phone" text,
@@ -23,10 +24,11 @@ CREATE TABLE "customer_profiles" (
 	"shipping_zip_code" text,
 	"shipping_country" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "customer_profiles_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE "orders" (
+CREATE TABLE IF NOT EXISTS "orders" (
 	"id" text PRIMARY KEY NOT NULL,
 	"order_number" varchar(50) NOT NULL,
 	"status" varchar(20) NOT NULL,
@@ -41,16 +43,18 @@ CREATE TABLE "orders" (
 	"notes" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "orders_order_number_unique" UNIQUE("order_number")
+	CONSTRAINT "orders_order_number_unique" UNIQUE("order_number"),
+	CONSTRAINT "orders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE "sessions" (
+CREATE TABLE IF NOT EXISTS "sessions" (
 	"session_token" text PRIMARY KEY NOT NULL,
 	"user_id" text NOT NULL,
-	"expires" timestamp NOT NULL
+	"expires" timestamp NOT NULL,
+	CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action
 );
 --> statement-breakpoint
-CREATE TABLE "users" (
+CREATE TABLE IF NOT EXISTS "users" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" text,
 	"email" text NOT NULL,
@@ -63,14 +67,10 @@ CREATE TABLE "users" (
 	CONSTRAINT "users_email_unique" UNIQUE("email")
 );
 --> statement-breakpoint
-CREATE TABLE "verification_tokens" (
+CREATE TABLE IF NOT EXISTS "verification_tokens" (
 	"identifier" text NOT NULL,
 	"token" text NOT NULL,
 	"expires" timestamp NOT NULL,
 	CONSTRAINT "verification_tokens_identifier_token_pk" PRIMARY KEY("identifier","token")
 );
 --> statement-breakpoint
-ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "customer_profiles" ADD CONSTRAINT "customer_profiles_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "orders" ADD CONSTRAINT "orders_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;

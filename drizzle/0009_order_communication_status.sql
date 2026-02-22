@@ -1,0 +1,9 @@
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "order_receipt_email_id" text;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "order_receipt_email_status" text;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "order_receipt_email_updated_at" timestamp;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "order_paid_email_id" text;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "order_paid_email_status" text;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "order_paid_email_updated_at" timestamp;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "order_shipped_email_id" text;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "order_shipped_email_status" text;
+ALTER TABLE "orders" ADD COLUMN IF NOT EXISTS "order_shipped_email_updated_at" timestamp;

@@ -24,6 +24,41 @@ const formatCurrency = (value: number) =>
     maximumFractionDigits: 2,
   }).format(value);
 
+const formatCommunicationStatusLabel = (status?: string): string =>
+  status ? status.replace("email.", "").replaceAll("_", " ").toUpperCase() : "NOT SENT";
+
+const getCommunicationStatusClass = (status?: string): string => {
+  if (!status) {
+    return "border-zinc-700 bg-zinc-800/40 text-zinc-300";
+  }
+
+  if (
+    status === "email.delivered" ||
+    status === "email.opened" ||
+    status === "email.clicked"
+  ) {
+    return "border-emerald-500/40 bg-emerald-500/10 text-emerald-300";
+  }
+
+  if (status === "email.sent" || status === "email.delivery_delayed") {
+    return "border-amber-500/40 bg-amber-500/10 text-amber-200";
+  }
+
+  if (status === "email.bounced" || status === "email.complained") {
+    return "border-red-500/40 bg-red-500/10 text-red-300";
+  }
+
+  return "border-purple-500/40 bg-purple-500/10 text-purple-200";
+};
+
+const formatCommunicationTime = (value?: string): string =>
+  value
+    ? new Date(value).toLocaleString("en-US", {
+      dateStyle: "short",
+      timeStyle: "short",
+    })
+    : "—";
+
 const MONTH_OPTIONS = [
   { value: 1, label: "January", short: "Jan" },
   { value: 2, label: "February", short: "Feb" },
@@ -796,6 +831,23 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                       dateStyle: "short",
                       timeStyle: "short",
                     });
+                    const communicationRows = [
+                      {
+                        label: "Order Receipt",
+                        status: order.orderReceiptEmailStatus,
+                        updatedAt: order.orderReceiptEmailUpdatedAt,
+                      },
+                      {
+                        label: "Payment Confirmed",
+                        status: order.orderPaidEmailStatus,
+                        updatedAt: order.orderPaidEmailUpdatedAt,
+                      },
+                      {
+                        label: "Order Shipped",
+                        status: order.orderShippedEmailStatus,
+                        updatedAt: order.orderShippedEmailUpdatedAt,
+                      },
+                    ];
 
                     const statusColors = {
                       PENDING_PAYMENT: "bg-yellow-500/20 text-yellow-400",
@@ -850,6 +902,32 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                                   {order.shippingAddress.zipCode}
                                 </span>
                               </p>
+                            </div>
+
+                            <div className="mb-4">
+                              <h4 className="mb-2 text-sm font-semibold text-purple-200">
+                                Communication:
+                              </h4>
+                              <div className="space-y-2">
+                                {communicationRows.map((communication) => (
+                                  <div
+                                    key={`${order.id}-${communication.label}`}
+                                    className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-purple-900/40 bg-black/50 px-3 py-2 text-xs"
+                                  >
+                                    <span className="text-zinc-300">{communication.label}</span>
+                                    <div className="flex items-center gap-2">
+                                      <span
+                                        className={`rounded-full border px-2 py-1 font-semibold tracking-[0.12em] ${getCommunicationStatusClass(communication.status)}`}
+                                      >
+                                        {formatCommunicationStatusLabel(communication.status)}
+                                      </span>
+                                      <span className="text-zinc-500">
+                                        {formatCommunicationTime(communication.updatedAt)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
                             </div>
 
                             <div className="space-y-2">

@@ -37,6 +37,15 @@ export type Order = {
   referralDiscount?: number;
   referralCommissionPercent?: number;
   referralCommissionAmount?: number;
+  orderReceiptEmailId?: string;
+  orderReceiptEmailStatus?: string;
+  orderReceiptEmailUpdatedAt?: string;
+  orderPaidEmailId?: string;
+  orderPaidEmailStatus?: string;
+  orderPaidEmailUpdatedAt?: string;
+  orderShippedEmailId?: string;
+  orderShippedEmailStatus?: string;
+  orderShippedEmailUpdatedAt?: string;
 };
 
 export type OrderTotals = {
