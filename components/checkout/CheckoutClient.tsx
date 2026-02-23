@@ -12,13 +12,15 @@ import {
   useSharedUiAdapters,
 } from "@ap/shared-ui/adapters";
 
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value);
+  currencyFormatter.format(value);
 
 type SessionUser = {
   id: string;

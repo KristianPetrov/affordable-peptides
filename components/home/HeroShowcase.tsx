@@ -43,34 +43,44 @@ export default function HeroShowcase ({ products }: HeroShowcaseProps)
     () => products.slice(0, 3),
     [products]
   );
+  const showcaseItems = useMemo(
+    () =>
+      clampedProducts.map((product) => ({
+        product,
+        highlight: getHighlightDetails(product),
+        molecules: getMoleculesForProduct(product.name),
+      })),
+    [clampedProducts]
+  );
 
   const displayIndex =
-    clampedProducts.length === 0
+    showcaseItems.length === 0
       ? 0
-      : Math.min(activeIndex, clampedProducts.length - 1);
+      : Math.min(activeIndex, showcaseItems.length - 1);
 
   useEffect(() =>
   {
-    if (clampedProducts.length <= 1) {
+    if (showcaseItems.length <= 1) {
       return;
     }
 
     const timer = window.setInterval(() =>
     {
-      setActiveIndex((prev) => (prev + 1) % clampedProducts.length);
+      if (document.visibilityState !== "visible") {
+        return;
+      }
+      setActiveIndex((prev) => (prev + 1) % showcaseItems.length);
     }, rotationIntervalMs);
 
     return () => window.clearInterval(timer);
-  }, [clampedProducts.length]);
+  }, [showcaseItems.length]);
 
   return (
     <>
       <div className="relative min-h-[440px] overflow-hidden rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#0b0014] to-black p-6 sm:p-10">
-        {clampedProducts.map((product, index) =>
+        {showcaseItems.map(({ product, highlight, molecules }, index) =>
         {
           const isActive = index === displayIndex;
-          const highlight = getHighlightDetails(product);
-          const molecules = getMoleculesForProduct(product.name);
 
           return (
             <article
@@ -122,7 +132,7 @@ export default function HeroShowcase ({ products }: HeroShowcaseProps)
       </div>
 
       <div className="flex justify-center gap-3">
-        {clampedProducts.map((product, index) =>
+        {showcaseItems.map(({ product }, index) =>
         {
           const isActive = index === displayIndex;
           return (

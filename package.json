@@ -8,7 +8,7 @@
     "start": "next start",
     "shared:sync": "node scripts/sync-shared-packages.mjs",
     "shared:build": "pnpm --filter @ap/shared-core build && pnpm --filter @ap/shared-ui build",
-    "audit:seo" :"npx vercel-seo-audit https://www.affordablepeptides.life",
+    "audit:seo": "npx vercel-seo-audit https://www.affordablepeptides.life",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -18,9 +18,9 @@
     "seed:inventory": "tsx scripts/seed-inventory.ts"
   },
   "dependencies": {
+    "3dmol": "^2.5.3",
     "@ap/shared-core": "workspace:*",
     "@ap/shared-ui": "workspace:*",
-    "3dmol": "^2.5.3",
     "@auth/drizzle-adapter": "^1.11.1",
     "@neondatabase/serverless": "^1.0.2",
     "@vercel/analytics": "^1.6.1",
@@ -38,6 +38,7 @@
     "@types/node": "^20",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
+    "baseline-browser-mapping": "^2.10.0",
     "drizzle-kit": "^0.31.7",
     "eslint": "^9",
     "eslint-config-next": "16.1.0",

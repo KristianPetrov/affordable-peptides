@@ -15,13 +15,15 @@ const statusStyles: Record<Order["status"], string> = {
   CANCELLED: "text-red-200 bg-red-500/10",
 };
 
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value);
+  currencyFormatter.format(value);
 
 type OrderLookupClientProps = {
   defaultOrderNumber?: string;

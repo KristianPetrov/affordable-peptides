@@ -102,13 +102,15 @@ const productHasTestResults = (product: Product) =>
     product.variants.some((variant) => variant.testResultUrl)
   );
 
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 0,
+  maximumFractionDigits: 2,
+});
+
 const formatCurrency = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2,
-  }).format(value);
+  currencyFormatter.format(value);
 
 const parsePrice = (value: string) => Number(value.replace(/[^0-9.]/g, "")) || 0;
 
