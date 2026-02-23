@@ -1,0 +1,16 @@
+{
+  "name": "@ap/shared-core",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./orders": "./src/orders.ts",
+    "./customer": "./src/customer.ts"
+  },
+  "types": "./src/index.ts",
+  "scripts": {
+    "build": "echo \"@ap/shared-core uses source exports\"",
+    "lint": "echo \"No standalone lint for @ap/shared-core\""
+  }
+}

@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import Link from "next/link";
-import NavBar from "@/components/NavBar";
-import ProductDetailStandalone from "@/components/store/ProductDetailStandalone";
-import { getMoleculesForProduct } from "@/lib/molecules";
+import { NavBar, ProductDetailStandalone } from "@ap/shared-ui";
+import { getMoleculesForProduct } from "@ap/shared-core";
 import {
   getProductBySlug,
   peptideProducts,

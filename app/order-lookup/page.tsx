@@ -1,7 +1,6 @@
 import Link from "next/link";
 
-import NavBar from "@/components/NavBar";
-import OrderLookupClient from "@/components/orders/OrderLookupClient";
+import { NavBar, OrderLookupClient } from "@ap/shared-ui";
 
 type SearchParams = Record<string, string | string[] | undefined>;
 

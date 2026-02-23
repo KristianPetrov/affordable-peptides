@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "shared:sync": "node scripts/sync-shared-packages.mjs",
+    "shared:build": "pnpm --filter @ap/shared-core build && pnpm --filter @ap/shared-ui build",
     "audit:seo" :"npx vercel-seo-audit https://www.affordablepeptides.life",
     "lint": "eslint",
     "db:generate": "drizzle-kit generate",
@@ -16,6 +18,8 @@
     "seed:inventory": "tsx scripts/seed-inventory.ts"
   },
   "dependencies": {
+    "@ap/shared-core": "workspace:*",
+    "@ap/shared-ui": "workspace:*",
     "3dmol": "^2.5.3",
     "@auth/drizzle-adapter": "^1.11.1",
     "@neondatabase/serverless": "^1.0.2",

@@ -1,5 +1,4 @@
-import NavBar from "@/components/NavBar";
-import { CheckoutClient } from "@/components/checkout/CheckoutClient";
+import { CheckoutClient, NavBar } from "@ap/shared-ui";
 import { auth } from "@/lib/auth";
 import { getCustomerProfile } from "@/lib/db";
 

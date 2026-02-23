@@ -1,20 +1,30 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import NavBar from "@/components/NavBar";
-import ReferralDashboard from "@/components/admin/ReferralDashboard";
+import {
+  DeleteOrderButton,
+  NavBar,
+  OrderStatusForm,
+  ReferralDashboard,
+} from "@ap/shared-ui";
 import { getAllOrders } from "@/lib/db";
 import { calculateOrderTotals, formatOrderNumber } from "@/lib/orders";
 import
   {
     updateProductStockAction,
   } from "@/app/actions/admin";
+import {
+  createReferralCodeAction,
+  createReferralPartnerAction,
+  deleteReferralCodeAction,
+  deleteReferralPartnerAction,
+  toggleReferralCodeStatusAction,
+  toggleReferralPartnerStatusAction,
+} from "@/app/actions/referrals";
 import { auth, signOut } from "@/lib/auth";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
 import { getProductsWithInventory } from "@/lib/products.server";
 import { getReferralDashboardData } from "@/lib/referrals";
-import { OrderStatusForm } from "@/components/admin/OrderStatusForm";
-import { DeleteOrderButton } from "@/components/admin/DeleteOrderButton";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -577,7 +587,17 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
           )}
 
           {activeView === "referrals" && referralDashboard && (
-            <ReferralDashboard data={referralDashboard} />
+            <ReferralDashboard
+              data={referralDashboard}
+              actions={{
+                createReferralPartnerAction,
+                createReferralCodeAction,
+                toggleReferralPartnerStatusAction,
+                toggleReferralCodeStatusAction,
+                deleteReferralPartnerAction,
+                deleteReferralCodeAction,
+              }}
+            />
           )}
 
           {activeView === "referrals" && !referralDashboard && (

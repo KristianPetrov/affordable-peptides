@@ -2,21 +2,23 @@ import type { Metadata } from "next";
 import type { ReactElement, SVGProps } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import Disclaimer from "@/components/Disclaimer";
-import NavBar from "@/components/NavBar";
-import HeroShowcase from "@/components/home/HeroShowcase";
-import MissionSection from "@/components/home/MissionSection";
-import ResearchSection from "@/components/home/ResearchSection";
-import ReviewsSection from "@/components/home/ReviewsSection";
-import VisionSection from "@/components/home/VisionSection";
+import {
+  Disclaimer,
+  HeroShowcase,
+  MissionSection,
+  NavBar,
+  ResearchSection,
+  ReviewsSection,
+  VisionSection,
+} from "@ap/shared-ui";
 import
 {
   featuredProducts,
   peptideProducts,
   type Product,
 } from "@/lib/products";
+import { SUPPORT_PHONE_DISPLAY, SUPPORT_SMS_LINK } from "@ap/shared-core";
 import { absoluteUrl, siteMetadata } from "@/lib/seo";
-import { SUPPORT_PHONE_DISPLAY, SUPPORT_SMS_LINK } from "@/lib/support";
 type IconProps = SVGProps<SVGSVGElement>;
 function TikTokIcon (props: IconProps)
 {

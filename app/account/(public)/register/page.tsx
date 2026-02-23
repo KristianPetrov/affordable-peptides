@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 
-import NavBar from "@/components/NavBar";
-import { AccountRegisterForm } from "@/components/account/AccountRegisterForm";
+import { AccountRegisterForm, NavBar } from "@ap/shared-ui";
 import { auth } from "@/lib/auth";
 
 export default async function AccountRegisterPage() {
