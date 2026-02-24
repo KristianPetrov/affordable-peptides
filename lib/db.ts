@@ -7,11 +7,31 @@ import
     customerProfiles,
     productInventory,
   } from "./db/index";
-import type { Order } from "./orders";
+import type { Order, OrderStatus } from "./orders";
 
 export const db = drizzleDb;
 
 export type OrderEmailChannel = "receipt" | "paid" | "shipped";
+export type OrderContactExportStatus = Extract<
+  OrderStatus,
+  "PENDING_PAYMENT" | "SHIPPED"
+>;
+
+export type OrderContactExportRecord = {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  shippingStreet: string;
+  shippingCity: string;
+  shippingState: string;
+  shippingZipCode: string;
+  shippingCountry: string;
+  lastOrderId: string;
+  lastOrderNumber: string;
+  lastOrderStatus: OrderContactExportStatus;
+  lastOrderCreatedAt: string;
+  lastOrderUpdatedAt: string;
+};
 
 // Convert database row to Order type
 function dbRowToOrder (row: typeof orders.$inferSelect): Order
@@ -174,6 +194,81 @@ export async function getAllOrders (searchQuery?: string): Promise<Order[]>
 
   const allOrders = await db.select().from(orders);
   return allOrders.map(dbRowToOrder);
+}
+
+export async function getOrderContactsByStatus (
+  status: OrderContactExportStatus
+): Promise<OrderContactExportRecord[]>
+{
+  const rows = await db
+    .select({
+      id: orders.id,
+      orderNumber: orders.orderNumber,
+      status: orders.status,
+      customerName: orders.customerName,
+      customerEmail: orders.customerEmail,
+      customerPhone: orders.customerPhone,
+      shippingAddress: orders.shippingAddress,
+      createdAt: orders.createdAt,
+      updatedAt: orders.updatedAt,
+    })
+    .from(orders)
+    .where(eq(orders.status, status));
+
+  const dedupedByEmail = new Map<
+    string,
+    {
+      id: string;
+      orderNumber: string;
+      status: OrderContactExportStatus;
+      customerName: string;
+      customerEmail: string;
+      customerPhone: string;
+      shippingAddress: {
+        street: string;
+        city: string;
+        state: string;
+        zipCode: string;
+        country: string;
+      };
+      createdAt: Date;
+      updatedAt: Date;
+    }
+  >();
+
+  rows.forEach((row) =>
+  {
+    const emailKey = row.customerEmail.trim().toLowerCase();
+    if (!emailKey) {
+      return;
+    }
+
+    const existing = dedupedByEmail.get(emailKey);
+    if (!existing || row.updatedAt.getTime() > existing.updatedAt.getTime()) {
+      dedupedByEmail.set(emailKey, {
+        ...row,
+        status: row.status as OrderContactExportStatus,
+      });
+    }
+  });
+
+  return Array.from(dedupedByEmail.values())
+    .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    .map((row) => ({
+      customerName: row.customerName,
+      customerEmail: row.customerEmail,
+      customerPhone: row.customerPhone,
+      shippingStreet: row.shippingAddress?.street ?? "",
+      shippingCity: row.shippingAddress?.city ?? "",
+      shippingState: row.shippingAddress?.state ?? "",
+      shippingZipCode: row.shippingAddress?.zipCode ?? "",
+      shippingCountry: row.shippingAddress?.country ?? "",
+      lastOrderId: row.id,
+      lastOrderNumber: row.orderNumber,
+      lastOrderStatus: row.status,
+      lastOrderCreatedAt: row.createdAt.toISOString(),
+      lastOrderUpdatedAt: row.updatedAt.toISOString(),
+    }));
 }
 
 export async function updateOrderStatus (

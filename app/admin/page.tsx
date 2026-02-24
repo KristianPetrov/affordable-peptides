@@ -428,6 +428,10 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
     filterResetParams.size > 0
       ? `/admin?${filterResetParams.toString()}`
       : "/admin";
+  const pendingPaymentContactsExportHref =
+    "/api/admin/customer-contacts?segment=pending_payment&format=csv";
+  const shippedContactsExportHref =
+    "/api/admin/customer-contacts?segment=shipped&format=csv";
 
   return (
     <div className="min-h-screen bg-black text-zinc-100">
@@ -824,6 +828,58 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                   <div className="mt-2 text-3xl font-semibold text-white">
                     {orders.length}
                   </div>
+                </div>
+              </div>
+
+              <div className="mb-8 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6">
+                <div className="border-b border-purple-900/40 pb-4">
+                  <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
+                    Customer Outreach Lists
+                  </p>
+                  <h3 className="mt-1 text-xl font-semibold text-white">
+                    Export Contacts by Order Status
+                  </h3>
+                  <p className="mt-2 text-sm text-zinc-400">
+                    Download one-row-per-email CSV lists for follow-up campaigns.
+                    Pending payment captures abandoned carts, and shipped captures
+                    delivered customers for ongoing marketing.
+                  </p>
+                </div>
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <a
+                    href={pendingPaymentContactsExportHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-2xl border border-yellow-500/30 bg-yellow-500/10 p-4 transition hover:border-yellow-400 hover:bg-yellow-500/20"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-yellow-200">
+                      Abandoned Cart
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-white">
+                      Download Pending Payment Contacts
+                    </p>
+                    <p className="mt-2 text-xs text-zinc-400">
+                      Based on {statusCounts.PENDING_PAYMENT} pending payment order
+                      {statusCounts.PENDING_PAYMENT === 1 ? "" : "s"}.
+                    </p>
+                  </a>
+                  <a
+                    href={shippedContactsExportHref}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 transition hover:border-emerald-400 hover:bg-emerald-500/20"
+                  >
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">
+                      Customer Retention
+                    </p>
+                    <p className="mt-1 text-base font-semibold text-white">
+                      Download Shipped Contacts
+                    </p>
+                    <p className="mt-2 text-xs text-zinc-400">
+                      Based on {statusCounts.SHIPPED} shipped order
+                      {statusCounts.SHIPPED === 1 ? "" : "s"}.
+                    </p>
+                  </a>
                 </div>
               </div>
 
