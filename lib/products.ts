@@ -289,19 +289,6 @@ const productDefinitions: ProductDefinition[] = [
     ],
   },
   {
-    name: "HGH",
-    researchFocus: "Recombinant human growth hormone for profound anabolic and lipolytic studies.",
-    detailedDescription: "Recombinant human growth hormone (HGH) has a long research history in growth-hormone deficiency, body composition, and recovery. Studies have explored its effects on lean mass, fat distribution, and performance-related endpoints under controlled conditions.",
-    categories: ["hormone-growth", "recovery-performance"],
-    variants: [
-      createVariant("100 IU kit (10 bottles × 10 IU)", 200, {
-        mockupLabel: "/products/label-hgh-10iu-3ml.png",
-        testResultUrl: "https://chromate.org/verify?c=30364_AFFORD7CZE3V",
-      }),
-      createVariant("150 IU kit (10 bottles × 15 IU)", 250, "/products/label-hgh-15iu-3ml.png"),
-    ],
-  },
-  {
     name: "IGF-1 LR3",
     researchFocus: "Extended IGF signaling that supports muscle hyperplasia investigations.",
     detailedDescription: "IGF-1 LR3 is a long-acting analog of insulin-like growth factor 1 designed to extend receptor interaction time. It's used in research on muscle hyperplasia, tissue repair, and cellular growth pathways. IGF-1 LR3 is a long, complex peptide, and due to its size, minor synthesis byproducts are normal. For this compound, 90–95% purity is widely accepted in research settings when the correct molecular weight and a dominant HPLC peak are present.",

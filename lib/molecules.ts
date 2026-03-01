@@ -204,12 +204,6 @@ export const moleculesByProduct: MoleculeMap = {
             }
         ),
     ],
-    HGH: [
-        createLocalMoleculeDefinition("hgh", "Human Growth Hormone", {
-            format: "pdb",
-            fallback: rcsbSource("1HGU"),
-        }),
-    ],
     "IGF-1 LR3": [
         createLocalMoleculeDefinition("igf-1", "IGF-1 Backbone", {
             format: "pdb",
