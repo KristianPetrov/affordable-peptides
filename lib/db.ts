@@ -51,6 +51,9 @@ function dbRowToOrder (row: typeof orders.$inferSelect): Order
       row.shippingCost === null ? undefined : parseFloat(row.shippingCost),
     totalAmount:
       row.totalAmount === null ? undefined : parseFloat(row.totalAmount),
+    paymentMethod: row.paymentMethod,
+    paymentTransactionId: row.paymentTransactionId || undefined,
+    paidAt: row.paidAt ? row.paidAt.toISOString() : undefined,
     totalUnits: row.totalUnits,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
@@ -111,6 +114,9 @@ function orderToDbRow (order: Order): typeof orders.$inferInsert
       typeof order.totalAmount === "number"
         ? order.totalAmount.toString()
         : null,
+    paymentMethod: order.paymentMethod ?? "MANUAL",
+    paymentTransactionId: order.paymentTransactionId ?? null,
+    paidAt: order.paidAt ? new Date(order.paidAt) : null,
     totalUnits: order.totalUnits,
     notes: order.notes || null,
     trackingNumber: order.trackingNumber || null,

@@ -85,6 +85,15 @@ export default function OrderLookupClient ({
           return;
         }
 
+        if (!request.customerEmail.trim()) {
+          setResult({
+            order: null,
+            error: "Enter the email used at checkout to continue.",
+            hasSearched: true,
+          });
+          return;
+        }
+
         const resolvedLookupOrderAction = requireSharedUiAdapter(
           lookupOrderAction,
           "orderActions.lookupOrder"
@@ -114,7 +123,7 @@ export default function OrderLookupClient ({
 
   useEffect(() =>
   {
-    if (!autoSubmittedRef.current && defaultOrderNumber) {
+    if (!autoSubmittedRef.current && defaultOrderNumber && defaultEmail) {
       autoSubmittedRef.current = true;
       runLookup({
         orderNumber: defaultOrderNumber,
@@ -163,12 +172,13 @@ export default function OrderLookupClient ({
             htmlFor="customerEmail"
             className="mb-2 block text-sm font-medium text-purple-200"
           >
-            Email Used at Checkout (optional)
+            Email Used at Checkout
           </label>
           <input
             id="customerEmail"
             name="customerEmail"
             type="email"
+            required
             value={formData.customerEmail}
             onChange={handleChange}
             placeholder="you@example.com"
@@ -308,8 +318,8 @@ export default function OrderLookupClient ({
       {!result.order && result.hasSearched && !result.error && (
         <div className="rounded-2xl border border-purple-900/40 bg-black/30 p-6 text-sm text-zinc-300">
           We couldn&apos;t find an order with that number yet. Double-check the
-          format (example: 123456) or try entering the email used at
-          checkout.
+          format (example: 123456) and make sure you entered the same email used
+          at checkout.
         </div>
       )}
     </div>

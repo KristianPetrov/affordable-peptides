@@ -52,7 +52,7 @@ export function AccountLoginForm ({ callbackUrl }: AccountLoginFormProps)
   };
 
   return (
-    <div className="w-full max-w-md rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+    <div className="theme-card-gradient w-full max-w-md rounded-3xl p-8">
       <h1 className="mb-2 text-2xl font-semibold text-white">Account Login</h1>
       <p className="mb-6 text-sm text-zinc-400">
         Access saved shipping details and order history.

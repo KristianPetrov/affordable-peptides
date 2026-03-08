@@ -6,7 +6,7 @@ export default function ResearchSection ()
       className="relative px-6 sm:px-12 lg:px-16"
       aria-labelledby="research-heading"
     >
-      <div className="relative mx-auto max-w-5xl space-y-10 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#0b0011] via-[#140024] to-[#1d0032] px-6 py-14 shadow-[0_22px_65px_rgba(55,0,105,0.45)] sm:px-12 sm:py-16">
+      <div className="theme-card-gradient relative mx-auto max-w-5xl space-y-10 rounded-3xl px-6 py-14 sm:px-12 sm:py-16">
         <div className="space-y-4 text-center">
           <span className="inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
             Research & Facts
@@ -19,7 +19,7 @@ export default function ResearchSection ()
           </h2>
           <p className="text-base text-zinc-300 sm:text-lg">
             Straight answers about purity, testing, and what the numbers
-            actually mean for real-world research.
+            actually mean for laboratory sourcing decisions.
           </p>
         </div>
         <dl className="space-y-10 text-left">
@@ -80,7 +80,7 @@ export default function ResearchSection ()
 
           <div className="space-y-3">
             <dt className="text-lg font-semibold text-white sm:text-xl">
-              Do slightly lower purity percentages affect effectiveness?
+              Do slightly lower purity percentages affect study consistency?
             </dt>
             <dd className="text-base leading-7 text-zinc-300">
               No. A peptide at 97-98% purity contains virtually the same
@@ -91,12 +91,13 @@ export default function ResearchSection ()
 
           <div className="space-y-3">
             <dt className="text-lg font-semibold text-white sm:text-xl">
-              Are the remaining 1-3% unsafe?
+              What is usually present in the remaining 1-3%?
             </dt>
             <dd className="text-base leading-7 text-zinc-300">
-              No. The small remainder is commonly water, buffer residues, or
-              microscopic peptide fragments formed during purification. They are
-              considered safe within research-grade standards.
+              The small remainder is commonly water, buffer residues, or
+              microscopic peptide fragments formed during purification. In
+              normal analytical reports, this profile aligns with standard
+              research-grade specifications.
             </dd>
           </div>
 

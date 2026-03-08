@@ -2,10 +2,22 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
+import type { Appearance } from "@nmipayments/nmi-core";
+import {
+  type NmiPaymentsRef,
+  type PaymentChangeEvent,
+  type PaymentMethod as NmiPaymentMethod,
+} from "@nmipayments/nmi-pay-react";
 
 import { useStorefront } from "../store/StorefrontContext";
-import type { AppliedReferralResult, CustomerProfile } from "@ap/shared-core";
+import type {
+  AppliedReferralResult,
+  CustomerProfile,
+  PaymentMethod,
+} from "@ap/shared-core";
 import { calculateShippingCost } from "@ap/shared-core";
 import {
   requireSharedUiAdapter,
@@ -21,6 +33,142 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 
 const formatCurrency = (value: number) =>
   currencyFormatter.format(value);
+const NMI_TOKENIZATION_KEY =
+  process.env.NEXT_PUBLIC_NMI_TOKENIZATION_KEY?.trim() ?? "";
+const NMI_APPLE_PAY_ENABLED =
+  process.env.NEXT_PUBLIC_ENABLE_APPLE_PAY?.trim().toLowerCase() === "true";
+const DynamicNmiPayments = dynamic(
+  () => import("@nmipayments/nmi-pay-react").then((mod) => mod.NmiPayments),
+  { ssr: false }
+);
+
+type ExpressCheckoutEvent = {
+  token: string;
+};
+
+const getNmiAppearance = (theme: "dark" | "light"): Appearance => {
+  if (theme === "light") {
+    return {
+      theme,
+      customTheme: {
+        colors: {
+          background: "#FFFFFF",
+          foreground: "#111827",
+          border: "#D8B4FE",
+          input: "#FAF5FF",
+          primary: {
+            "100": "#F3E8FF",
+            "200": "#D8B4FE",
+            default: "#9333EA",
+            foreground: "#FFFFFF",
+          },
+          secondary: {
+            "100": "#EEF2FF",
+            "200": "#C7D2FE",
+            default: "#6366F1",
+            foreground: "#FFFFFF",
+          },
+          success: {
+            "100": "#DCFCE7",
+            "200": "#86EFAC",
+            default: "#16A34A",
+            foreground: "#FFFFFF",
+          },
+          warning: {
+            "100": "#FEF3C7",
+            "200": "#FCD34D",
+            default: "#D97706",
+            foreground: "#111827",
+          },
+          danger: {
+            "100": "#FEE2E2",
+            "200": "#FCA5A5",
+            default: "#DC2626",
+            foreground: "#FFFFFF",
+          },
+          default: {
+            "100": "#F3F4F6",
+            "200": "#E5E7EB",
+            default: "#6B7280",
+            foreground: "#FFFFFF",
+          },
+          content1: {
+            "100": "#FFFFFF",
+            "200": "#FAF5FF",
+            default: "#F5EFFF",
+            foreground: "#111827",
+          },
+          content2: {
+            "100": "#FAF5FF",
+            "200": "#F3E8FF",
+            default: "#E9D5FF",
+            foreground: "#111827",
+          },
+        },
+      },
+    };
+  }
+
+  return {
+    theme,
+    customTheme: {
+      colors: {
+        background: "#2B0359",
+        foreground: "#000000",
+        border: "#A855F7",
+        input: "#E9D5FF",
+        primary: {
+          "100": "#E9D5FF",
+          "200": "#C084FC",
+          default: "#A855F7",
+          foreground: "#000000",
+        },
+        secondary: {
+          "100": "#F5D0FE",
+          "200": "#E879F9",
+          default: "#C026D3",
+          foreground: "#000000",
+        },
+        success: {
+          "100": "#DCFCE7",
+          "200": "#86EFAC",
+          default: "#22C55E",
+          foreground: "#000000",
+        },
+        warning: {
+          "100": "#FEF3C7",
+          "200": "#FCD34D",
+          default: "#F59E0B",
+          foreground: "#000000",
+        },
+        danger: {
+          "100": "#FEE2E2",
+          "200": "#FCA5A5",
+          default: "#EF4444",
+          foreground: "#000000",
+        },
+        default: {
+          "100": "#F3F4F6",
+          "200": "#D1D5DB",
+          default: "#9CA3AF",
+          foreground: "#000000",
+        },
+        content1: {
+          "100": "#FAF5FF",
+          "200": "#F3E8FF",
+          default: "#E9D5FF",
+          foreground: "#000000",
+        },
+        content2: {
+          "100": "#F3E8FF",
+          "200": "#E9D5FF",
+          default: "#D8B4FE",
+          foreground: "#000000",
+        },
+      },
+    },
+  };
+};
 
 type SessionUser = {
   id: string;
@@ -36,14 +184,25 @@ type CheckoutClientProps = {
 
 export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
 {
+  const { resolvedTheme } = useTheme();
   const router = useRouter();
   const { orderActions, referralActions } = useSharedUiAdapters();
   const { cartItems, subtotal, totalUnits, lineItemTotals, clearCart } = useStorefront();
+  const nmiPaymentsRef = useRef<NmiPaymentsRef>(null);
   const [isPending, startTransition] = useTransition();
   const [isApplyingReferral, startReferralTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saveProfile, setSaveProfile] = useState(Boolean(sessionUser));
   const [referralInput, setReferralInput] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(
+    NMI_TOKENIZATION_KEY.length > 0 ? "NMI_CARD" : "MANUAL"
+  );
+  const [paymentToken, setPaymentToken] = useState("");
+  const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+  const [arePaymentFieldsReady, setArePaymentFieldsReady] = useState(false);
+  const [isHttpsOrigin, setIsHttpsOrigin] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [acceptedResearchUse, setAcceptedResearchUse] = useState(false);
   const [referralResult, setReferralResult] =
     useState<AppliedReferralResult | null>(null);
   const appliedReferral =
@@ -82,10 +241,49 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
 
   const [formData, setFormData] = useState(defaultFormValues);
 
+  const isNmiConfigured = NMI_TOKENIZATION_KEY.length > 0;
   const isLoggedIn = Boolean(sessionUser);
+  const isPayNow = paymentMethod === "NMI_CARD";
+  const isManualSelected = paymentMethod === "MANUAL";
+  const isManualOnly = !isNmiConfigured;
+  const isApplePayEnabled = NMI_APPLE_PAY_ENABLED && isHttpsOrigin;
+  const availablePaymentMethods = useMemo<NmiPaymentMethod[]>(
+    () =>
+      isApplePayEnabled
+        ? ["card", "google-pay", "apple-pay"]
+        : ["card", "google-pay"],
+    [isApplePayEnabled]
+  );
+  const expressPaymentLabel = isApplePayEnabled
+    ? "card, Apple Pay, or Google Pay"
+    : "card or Google Pay";
+  const nmiTheme = resolvedTheme === "light" ? "light" : "dark";
+  const nmiAppearance = useMemo(() => getNmiAppearance(nmiTheme), [nmiTheme]);
+  const expressCheckoutConfig = useMemo(
+    () => ({
+      amount: total.toFixed(2),
+      currency: "USD",
+      countryCode: "US",
+      googlePay: {
+        buttonType: "pay" as const,
+        totalPriceStatus: "FINAL" as const,
+      },
+      ...(isApplePayEnabled
+        ? {
+            applePay: {
+              buttonType: "check-out" as const,
+              totalLabel: "Affordable Peptides",
+            },
+          }
+        : {}),
+    }),
+    [isApplePayEnabled, total]
+  );
 
   useEffect(() =>
   {
+    setIsHttpsOrigin(window.location.protocol === "https:");
+
     const previousSubtotal = previousSubtotalRef.current;
     previousSubtotalRef.current = subtotal;
 
@@ -97,6 +295,13 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
       return () => window.clearTimeout(timeoutId);
     }
   }, [subtotal, appliedReferral]);
+
+  useEffect(() =>
+  {
+    if (!isNmiConfigured && paymentMethod !== "MANUAL") {
+      setPaymentMethod("MANUAL");
+    }
+  }, [isNmiConfigured, paymentMethod]);
 
   if (cartItems.length === 0) {
     return (
@@ -124,6 +329,19 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handlePaymentChange = (event: PaymentChangeEvent) =>
+  {
+    setPaymentToken(event.complete ? event.token : "");
+    setIsPaymentComplete(event.complete);
+  };
+
+  const handleExpressCheckout = (event: ExpressCheckoutEvent) =>
+  {
+    setPaymentToken(event.token);
+    setIsPaymentComplete(Boolean(event.token));
+    setError(null);
   };
 
   const handleApplyReferral = () =>
@@ -173,6 +391,27 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
     e.preventDefault();
     setError(null);
 
+    if (isPayNow) {
+      if (!isNmiConfigured) {
+        setError(
+          "Card payments are not configured yet. Add NEXT_PUBLIC_NMI_TOKENIZATION_KEY to enable NMI pay now."
+        );
+        return;
+      }
+
+      if (!isPaymentComplete || !paymentToken) {
+        setError("Please finish entering your card details before placing the order.");
+        return;
+      }
+    }
+
+    if (!acceptedTerms || !acceptedResearchUse) {
+      setError(
+        "Please accept the Terms, Privacy, Shipping, Refund, and Research Use Only policies before placing your order."
+      );
+      return;
+    }
+
     startTransition(async () =>
     {
       const createOrderAction = requireSharedUiAdapter(
@@ -186,17 +425,27 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
         totalUnits,
         saveProfile: isLoggedIn && saveProfile,
         referralCode: appliedReferral?.code,
+        paymentMethod,
+        paymentToken: isPayNow ? paymentToken : undefined,
+        acceptedTerms,
+        acceptedResearchUse,
         ...formData,
       });
 
       if (result.success) {
         clearCart();
-        router.push(
-          `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${result.totalAmount.toFixed(
-            2
-          )}`
-        );
+        const params = new URLSearchParams({
+          orderNumber: result.orderNumber,
+          orderStatus: result.orderStatus,
+        });
+        router.push(`/checkout/thank-you?${params.toString()}`);
         return;
+      }
+
+      if (isPayNow) {
+        nmiPaymentsRef.current?.resetFields();
+        setPaymentToken("");
+        setIsPaymentComplete(false);
       }
 
       setError(result.error);
@@ -236,7 +485,7 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
         <div className="grid gap-8 lg:grid-cols-3">
           <div className="lg:col-span-2">
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+              <div className="theme-card-gradient rounded-3xl p-6 sm:p-8">
                 <h2 className="mb-6 text-xl font-semibold text-white">
                   Customer Information
                 </h2>
@@ -298,7 +547,7 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
                 </div>
               </div>
 
-              <div className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+              <div className="theme-card-gradient rounded-3xl p-6 sm:p-8">
                 <h2 className="mb-6 text-xl font-semibold text-white">
                   Shipping Address
                 </h2>
@@ -410,7 +659,204 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
                 )}
               </div>
 
-              <div className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+              <div className="theme-card-gradient rounded-3xl p-6 sm:p-8">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-white">
+                      Payment Method
+                    </h2>
+                    <p className="text-sm text-zinc-400">
+                      {isManualOnly
+                        ? "Card checkout is temporarily unavailable. Orders will remain pending until payment is confirmed by our team."
+                        : `Use secure card checkout through NMI (recommended), or choose manual payment as a secondary option.`}
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-purple-500/40 bg-purple-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
+                    {isPayNow ? "Secure Card Checkout" : "Manual Payment"}
+                  </span>
+                </div>
+                <div className="mt-6 grid gap-4">
+                  <label className={`cursor-pointer rounded-2xl border p-4 transition ${isPayNow
+                    ? "border-purple-400 bg-purple-500/10"
+                    : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                    }`}>
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={isPayNow}
+                        disabled={!isNmiConfigured}
+                        onChange={() =>
+                        {
+                          setPaymentMethod("NMI_CARD");
+                          setError(null);
+                        }}
+                        className="mt-1 h-4 w-4 border-purple-500/50 bg-black text-purple-500 focus:ring-purple-400"
+                      />
+                      <div>
+                        <p className="font-semibold text-white">
+                          Pay now with {expressPaymentLabel}
+                        </p>
+                        <p className="mt-1 text-sm text-zinc-400">
+                          {isNmiConfigured
+                            ? "Your order is charged securely through NMI before submission."
+                            : "Card checkout is currently unavailable."}
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+                  <label className={`cursor-pointer rounded-2xl border p-4 transition ${isManualSelected
+                    ? "border-purple-400 bg-purple-500/10"
+                    : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                    }`}>
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={isManualSelected}
+                        onChange={() =>
+                        {
+                          setPaymentMethod("MANUAL");
+                          nmiPaymentsRef.current?.resetFields();
+                          setPaymentToken("");
+                          setIsPaymentComplete(false);
+                          setError(null);
+                        }}
+                        className="mt-1 h-4 w-4 border-purple-500/50 bg-black text-purple-500 focus:ring-purple-400"
+                      />
+                      <div>
+                        <p className="font-semibold text-white">
+                          Manual payment (secondary option)
+                        </p>
+                        <p className="mt-1 text-sm text-zinc-400">
+                          Place the order first and our support team will follow up
+                          with approved next steps.
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+
+                {isPayNow ? (
+                  <div className="mt-6 space-y-4 rounded-2xl border border-purple-500/30 bg-black/50 p-5">
+                    <div>
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
+                        Secure Payment Details
+                      </h3>
+                      <p className="mt-2 text-sm text-zinc-400">
+                        Use {expressPaymentLabel} to charge {formatCurrency(total)}{" "}
+                        when you place the order. Payment data is tokenized by
+                        NMI and never hits our server directly.
+                      </p>
+                    </div>
+                    {isNmiConfigured ? (
+                      <>
+                        <div className="rounded-2xl border border-purple-900/40 bg-black/40 p-4">
+                          <DynamicNmiPayments
+                            key={nmiTheme}
+                            ref={nmiPaymentsRef}
+                            tokenizationKey={NMI_TOKENIZATION_KEY}
+                            layout="multiLine"
+                            appearance={nmiAppearance}
+                            paymentMethods={availablePaymentMethods}
+                            expressCheckoutConfig={expressCheckoutConfig}
+                            showDivider={false}
+                            onChange={handlePaymentChange}
+                            onExpressCheckout={handleExpressCheckout}
+                            onFieldsAvailable={() => setArePaymentFieldsReady(true)}
+                          />
+                        </div>
+                        <div className="rounded-xl border border-purple-900/40 bg-black/40 px-4 py-3 text-sm text-zinc-300">
+                          {isPaymentComplete
+                            ? "Payment details look good. You can place the order when ready."
+                            : arePaymentFieldsReady
+                              ? isApplePayEnabled
+                                ? "Complete the secure payment fields or use Apple Pay / Google Pay to continue."
+                                : "Complete the secure payment fields or use Google Pay to continue."
+                              : "Loading secure payment fields..."}
+                        </div>
+                        {!isApplePayEnabled && (
+                          <div className="rounded-xl border border-purple-900/40 bg-black/40 px-4 py-3 text-sm text-zinc-400">
+                            Apple Pay is hidden in local/dev unless the site is
+                            served over HTTPS and `NEXT_PUBLIC_ENABLE_APPLE_PAY=true`.
+                          </div>
+                        )}
+                      </>
+                    ) : (
+                      <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-100">
+                        Card payments are disabled until `NEXT_PUBLIC_NMI_TOKENIZATION_KEY` is configured.
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-6 rounded-2xl border border-purple-900/40 bg-black/50 p-5 text-sm text-zinc-300">
+                    {isManualOnly
+                      ? "Card checkout is currently unavailable. You can still place this order, and our support team will contact you with the next approved payment step."
+                      : "Manual payment is selected. After you place the order, support will follow up with approved payment instructions."}
+                  </div>
+                )}
+              </div>
+
+              <div className="theme-card-gradient rounded-3xl p-6 sm:p-8">
+                <h2 className="text-xl font-semibold text-white">
+                  Required Acknowledgments
+                </h2>
+                <p className="mt-2 text-sm text-zinc-400">
+                  You must accept these policies before placing your order.
+                </p>
+                <div className="mt-5 space-y-4 text-sm text-zinc-300">
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={acceptedTerms}
+                      onChange={(event) => setAcceptedTerms(event.target.checked)}
+                      className="mt-1 h-5 w-5 rounded border border-purple-900/40 bg-black/60 text-purple-500 focus:ring-purple-400"
+                      required
+                    />
+                    <span>
+                      I agree to the{" "}
+                      <Link href="/legal/terms-of-use" className="text-purple-200 underline hover:text-white">
+                        Terms of Use
+                      </Link>
+                      ,{" "}
+                      <Link href="/legal/privacy-policy" className="text-purple-200 underline hover:text-white">
+                        Privacy Policy
+                      </Link>
+                      ,{" "}
+                      <Link href="/legal/shipping-policy" className="text-purple-200 underline hover:text-white">
+                        Shipping Policy
+                      </Link>
+                      , and{" "}
+                      <Link href="/legal/refund-policy" className="text-purple-200 underline hover:text-white">
+                        Refund Policy
+                      </Link>
+                      .
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={acceptedResearchUse}
+                      onChange={(event) =>
+                        setAcceptedResearchUse(event.target.checked)
+                      }
+                      className="mt-1 h-5 w-5 rounded border border-purple-900/40 bg-black/60 text-purple-500 focus:ring-purple-400"
+                      required
+                    />
+                    <span>
+                      I understand and agree that all products are sold strictly
+                      for laboratory research use only and are not intended for
+                      human or animal consumption. See the{" "}
+                      <Link href="/legal/research-use-only" className="text-purple-200 underline hover:text-white">
+                        Research Use Only Disclaimer
+                      </Link>
+                      .
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="theme-card-gradient rounded-3xl p-6 sm:p-8">
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-xl font-semibold text-white">
@@ -481,16 +927,22 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
 
               <button
                 type="submit"
-                disabled={isPending}
+                disabled={isPending || (isPayNow && (!isNmiConfigured || !isPaymentComplete))}
                 className="w-full rounded-full bg-purple-600 px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus:visible:ring-2 focus:visible:ring-purple-400 focus:visible:ring-offset-2 focus:visible:ring-offset-black disabled:cursor-not-allowed disabled:bg-purple-900/40"
               >
-                {isPending ? "Submitting Order..." : "Place Order (Pay Manually)"}
+                {isPending
+                  ? isPayNow
+                    ? "Processing Payment..."
+                    : "Submitting Order..."
+                  : isPayNow
+                    ? `Pay ${formatCurrency(total)} and Place Order`
+                    : "Place Order (Manual Payment)"}
               </button>
             </form>
           </div>
 
           <div className="lg:col-span-1">
-            <div className="sticky top-6 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+            <div className="theme-card-gradient sticky top-6 rounded-3xl p-6">
               <h2 className="mb-4 text-lg font-semibold text-white">
                 Order Summary
               </h2>

@@ -12,7 +12,7 @@ import
   uniqueIndex,
   index,
 } from "drizzle-orm/pg-core";
-import type { OrderStatus } from "../orders";
+import type { OrderStatus, PaymentMethod } from "../orders";
 import type { CartItem } from "@/components/store/StorefrontContext";
 
 export const users = pgTable("users", {
@@ -193,6 +193,12 @@ export const orders = pgTable("orders", {
   subtotal: numeric("subtotal", { precision: 10, scale: 2 }).notNull(),
   shippingCost: numeric("shipping_cost", { precision: 10, scale: 2 }),
   totalAmount: numeric("total_amount", { precision: 10, scale: 2 }),
+  paymentMethod: varchar("payment_method", { length: 20 })
+    .notNull()
+    .default("MANUAL")
+    .$type<PaymentMethod>(),
+  paymentTransactionId: text("payment_transaction_id"),
+  paidAt: timestamp("paid_at"),
   totalUnits: integer("total_units").notNull(),
   notes: text("notes"),
   trackingNumber: text("tracking_number"),

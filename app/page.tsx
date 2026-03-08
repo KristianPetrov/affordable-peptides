@@ -168,22 +168,16 @@ export default function Home ()
   const showcaseProducts = getShowcaseProducts();
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
+    <div className="theme-page min-h-screen">
       <NavBar />
       <main className="space-y-24 pb-24">
         <section className="relative isolate overflow-hidden px-6 pt-28 pb-32 sm:px-12 lg:px-16">
-          <div
-            className="absolute inset-0 bg-linear-to-b from-black via-[#140018] to-black"
-            aria-hidden
-          />
+          <div className="theme-hero-backdrop absolute inset-0" aria-hidden />
           <div
             className="hero-fire pointer-events-none absolute left-1/2 top-[46%] h-[620px] w-[420px] -translate-x-1/2 -translate-y-1/2 sm:top-[44%] sm:h-[700px] sm:w-[460px]"
             aria-hidden
           />
-          <div
-            className="pointer-events-none absolute inset-0 bg-[radial-linear(circle_at_top,rgba(148,63,255,0.25),transparent_65%)] mix-blend-screen"
-            aria-hidden
-          />
+          <div className="theme-spotlight pointer-events-none absolute inset-0" aria-hidden />
           <div className="relative mx-auto flex max-w-5xl flex-col items-center text-center">
             <span className="mb-6 inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
               Lab-Grade Standards. Real-World Prices.
@@ -205,7 +199,7 @@ export default function Home ()
             <p className="mt-6 max-w-2xl text-balance text-base text-zinc-300 sm:text-lg">
               Affordable Peptides brings together rigorous science, transparent
               third-party testing, and fair pricing so you can focus on what
-              matters most—advancing results that make a difference.
+              matters most: consistent laboratory workflows and documented batch quality.
             </p>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link
@@ -240,8 +234,8 @@ export default function Home ()
                 Top selections
               </h2>
               <p className="mx-auto max-w-3xl text-balance text-base text-zinc-300 sm:text-lg">
-                Explore our most requested products, curated for their popularity,
-                reliability, and results. Select a highlight to learn more in
+                Explore our most requested products, curated for documentation,
+                reliability, and repeatable fulfillment. Select a highlight to learn more in
                 the full store.
               </p>
             </div>
@@ -258,10 +252,7 @@ export default function Home ()
           aria-labelledby="contact-heading"
         >
           <div className="relative mx-auto max-w-4xl">
-            <div
-              className="absolute inset-0 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black shadow-[0_25px_70px_rgba(70,0,110,0.45)]"
-              aria-hidden
-            />
+            <div className="theme-card-gradient absolute inset-0 rounded-3xl" aria-hidden />
             <div className="relative space-y-6 px-6 py-14 text-center sm:px-12 sm:py-16">
               <span className="inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
                 Contact
@@ -278,7 +269,7 @@ export default function Home ()
                 quickly.
               </p>
               <div className="mx-auto grid w-full max-w-3xl gap-4 md:grid-cols-2">
-                <div className="flex flex-col items-center gap-3 rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-center">
+                <div className="theme-surface flex flex-col items-center gap-3 rounded-2xl p-6 text-center">
                   <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
                     Text
                   </span>
@@ -293,7 +284,7 @@ export default function Home ()
                     back to you promptly.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-left">
+                <div className="theme-surface rounded-2xl p-6 text-left">
                   <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
                     Social
                   </span>

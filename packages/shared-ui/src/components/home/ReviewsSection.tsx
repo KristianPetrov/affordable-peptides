@@ -118,7 +118,7 @@ function ReviewCard ({ review }: { review: Review })
     .slice(0, 2);
 
   return (
-    <div className="flex h-full flex-col rounded-2xl border border-purple-900/50 bg-linear-to-br from-[#110019]/80 via-black/60 to-[#0a0010]/80 p-6 shadow-[0_12px_35px_rgba(50,0,90,0.3)] transition hover:border-purple-700/60 hover:shadow-[0_16px_45px_rgba(60,0,110,0.4)]">
+    <div className="theme-surface flex h-full flex-col rounded-2xl p-6 transition hover:border-purple-700/60 hover:shadow-[0_16px_45px_rgba(60,0,110,0.2)]">
       {/* Stars */}
       <Stars rating={review.rating} />
 
@@ -166,7 +166,7 @@ export default function ReviewsSection ()
             id="reviews-heading"
             className="text-3xl font-semibold text-white sm:text-4xl"
           >
-            What Our Customers Say
+            Service & Fulfillment Feedback
           </h2>
 
           {/* Aggregate rating row */}

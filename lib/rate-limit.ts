@@ -193,6 +193,21 @@ export const orderCreationRateLimiter = createMemoryRateLimiter({
     max: ORDER_RATE_LIMIT_MAX_REQUESTS,
 });
 
+const ORDER_LOOKUP_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
+    process.env.ORDER_LOOKUP_RATE_LIMIT_MAX_REQUESTS,
+    8
+);
+const ORDER_LOOKUP_RATE_LIMIT_WINDOW_MS = parsePositiveInteger(
+    process.env.ORDER_LOOKUP_RATE_LIMIT_WINDOW_MS,
+    15 * 60 * 1000
+);
+
+export const orderLookupRateLimiter = createMemoryRateLimiter({
+    name: "order-lookup",
+    windowMs: ORDER_LOOKUP_RATE_LIMIT_WINDOW_MS,
+    max: ORDER_LOOKUP_RATE_LIMIT_MAX_REQUESTS,
+});
+
 const PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS = parsePositiveInteger(
     process.env.PASSWORD_RESET_RATE_LIMIT_MAX_REQUESTS,
     5

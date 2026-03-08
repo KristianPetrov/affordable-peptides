@@ -476,7 +476,19 @@ const productDefinitions: ProductDefinition[] = [
   },
 ];
 
-export const peptideProducts: Product[] = productDefinitions.map(defineProduct);
+const RESEARCH_ONLY_FOCUS =
+  "Research-use compound for qualified laboratory and analytical workflows.";
+
+const createResearchOnlyDescription = (productName: string): string =>
+  `${productName} is supplied exclusively for laboratory research use by qualified professionals. Review available COA documentation and handling guidance before use. Not for human or animal consumption.`;
+
+export const peptideProducts: Product[] = productDefinitions.map(defineProduct).map(
+  (product) => ({
+    ...product,
+    researchFocus: RESEARCH_ONLY_FOCUS,
+    detailedDescription: createResearchOnlyDescription(product.name),
+  })
+);
 
 const productBySlug = new Map<string, Product>();
 const productSlugByName = new Map<string, string>();

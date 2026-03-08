@@ -77,7 +77,7 @@ export default function HeroShowcase ({ products }: HeroShowcaseProps)
 
   return (
     <>
-      <div className="relative min-h-[440px] overflow-hidden rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#0b0014] to-black p-6 sm:p-10">
+      <div className="theme-card-gradient relative min-h-[440px] overflow-hidden rounded-3xl p-6 sm:p-10">
         {showcaseItems.map(({ product, highlight, molecules }, index) =>
         {
           const isActive = index === displayIndex;
@@ -122,7 +122,7 @@ export default function HeroShowcase ({ products }: HeroShowcaseProps)
               </div>
               <Link
                 href="/store"
-                className="inline-flex items-center justify-center rounded-full border border-purple-500/60 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-purple-200 transition hover:border-purple-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                className="theme-focus-offset inline-flex items-center justify-center rounded-full border border-purple-500/60 px-6 py-3 text-sm font-semibold uppercase tracking-[0.25em] text-purple-200 transition hover:border-purple-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 View in Store
               </Link>

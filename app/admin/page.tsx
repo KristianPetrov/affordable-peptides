@@ -8,7 +8,12 @@ import {
   ReferralDashboard,
 } from "@ap/shared-ui";
 import { getAllOrders } from "@/lib/db";
-import { calculateOrderTotals, formatOrderNumber } from "@/lib/orders";
+import
+{
+  calculateOrderTotals,
+  formatOrderNumber,
+  formatPaymentMethod,
+} from "@/lib/orders";
 import
   {
     updateProductStockAction,
@@ -102,7 +107,7 @@ function RevenueChart ({
 {
   if (data.length === 0) {
     return (
-      <div className="rounded-2xl border border-purple-900/40 bg-black/60 p-8 text-center text-sm text-zinc-400">
+      <div className="theme-surface rounded-2xl p-8 text-center text-sm text-zinc-400">
         No revenue data for the selected period yet.
       </div>
     );
@@ -434,7 +439,7 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
     "/api/admin/customer-contacts?segment=shipped&format=csv";
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
+    <div className="theme-page min-h-screen">
       <NavBar />
       <main className="px-6 py-12 sm:px-12 lg:px-16">
         <div className="mx-auto max-w-7xl">
@@ -502,7 +507,7 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
           </div>
 
           {activeView === "inventory" && (
-            <section className="mb-10 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6">
+            <section className="theme-card-gradient mb-10 rounded-3xl p-6">
               <div className="flex flex-col gap-2 pb-4 border-b border-purple-900/40">
                 <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
                   Inventory Management
@@ -605,17 +610,14 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
           )}
 
           {activeView === "referrals" && !referralDashboard && (
-            <section className="rounded-3xl border border-purple-900/60 bg-black/60 p-12 text-center text-zinc-400">
+            <section className="theme-surface rounded-3xl p-12 text-center text-zinc-400">
               <p>Loading referral data...</p>
             </section>
           )}
 
           {activeView === "orders" && (
             <>
-              <details
-                className="group mb-10 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6"
-
-              >
+              <details className="theme-card-gradient group mb-10 rounded-3xl p-6">
                 <summary className="flex cursor-pointer list-none flex-col gap-2 border-b border-purple-900/40 pb-4 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
@@ -805,25 +807,25 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                 </form>
               </div>
               <div className="mb-8 grid gap-4 sm:grid-cols-4">
-                <div className="rounded-2xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6">
+                <div className="theme-card-gradient rounded-2xl p-6">
                   <div className="text-sm text-zinc-400">Pending Payment</div>
                   <div className="mt-2 text-3xl font-semibold text-yellow-400">
                     {statusCounts.PENDING_PAYMENT}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6">
+                <div className="theme-card-gradient rounded-2xl p-6">
                   <div className="text-sm text-zinc-400">Paid</div>
                   <div className="mt-2 text-3xl font-semibold text-blue-400">
                     {statusCounts.PAID}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6">
+                <div className="theme-card-gradient rounded-2xl p-6">
                   <div className="text-sm text-zinc-400">Shipped</div>
                   <div className="mt-2 text-3xl font-semibold text-green-400">
                     {statusCounts.SHIPPED}
                   </div>
                 </div>
-                <div className="rounded-2xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6">
+                <div className="theme-card-gradient rounded-2xl p-6">
                   <div className="text-sm text-zinc-400">Total Orders</div>
                   <div className="mt-2 text-3xl font-semibold text-white">
                     {orders.length}
@@ -831,7 +833,7 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                 </div>
               </div>
 
-              <div className="mb-8 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6">
+              <div className="theme-card-gradient mb-8 rounded-3xl p-6">
                 <div className="border-b border-purple-900/40 pb-4">
                   <p className="text-xs uppercase tracking-[0.3em] text-purple-200">
                     Customer Outreach Lists
@@ -885,7 +887,7 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
 
               <div className="space-y-4">
                 {sortedOrders.length === 0 ? (
-                  <div className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-12 text-center">
+                  <div className="theme-card-gradient rounded-3xl p-12 text-center">
                     <p className="text-zinc-400">
                       {searchQuery ? "No orders found matching your search" : "No orders yet"}
                     </p>
@@ -933,10 +935,7 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                     };
 
                     return (
-                      <div
-                        key={order.id}
-                        className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6"
-                      >
+                      <div key={order.id} className="theme-card-gradient rounded-3xl p-6">
                         <div className="grid gap-6 lg:grid-cols-3">
                           <div className="lg:col-span-2">
                             <div className="mb-4 flex items-start justify-between">
@@ -969,6 +968,31 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                                 <span className="text-zinc-400">Phone:</span>{" "}
                                 <span className="text-white">{order.customerPhone}</span>
                               </p>
+                              <p>
+                                <span className="text-zinc-400">Payment:</span>{" "}
+                                <span className="text-white">
+                                  {formatPaymentMethod(order.paymentMethod)}
+                                </span>
+                              </p>
+                              {order.paidAt && (
+                                <p>
+                                  <span className="text-zinc-400">Paid At:</span>{" "}
+                                  <span className="text-white">
+                                    {new Date(order.paidAt).toLocaleString("en-US", {
+                                      dateStyle: "short",
+                                      timeStyle: "short",
+                                    })}
+                                  </span>
+                                </p>
+                              )}
+                              {order.paymentTransactionId && (
+                                <p>
+                                  <span className="text-zinc-400">Transaction ID:</span>{" "}
+                                  <span className="font-mono text-white">
+                                    {order.paymentTransactionId}
+                                  </span>
+                                </p>
+                              )}
                               <p>
                                 <span className="text-zinc-400">Shipping:</span>{" "}
                                 <span className="text-white">

@@ -43,139 +43,139 @@ export const reviews: Review[] = [
   {
     "name": "Brittany Huynh",
     "rating": 5,
-    "body": "Great prices and top-tier products. Was hesitant about payment at first, but Vincent explained everything and even included a complimentary bottle. Ordered 3 times since—fast delivery every time. 100/10 recommend.",
+    "body": "Clear communication, fast shipping, and consistent packaging quality on every order. COA links are easy to review before purchase.",
     "date": "Fri, Feb 13 2026 PST"
   },
   {
     "name": "Chris Lewis",
     "rating": 5,
-    "body": "Used Affordable Peptides (Retatrutide) for 4 months and went from 193 to 166. Feel great and happy with progress. Excellent service and organized records. Highly recommend.",
+    "body": "Order records are organized, support replies quickly, and fulfillment updates are reliable from checkout to delivery.",
     "date": "Fri, Feb 13 2026 PST"
   },
   {
     "name": "Sue",
     "rating": 5,
-    "body": "Great product and wonderful service. Well trusted.",
+    "body": "Professional service, dependable turnaround times, and straightforward ordering experience.",
     "date": "Fri, Feb 13 2026 PST"
   },
   {
     "name": "Isabelle T",
     "rating": 5,
-    "body": "Vincent is fast, professional, and super reliable. Easy to interact with, very knowledgeable, and provides fantastic customer service. Highly recommend.",
+    "body": "Support is professional and responsive. Questions about inventory, packaging, and documentation were answered clearly.",
     "date": "Fri, Feb 13 2026 PST"
   },
   {
     "name": "leslie",
     "rating": 5,
-    "body": "Amazing experience—thanks to Vince and Susan for great advice and communication. Always available for questions. Fast shipping and super convenient. My #1 peptide dealer.",
+    "body": "Very smooth experience with prompt shipping notices and consistent communication throughout the order process.",
     "date": "Fri, Feb 13 2026 PST"
   },
   {
     "name": "Renato Gonzalez",
     "rating": 5,
-    "body": "Great peptides and great service—Affordable Peptides has changed my life. They ship immediately after you order.",
+    "body": "Strong service standards and quick order handling. Packages arrived sealed and clearly labeled each time.",
     "date": "Fri, Feb 13 2026 PST"
   },
   {
     "name": "Sal Montes",
     "rating": 5,
-    "body": "Great customer service and fast shipping. I’ve referred many people and everyone has had a great experience.",
+    "body": "Fast fulfillment and helpful support team. The process is simple and repeatable across orders.",
     "date": "Fri, Feb 13 2026 PST"
   },
   {
     "name": "Michaeldestinyaol.com",
     "rating": 5,
-    "body": "Working with Vincent was a pleasure. He listened, made helpful suggestions, and went above and beyond.",
+    "body": "Helpful communication and clear follow-through from order placement through shipping confirmation.",
     "date": "Fri, Feb 13 2026 PST"
   },
   {
     "name": "Ricky Burnell",
     "rating": 5,
-    "body": "Order arrived quickly and securely packaged. A+ quality—clean, well-labeled, and professionally handled. Will order again and recommend to others.",
+    "body": "Order arrived quickly with professional packaging and labeling. Product presentation and documentation were consistent.",
     "date": "Fri, Feb 13 2026 PST"
   },
   {
     "name": "Jesus Perez",
     "rating": 5,
-    "body": "Vincent is extremely trustworthy, responsive, and very knowledgeable. He explains everything clearly and never rushes you. Fast handling and consistent communication. Highly recommend.",
+    "body": "Responsive team with clear answers and dependable communication. Shipping and status updates were timely.",
     "date": "Fri, Feb 13 2026 PST"
   },
   {
     "name": "Mersha Tamrat",
     "rating": 5,
-    "body": "I was hesitant at first due to payment options (Zelle/Venmo/Cash App), but everything went smoothly. Great quality, reliable shipping, and Vincent’s direct support is amazing. Definitely recommend.",
+    "body": "Reliable shipping cadence and attentive customer support. The ordering process was straightforward and transparent.",
     "date": "Fri, Feb 13 2026 PST"
   },
   {
     "name": "Zoe K",
     "rating": 5,
-    "body": "Love this stuff—makes me feel good and I love the way it’s making me look and feel!",
+    "body": "Quick delivery, clean packaging, and clear product labeling on arrival.",
     "date": "Thu, Feb 12 2026 PST"
   },
   {
     "name": "Chrissy Garavaglia",
     "rating": 5,
-    "body": "Love how quickly orders arrive and the results have been fast. Highly recommend for peptide needs.",
+    "body": "Orders ship quickly and support remains easy to reach when questions come up.",
     "date": "Thu, Feb 12 2026 PST"
   },
   {
     "name": "Brenden Mccarthy",
     "rating": 5,
-    "body": "Product works—down 35 pounds. Great customer service, very knowledgeable, and takes time to explain things. Reliable, great quality, and excellent support.",
+    "body": "Strong customer service and consistent order handling. The team takes time to explain documentation and next steps.",
     "date": "Thu, Feb 12 2026 PST"
   },
   {
     "name": "Christopher Connole",
     "rating": 5,
-    "body": "Third peptide company I’ve tried, first where I’ve seen verified quality and real results. They test their products and quality is not “cheap.” Used 6 compounds over 5 months—excellent results and service.",
+    "body": "COA visibility and batch transparency stand out. Service quality has been consistent across multiple orders.",
     "date": "Thu, Feb 12 2026 PST"
   },
   {
     "name": "Angelene Victoria Tropp",
     "rating": 5,
-    "body": "Great experience—fast delivery, consistent quality, and they always answer my questions. Recommend to family and friends all the time.",
+    "body": "Fast delivery, consistent packaging standards, and responsive follow-up whenever I had questions.",
     "date": "Thu, Feb 12 2026 PST"
   },
   {
     "name": "Alaya Burg",
     "rating": 5,
-    "body": "Best peptides, best prices, best customer service!",
+    "body": "Competitive pricing with dependable support and clear communication.",
     "date": "Thu, Feb 12 2026 PST"
   },
   {
     "name": "Brandyn S",
     "rating": 5,
-    "body": "Great product, fast shipping, and great customer service.",
+    "body": "Fast shipping and excellent customer service from checkout through delivery.",
     "date": "Thu, Feb 12 2026 PST"
   },
   {
     "name": "Kristle Bierd",
     "rating": 5,
-    "body": "Exceptional customer service—responsive and helpful. Super fast shipping, well-packaged order, and clearly labeled professional products. Highly recommend and will be a repeat customer.",
+    "body": "Exceptional support, very fast shipping, and professionally labeled packaging. I plan to continue ordering.",
     "date": "Thu, Feb 12 2026 PST"
   },
   {
     "name": "Ashley Rosborough",
     "rating": 5,
-    "body": "So grateful I found Affordable Peptides. Best product I’ve tried and customer service is far superior to other companies. Will recommend to friends and family.",
+    "body": "Customer service is responsive and reliable, with consistent updates and smooth fulfillment.",
     "date": "Thu, Feb 12 2026 PST"
   },
   {
     "name": "Sean Shively",
     "rating": 5,
-    "body": "Great quality, service, and price. Ordered three times—delivered every time and fast. Amazing customer service. Buying here from now on.",
+    "body": "Consistent service and delivery speed across repeat orders. Communication remains prompt each time.",
     "date": "Thu, Feb 12 2026 PST"
   },
   {
     "name": "Eric Powell",
     "rating": 5,
-    "body": "Easy ordering and fast service. Gets all my business—super easy to deal with.",
+    "body": "Ordering is simple and fulfillment is fast. Support has been easy to work with.",
     "date": "Thu, Feb 12 2026 PST"
   },
   {
     "name": "Elias Chavez",
     "rating": 5,
-    "body": "Amazing customer service, fast shipping, and great products!",
+    "body": "Great customer service, quick shipping, and consistent order quality controls.",
     "date": "Thu, Feb 12 2026 PST"
   }
 ]

@@ -2,16 +2,42 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-
 import { useStorefront } from "../store/StorefrontContext";
-import type { AppliedReferralResult, CustomerProfile } from "@ap/shared-core";
+import type {
+  AppliedReferralResult,
+  CustomerProfile,
+  PaymentMethod,
+} from "@ap/shared-core";
 import { calculateShippingCost } from "@ap/shared-core";
+import { useTheme,  } from "next-themes";
 import {
   requireSharedUiAdapter,
   useSharedUiAdapters,
 } from "@ap/shared-ui/adapters";
-
+import { appearance } from "@/lib/nmi";
+interface ExpressCheckoutOptions
+{
+  /**
+   * Required payment details
+   */
+  amount: string;
+  currency: string;
+  countryCode?: string;
+  /**
+   * Button appearance
+   */
+  buttonColor?: 'default' | 'black' | 'white' | 'white-outline';
+  buttonLocale?: string;
+  /**
+   * Customer information requirements
+   */
+  emailRequired?: boolean;
+  billingRequired?: boolean;
+  shippingRequired?: boolean;
+  phoneRequired?: boolean;
+}
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -21,6 +47,12 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 
 const formatCurrency = (value: number) =>
   currencyFormatter.format(value);
+const NMI_TOKENIZATION_KEY =
+  process.env.NEXT_PUBLIC_NMI_TOKENIZATION_KEY?.trim() ?? "";
+const DynamicNmiPayments = dynamic(
+  () => import("@nmipayments/nmi-pay-react").then((mod) => mod.NmiPayments),
+  { ssr: false }
+);
 
 type SessionUser = {
   id: string;
@@ -34,8 +66,18 @@ type CheckoutClientProps = {
   sessionUser: SessionUser;
 };
 
+type PaymentChangeEvent = {
+  token: string;
+  complete: boolean;
+};
+
+type ExpressCheckoutEvent = {
+  token: string;
+};
+
 export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
 {
+  const { theme, resolvedTheme,systemTheme } = useTheme();
   const router = useRouter();
   const { orderActions, referralActions } = useSharedUiAdapters();
   const { cartItems, subtotal, totalUnits, lineItemTotals, clearCart } = useStorefront();
@@ -44,6 +86,11 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
   const [error, setError] = useState<string | null>(null);
   const [saveProfile, setSaveProfile] = useState(Boolean(sessionUser));
   const [referralInput, setReferralInput] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("MANUAL");
+  const [paymentFieldsKey, setPaymentFieldsKey] = useState(0);
+  const [paymentToken, setPaymentToken] = useState("");
+  const [isPaymentComplete, setIsPaymentComplete] = useState(false);
+  const [arePaymentFieldsReady, setArePaymentFieldsReady] = useState(false);
   const [referralResult, setReferralResult] =
     useState<AppliedReferralResult | null>(null);
   const appliedReferral =
@@ -83,6 +130,25 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
   const [formData, setFormData] = useState(defaultFormValues);
 
   const isLoggedIn = Boolean(sessionUser);
+  const isPayNow = paymentMethod === "NMI_CARD";
+  const isNmiConfigured = NMI_TOKENIZATION_KEY.length > 0;
+  const expressCheckoutConfig = useMemo(
+    () => ({billingRequired: true,phoneRequired: true,
+      emailRequired: true,
+      amount: total.toFixed(2),
+      currency: "USD",
+      countryCode: "US",
+      googlePay: {
+        buttonType: "pay" as const,
+        totalPriceStatus: "FINAL" as const,
+      },
+      applePay: {
+        buttonType: "check-out" as const,
+        totalLabel: "Affordable Peptides",
+      },
+    } as ExpressCheckoutOptions),
+    [total]
+  );
 
   useEffect(() =>
   {
@@ -124,6 +190,19 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handlePaymentChange = (event: PaymentChangeEvent) =>
+  {
+    setPaymentToken(event.complete ? event.token : "");
+    setIsPaymentComplete(event.complete);
+  };
+
+  const handleExpressCheckout = (event: ExpressCheckoutEvent) =>
+  {
+    setPaymentToken(event.token);
+    setIsPaymentComplete(Boolean(event.token));
+    setError(null);
   };
 
   const handleApplyReferral = () =>
@@ -173,6 +252,20 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
     e.preventDefault();
     setError(null);
 
+    if (isPayNow) {
+      if (!isNmiConfigured) {
+        setError(
+          "Card payments are not configured yet. Add NEXT_PUBLIC_NMI_TOKENIZATION_KEY to enable NMI pay now."
+        );
+        return;
+      }
+
+      if (!isPaymentComplete || !paymentToken) {
+        setError("Please finish entering your card details before placing the order.");
+        return;
+      }
+    }
+
     startTransition(async () =>
     {
       const createOrderAction = requireSharedUiAdapter(
@@ -186,17 +279,31 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
         totalUnits,
         saveProfile: isLoggedIn && saveProfile,
         referralCode: appliedReferral?.code,
+        paymentMethod,
+        paymentToken: isPayNow ? paymentToken : undefined,
+        acceptedTerms: true,
+        acceptedResearchUse: true,
         ...formData,
       });
 
       if (result.success) {
         clearCart();
-        router.push(
-          `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${result.totalAmount.toFixed(
-            2
-          )}`
-        );
+        const params = new URLSearchParams({
+          orderId: result.orderId,
+          orderNumber: result.orderNumber,
+          orderAmount: result.totalAmount.toFixed(2),
+          orderStatus: result.orderStatus,
+          paymentMethod: result.paymentMethod,
+        });
+        router.push(`/checkout/thank-you?${params.toString()}`);
         return;
+      }
+
+      if (isPayNow) {
+        setPaymentFieldsKey((current) => current + 1);
+        setArePaymentFieldsReady(false);
+        setPaymentToken("");
+        setIsPaymentComplete(false);
       }
 
       setError(result.error);
@@ -414,6 +521,140 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
                 <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div>
                     <h2 className="text-xl font-semibold text-white">
+                      Payment Method
+                    </h2>
+                    <p className="text-sm text-zinc-400">
+                      Choose whether to pay now through NMI or keep the current
+                      manual payment flow.
+                    </p>
+                  </div>
+                  <span className="rounded-full border border-purple-500/40 bg-purple-500/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
+                    {isPayNow ? "Pay Now" : "Manual Payment"}
+                  </span>
+                </div>
+                <div className="mt-6 grid gap-4">
+                  <label className={`cursor-pointer rounded-2xl border p-4 transition ${isPayNow
+                    ? "border-purple-400 bg-purple-500/10"
+                    : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                    }`}>
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={isPayNow}
+                        disabled={!isNmiConfigured}
+                        onChange={() =>
+                        {
+                          setPaymentMethod("NMI_CARD");
+                          setPaymentFieldsKey((current) => current + 1);
+                          setPaymentToken("");
+                          setIsPaymentComplete(false);
+                          setArePaymentFieldsReady(false);
+                          setError(null);
+                        }}
+                        className="mt-1 h-4 w-4 border-purple-500/50 bg-black text-purple-500 focus:ring-purple-400"
+                      />
+                      <div>
+                        <p className="font-semibold text-white">
+                          Pay now with card, Apple Pay, or Google Pay
+                        </p>
+                        <p className="mt-1 text-sm text-zinc-400">
+                          {isNmiConfigured
+                            ? "Your order will be charged securely through NMI before it is placed."
+                            : "Add NEXT_PUBLIC_NMI_TOKENIZATION_KEY to enable secure NMI checkout."}
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+                  <label className={`cursor-pointer rounded-2xl border p-4 transition ${!isPayNow
+                    ? "border-purple-400 bg-purple-500/10"
+                    : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                    }`}>
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="radio"
+                        name="paymentMethod"
+                        checked={!isPayNow}
+                        onChange={() =>
+                        {
+                          setPaymentMethod("MANUAL");
+                          setPaymentFieldsKey((current) => current + 1);
+                          setArePaymentFieldsReady(false);
+                          setPaymentToken("");
+                          setIsPaymentComplete(false);
+                          setError(null);
+                        }}
+                        className="mt-1 h-4 w-4 border-purple-500/50 bg-black text-purple-500 focus:ring-purple-400"
+                      />
+                      <div>
+                        <p className="font-semibold text-white">
+                          Pay manually after placing the order
+                        </p>
+                        <p className="mt-1 text-sm text-zinc-400">
+                          Keep using Cash App, Venmo, or Zelle instructions after
+                          checkout.
+                        </p>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+
+                {isPayNow ? (
+                  <div className="mt-6 space-y-4 rounded-2xl border border-purple-500/30 bg-black/50 p-5">
+                    <div>
+                      <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
+                        Secure Payment Details
+                      </h3>
+                      <p className="mt-2 text-sm text-zinc-400">
+                        Use a card, Apple Pay, or Google Pay to charge{" "}
+                        {formatCurrency(total)} when you place the order. Payment
+                        data is tokenized by NMI and never hits our server
+                        directly.
+                      </p>
+                    </div>
+                    {isNmiConfigured ? (
+                      <>
+                        <div className="rounded-2xl border border-purple-900/40 bg-black/40 p-4">
+                          <DynamicNmiPayments
+                            key={paymentFieldsKey}
+                            tokenizationKey={NMI_TOKENIZATION_KEY}
+                            layout="multiLine"
+                            appearance={appearance(resolvedTheme as "dark" | "light" ?? "dark")}
+                            paymentMethods={["card", "google-pay", "apple-pay"]}
+                            expressCheckoutConfig={expressCheckoutConfig}
+                            showDivider
+                            onChange={handlePaymentChange}
+                            onExpressCheckout={handleExpressCheckout}
+                            onFieldsAvailable={() => setArePaymentFieldsReady(true)}
+                          />
+                        </div>
+                        <div className="rounded-xl border border-purple-900/40 bg-black/40 px-4 py-3 text-sm text-zinc-300">
+                          {isPaymentComplete
+                            ? "Payment details look good. You can place the order when ready."
+                            : arePaymentFieldsReady
+                              ? "Complete the secure payment fields or use Apple Pay / Google Pay to continue."
+                              : "Loading secure payment fields..."}
+                        </div>
+                      </>
+                    ) : (
+                      <div className="rounded-xl border border-yellow-500/40 bg-yellow-500/10 px-4 py-3 text-sm text-yellow-100">
+                        Card payments are disabled until `NEXT_PUBLIC_NMI_TOKENIZATION_KEY` is configured.
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-6 rounded-2xl border border-purple-900/40 bg-black/50 p-5 text-sm text-zinc-300">
+                    After you place the order, we&apos;ll show the same manual
+                    payment instructions you already use for Cash App, Venmo, and
+                    Zelle.
+                  </div>
+                )}
+              </div>
+
+              <div className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <h2 className="text-xl font-semibold text-white">
                       Referral Program
                     </h2>
                     <p className="text-sm text-zinc-400">
@@ -481,10 +722,16 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
 
               <button
                 type="submit"
-                disabled={isPending}
+                disabled={isPending || (isPayNow && (!isNmiConfigured || !isPaymentComplete))}
                 className="w-full rounded-full bg-purple-600 px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus:visible:ring-2 focus:visible:ring-purple-400 focus:visible:ring-offset-2 focus:visible:ring-offset-black disabled:cursor-not-allowed disabled:bg-purple-900/40"
               >
-                {isPending ? "Submitting Order..." : "Place Order (Pay Manually)"}
+                {isPending
+                  ? isPayNow
+                    ? "Processing Payment..."
+                    : "Submitting Order..."
+                  : isPayNow
+                    ? `Pay ${formatCurrency(total)} and Place Order`
+                    : "Place Order (Pay Manually)"}
               </button>
             </form>
           </div>

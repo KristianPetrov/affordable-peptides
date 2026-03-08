@@ -66,12 +66,12 @@ const variantConfig: Record<
   card: {
     showControls: true,
     showCaption: true,
-    overlayTone: "text-purple-100",
+    overlayTone: "text-purple-700 dark:text-purple-100",
   },
   hero: {
     showControls: false,
     showCaption: false,
-    overlayTone: "text-purple-50",
+    overlayTone: "text-purple-700 dark:text-purple-50",
   },
 };
 
@@ -321,7 +321,7 @@ export default function MoleculeViewer ({
       className={`flex flex-col gap-3 ${variant === "hero" ? "h-full" : ""} ${className}`}
     >
       <div
-        className="relative flex-1 overflow-hidden rounded-[inherit] border border-purple-500/40 bg-linear-to-br from-[#200532] via-[#0f001d] to-[#05000b]"
+        className="relative flex-1 overflow-hidden rounded-[inherit] border border-purple-300/50 bg-linear-to-br from-white via-purple-50 to-fuchsia-100 dark:border-purple-500/40 dark:from-[#200532] dark:via-[#0f001d] dark:to-[#05000b]"
       >
         <div
           ref={canvasRef}
@@ -331,7 +331,7 @@ export default function MoleculeViewer ({
         />
         {overlayControls && showSelector && (
           <div
-            className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-black/80 via-black/35 to-transparent"
+            className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-linear-to-t from-white/90 via-white/45 to-transparent dark:from-black/80 dark:via-black/35"
             aria-hidden
           />
         )}
@@ -347,7 +347,7 @@ export default function MoleculeViewer ({
               <button
                 type="button"
                 onClick={() => setReloadToken((prev) => prev + 1)}
-                className="rounded-full border border-purple-300/50 px-3 py-1 text-[0.6rem] tracking-[0.3em] text-purple-50 transition hover:border-purple-200 hover:text-white"
+                className="rounded-full border border-purple-400/50 px-3 py-1 text-[0.6rem] tracking-[0.3em] text-purple-800 transition hover:border-purple-500 hover:text-purple-950 dark:border-purple-300/50 dark:text-purple-50 dark:hover:border-purple-200 dark:hover:text-white"
               >
                 Retry
               </button>
@@ -360,7 +360,7 @@ export default function MoleculeViewer ({
         <div
           className={
             overlayControls
-              ? "absolute bottom-3 left-3 right-3 flex flex-nowrap items-center gap-2 overflow-x-auto rounded-2xl border border-purple-500/30 bg-black/35 p-2 backdrop-blur"
+              ? "absolute bottom-3 left-3 right-3 flex flex-nowrap items-center gap-2 overflow-x-auto rounded-2xl border border-purple-300/60 bg-white/75 p-2 backdrop-blur dark:border-purple-500/30 dark:bg-black/35"
               : "flex flex-wrap gap-2"
           }
         >
@@ -372,8 +372,8 @@ export default function MoleculeViewer ({
                 key={molecule.slug}
                 type="button"
                 className={`shrink-0 whitespace-nowrap rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${isActive
-                  ? "border-purple-500 bg-purple-500/20 text-white shadow-[0_0_15px_rgba(168,85,247,0.35)]"
-                  : "border-purple-900/40 text-purple-200 hover:border-purple-400 hover:text-white"
+                  ? "border-purple-500 bg-purple-500/20 text-purple-950 shadow-[0_0_15px_rgba(168,85,247,0.2)] dark:text-white dark:shadow-[0_0_15px_rgba(168,85,247,0.35)]"
+                  : "border-purple-300/70 text-purple-700 hover:border-purple-500 hover:text-purple-950 dark:border-purple-900/40 dark:text-purple-200 dark:hover:border-purple-400 dark:hover:text-white"
                   }`}
                 onClick={() => setActiveIndex(index)}
                 aria-pressed={isActive}
@@ -383,7 +383,7 @@ export default function MoleculeViewer ({
             );
           })} </div>
 
-        <span className="text-xs text-purple-200">
+        <span className="text-xs text-purple-700 dark:text-purple-200">
           {statusLabel}
           {activeMolecule?.subtitle ? ` • ${activeMolecule.subtitle}` : ""}
         </span>
@@ -391,8 +391,8 @@ export default function MoleculeViewer ({
       )}
 
       {config.showCaption && (
-        <div className="flex flex-col gap-1 text-xs text-zinc-400">
-          <span className="font-semibold uppercase tracking-[0.3em] text-purple-200">
+        <div className="flex flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
+          <span className="font-semibold uppercase tracking-[0.3em] text-purple-700 dark:text-purple-200">
             Molecular Preview
           </span>
           <span>
@@ -400,7 +400,7 @@ export default function MoleculeViewer ({
             {activeMolecule?.subtitle ? ` • ${activeMolecule.subtitle}` : ""}
           </span>
           {!molecules.length && (
-            <span className="text-[0.65rem] text-zinc-500">
+            <span className="text-[0.65rem] text-zinc-500 dark:text-zinc-500">
               Add a molecule entry for {productName} in lib/molecules.ts to
               enable the visualization.
             </span>

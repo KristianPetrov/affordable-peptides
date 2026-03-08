@@ -1,6 +1,11 @@
 import { auth } from "@/lib/auth";
 import { getOrdersForUser } from "@/lib/db";
-import { calculateOrderTotals, formatOrderNumber } from "@/lib/orders";
+import
+{
+  calculateOrderTotals,
+  formatOrderNumber,
+  formatPaymentMethod,
+} from "@/lib/orders";
 
 const statusStyles: Record<string, string> = {
   PENDING_PAYMENT: "text-yellow-200 bg-yellow-500/10",
@@ -96,6 +101,17 @@ export default async function AccountOrdersPage ()
                       {order.shippingAddress.street}, {order.shippingAddress.city},{" "}
                       {order.shippingAddress.state} {order.shippingAddress.zipCode}
                     </p>
+                    <p className="mt-2 text-xs uppercase tracking-[0.2em] text-zinc-500">
+                      Payment
+                    </p>
+                    <p className="mt-1 text-sm text-zinc-300">
+                      {formatPaymentMethod(order.paymentMethod)}
+                    </p>
+                    {order.paidAt && (
+                      <p className="text-xs text-zinc-500">
+                        Paid {new Date(order.paidAt).toLocaleString()}
+                      </p>
+                    )}
                   </div>
                   <div className="text-right">
                     <p className="text-xs uppercase tracking-[0.2em] text-zinc-500">

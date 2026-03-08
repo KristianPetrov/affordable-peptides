@@ -14,7 +14,7 @@ export default async function AccountProfilePage ()
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+      <section className="theme-card-gradient rounded-3xl p-6">
         <div className="mb-6">
           <p className="text-xs uppercase tracking-[0.2em] text-purple-200">
             Profile
@@ -30,7 +30,7 @@ export default async function AccountProfilePage ()
         />
       </section>
 
-      <section className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+      <section className="theme-card-gradient rounded-3xl p-6">
         <div className="mb-6">
           <p className="text-xs uppercase tracking-[0.2em] text-purple-200">
             Security

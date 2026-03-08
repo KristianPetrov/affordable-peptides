@@ -37,11 +37,11 @@ export default async function AccountLayout ({
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
+    <div className="theme-page min-h-screen">
       <NavBar />
       <main className="px-6 py-12 sm:px-12 lg:px-16">
         <div className="mx-auto max-w-6xl gap-6 lg:grid lg:grid-cols-[260px,1fr]">
-          <div className="mb-6 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 shadow-[0_25px_70px_rgba(70,0,110,0.45)] lg:mb-0">
+          <div className="theme-card-gradient mb-6 rounded-3xl p-6 lg:mb-0">
             <AccountSidebar user={session.user} />
             <div className="mt-8">
               <SignOutButton />

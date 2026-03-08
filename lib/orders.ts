@@ -3,6 +3,7 @@ import { calculateVolumePricing } from "@/lib/cart-pricing";
 import { calculateShippingCost } from "@/lib/shipping";
 
 export type OrderStatus = "PENDING_PAYMENT" | "PAID" | "SHIPPED" | "CANCELLED";
+export type PaymentMethod = "MANUAL" | "NMI_CARD";
 
 export type Order = {
   id: string;
@@ -23,6 +24,9 @@ export type Order = {
   subtotal: number;
   shippingCost?: number;
   totalAmount?: number;
+  paymentMethod?: PaymentMethod;
+  paymentTransactionId?: string;
+  paidAt?: string;
   totalUnits: number;
   createdAt: string;
   updatedAt: string;
@@ -121,6 +125,17 @@ export function formatOrderNumber (orderNumber: string): string
 {
   // Just return the order number as-is (it's already a 6-digit number)
   return orderNumber;
+}
+
+export function formatPaymentMethod (
+  paymentMethod: PaymentMethod | null | undefined
+): string
+{
+  if (paymentMethod === "NMI_CARD") {
+    return "Card or wallet via NMI";
+  }
+
+  return "Manual Payment";
 }
 
 export function normalizeOrderNumberInput (input: string | null | undefined): string | null

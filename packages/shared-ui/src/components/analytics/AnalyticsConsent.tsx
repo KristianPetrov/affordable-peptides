@@ -2,6 +2,7 @@
 
 import type { ReactNode } from "react";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 type ConsentState = "unknown" | "granted" | "denied";
@@ -13,10 +14,35 @@ type AnalyticsConsentContextValue = {
 };
 
 const STORAGE_KEY = "ap_analytics_consent";
+const COOKIE_NAME = "ap_analytics_consent";
 
 const AnalyticsConsentContext = createContext<AnalyticsConsentContextValue | null>(
     null
 );
+
+function readCookieConsent (): ConsentState
+{
+    if (typeof document === "undefined") {
+        return "unknown";
+    }
+
+    const cookieEntry = document.cookie
+        .split(";")
+        .map((part) => part.trim())
+        .find((part) => part.startsWith(`${COOKIE_NAME}=`));
+
+    if (!cookieEntry) {
+        return "unknown";
+    }
+
+    const [, rawValue = ""] = cookieEntry.split("=");
+    const normalized = decodeURIComponent(rawValue).trim().toLowerCase();
+    if (normalized === "granted" || normalized === "denied") {
+        return normalized;
+    }
+
+    return "unknown";
+}
 
 function readStoredConsent (): ConsentState
 {
@@ -28,13 +54,14 @@ function readStoredConsent (): ConsentState
     if (raw === "granted" || raw === "denied") {
         return raw;
     }
-    return "unknown";
+    return readCookieConsent();
 }
 
 function writeStoredConsent (consent: Exclude<ConsentState, "unknown">)
 {
     try {
         window.localStorage.setItem(STORAGE_KEY, consent);
+        document.cookie = `${COOKIE_NAME}=${encodeURIComponent(consent)}; Max-Age=31536000; Path=/; SameSite=Lax`;
     } catch {
         // ignore
     }
@@ -110,7 +137,7 @@ export function AnalyticsConsentBanner ()
             role="dialog"
             aria-live="polite"
             aria-label="Cookie consent"
-            className="fixed inset-x-0 bottom-0 z-50 border-t border-purple-900/60 bg-black/90 px-4 py-4 backdrop-blur sm:px-6"
+            className="theme-footer fixed inset-x-0 bottom-0 z-50 px-4 py-4 sm:px-6"
         >
             <div className="mx-auto flex max-w-5xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
@@ -119,7 +146,11 @@ export function AnalyticsConsentBanner ()
                     </p>
                     <p className="text-xs text-zinc-300">
                         With your consent, we use cookies and similar technologies (including the TikTok Pixel) to measure site usage and improve our store.
-                        By selecting “Accept”, you consent to these analytics technologies. You can refuse or withdraw consent at any time by clearing this site’s stored data in your browser.
+                        By selecting “Accept”, you consent to these analytics technologies. You can review details in our{" "}
+                        <Link href="/legal/privacy-policy" className="underline hover:text-white">
+                            Privacy Policy
+                        </Link>
+                        . You can withdraw consent at any time by selecting “Reject”.
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-3">

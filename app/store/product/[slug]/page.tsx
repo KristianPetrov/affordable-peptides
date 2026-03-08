@@ -80,7 +80,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
+    <div className="theme-page min-h-screen">
       <NavBar />
       <div className="mx-auto mt-6 flex max-w-6xl justify-start px-6 sm:px-12 lg:px-16">
         <Link

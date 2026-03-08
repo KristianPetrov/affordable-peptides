@@ -1,22 +1,29 @@
 "use server";
 
 import { headers } from "next/headers";
+import { randomUUID } from "crypto";
+import { revalidatePath } from "next/cache";
 
 import
 {
   createOrder,
   getOrderByOrderNumber,
+  updateOrderStatus,
   upsertCustomerProfile,
 } from "@/lib/db";
 import { sendOrderEmail } from "@/lib/email";
-import { generateOrderNumber, normalizeOrderNumberInput } from "@/lib/orders";
-import type { Order } from "@/lib/orders";
+import
+{
+  generateOrderNumber,
+  normalizeOrderNumberInput,
+  type Order,
+  type PaymentMethod,
+} from "@/lib/orders";
 import type { CartItem } from "@/components/store/StorefrontContext";
-import { randomUUID } from "crypto";
-import { revalidatePath } from "next/cache";
 import
 {
   extractClientIp,
+  orderLookupRateLimiter,
   orderCreationRateLimiter,
 } from "@/lib/rate-limit";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
@@ -33,6 +40,8 @@ import
   finalizeReferralForOrder,
   resolveReferralForOrder,
 } from "@/lib/referrals";
+import { sendTikTokCompletePayment } from "@/lib/tiktok-conversions";
+import { submitNmiSale, voidNmiTransaction } from "@/lib/nmi";
 
 type CreateOrderInput = {
   items: CartItem[];
@@ -49,7 +58,13 @@ type CreateOrderInput = {
   shippingCountry: string;
   saveProfile?: boolean;
   referralCode?: string;
+  paymentMethod?: PaymentMethod;
+  paymentToken?: string;
+  acceptedTerms: boolean;
+  acceptedResearchUse: boolean;
 };
+
+const ANALYTICS_CONSENT_COOKIE = "ap_analytics_consent";
 
 export type CreateOrderResult =
   | {
@@ -58,6 +73,8 @@ export type CreateOrderResult =
     orderNumber: string;
     shippingCost: number;
     totalAmount: number;
+    orderStatus: Order["status"];
+    paymentMethod: PaymentMethod;
   }
   | {
     success: false;
@@ -98,6 +115,124 @@ function formatRetryAfter (ms: number):
   };
 }
 
+function getSelectedPaymentMethod (input: CreateOrderInput): PaymentMethod
+{
+  return input.paymentMethod === "NMI_CARD" ? "NMI_CARD" : "MANUAL";
+}
+
+function formatNmiFailureMessage (responseText: string | null | undefined): string
+{
+  const normalized = responseText?.trim();
+
+  if (!normalized || /route not found/i.test(normalized)) {
+    return "We couldn't process your card right now. Please try again in a moment.";
+  }
+
+  return normalized;
+}
+
+async function rollbackFailedCheckout (input: {
+  createdOrder: Order | null;
+  paymentMethod: PaymentMethod;
+  paymentTransactionId?: string | null;
+}): Promise<void>
+{
+  if (input.paymentMethod === "NMI_CARD" && input.paymentTransactionId) {
+    try {
+      await voidNmiTransaction(input.paymentTransactionId);
+    } catch (voidError) {
+      console.error("Failed to void NMI transaction after checkout error:", voidError);
+    }
+  }
+
+  if (input.createdOrder) {
+    try {
+      await updateOrderStatus(
+        input.createdOrder.id,
+        "CANCELLED",
+        input.paymentMethod === "NMI_CARD"
+          ? "Order was cancelled automatically after a checkout finalization error. Card charge was voided."
+          : "Order was cancelled automatically after a checkout finalization error."
+      );
+    } catch (cancelError) {
+      console.error("Failed to cancel order after checkout error:", cancelError);
+    }
+  }
+}
+
+async function runPostOrderEffects (input: {
+  order: Order;
+  userId: string | null;
+  saveProfile: boolean;
+  customerInput: CreateOrderInput;
+  referralContext: Awaited<ReturnType<typeof resolveReferralForOrder>>;
+  analyticsConsentGranted: boolean;
+}): Promise<void>
+{
+  sendOrderEmail(input.order).catch((error) =>
+  {
+    console.error("Failed to send order email:", error);
+  });
+
+  if (input.order.status === "PAID" && input.analyticsConsentGranted) {
+    sendTikTokCompletePayment(input.order).catch((error) =>
+    {
+      console.error("Failed to send TikTok CompletePayment event:", error);
+    });
+  }
+
+  if (input.userId && input.saveProfile) {
+    try {
+      await upsertCustomerProfile(input.userId, {
+        fullName: input.customerInput.customerName.trim(),
+        phone: input.customerInput.customerPhone.trim(),
+        shippingStreet: input.customerInput.shippingStreet.trim(),
+        shippingCity: input.customerInput.shippingCity.trim(),
+        shippingState: input.customerInput.shippingState.trim(),
+        shippingZipCode: input.customerInput.shippingZipCode.trim(),
+        shippingCountry: input.customerInput.shippingCountry.trim(),
+      });
+
+      revalidatePath("/account/profile");
+      revalidatePath("/checkout");
+    } catch (profileError) {
+      console.error("Failed to save customer profile after checkout:", profileError);
+    }
+  }
+
+  if (input.referralContext) {
+    try {
+      await finalizeReferralForOrder(input.order, input.referralContext);
+    } catch (referralError) {
+      console.error("Failed to finalize referral attribution:", referralError);
+    }
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/account");
+  revalidatePath("/account/orders");
+  revalidatePath("/admin?view=referrals");
+}
+
+function hasAnalyticsConsent (cookieHeader: string | null | undefined): boolean
+{
+  if (!cookieHeader) {
+    return false;
+  }
+
+  const cookieEntry = cookieHeader
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(`${ANALYTICS_CONSENT_COOKIE}=`));
+
+  if (!cookieEntry) {
+    return false;
+  }
+
+  const [, rawValue = ""] = cookieEntry.split("=");
+  return decodeURIComponent(rawValue).trim().toLowerCase() === "granted";
+}
+
 export async function createOrderAction (
   input: CreateOrderInput
 ): Promise<CreateOrderResult>
@@ -133,6 +268,15 @@ export async function createOrderAction (
       };
     }
 
+    if (!input.acceptedTerms || !input.acceptedResearchUse) {
+      return {
+        success: false,
+        error:
+          "Please accept the Terms, Privacy, Shipping, Refund, and Research Use Only policies before placing your order.",
+        errorCode: "VALIDATION_ERROR",
+      };
+    }
+
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(input.customerEmail)) {
@@ -149,6 +293,16 @@ export async function createOrderAction (
       return {
         success: false,
         error: "Invalid phone number format",
+        errorCode: "VALIDATION_ERROR",
+      };
+    }
+
+    const paymentMethod = getSelectedPaymentMethod(input);
+
+    if (paymentMethod === "NMI_CARD" && !input.paymentToken?.trim()) {
+      return {
+        success: false,
+        error: "Your payment details are incomplete. Please finish entering your card information.",
         errorCode: "VALIDATION_ERROR",
       };
     }
@@ -177,6 +331,9 @@ export async function createOrderAction (
 
     const clientIp = extractClientIp(headerList);
     const normalizedEmail = input.customerEmail.trim().toLowerCase();
+    const analyticsConsentGranted = hasAnalyticsConsent(
+      headerList?.get("cookie")
+    );
 
     const rateLimitChecks = [
       orderCreationRateLimiter.check(["ip", clientIp]),
@@ -208,7 +365,6 @@ export async function createOrderAction (
 
     const userId = session?.user?.id ?? null;
     const orderNumber = generateOrderNumber();
-    const now = new Date().toISOString();
 
     const inventoryMap = await loadInventoryMap();
     const reservation = prepareInventoryAdjustments(
@@ -258,11 +414,11 @@ export async function createOrderAction (
 
     const shippingCost = calculateShippingCost(calculatedSubtotal);
     const totalAmount = finalSubtotal + shippingCost;
+    const now = new Date().toISOString();
 
-    const order = await createOrder({
+    const baseOrderData = {
       id: randomUUID(),
       orderNumber,
-      status: "PENDING_PAYMENT",
       userId,
       customerName: input.customerName.trim(),
       customerEmail: input.customerEmail.trim(),
@@ -278,6 +434,7 @@ export async function createOrderAction (
       subtotal: finalSubtotal,
       shippingCost,
       totalAmount,
+      paymentMethod,
       totalUnits: input.totalUnits,
       createdAt: now,
       updatedAt: now,
@@ -289,58 +446,81 @@ export async function createOrderAction (
       referralDiscount,
       referralCommissionPercent: referralContext?.referralCommissionPercent ?? 0,
       referralCommissionAmount: referralContext?.referralCommissionAmount ?? 0,
-    });
+    } satisfies Omit<Order, "status">;
 
-    await applyInventoryAdjustments(reservation.adjustments);
+    let createdOrder: Order | null = null;
+    let paymentTransactionId: string | null = null;
 
-    // Send email notification (non-blocking, don't fail order if email fails)
-    sendOrderEmail(order).catch((error) =>
-    {
-      console.error("Failed to send order email:", error);
-      // Log but don't throw - order is still created
-    });
+    try {
+      if (paymentMethod === "NMI_CARD") {
+        const saleResult = await submitNmiSale({
+          amount: totalAmount,
+          orderNumber,
+          customerName: input.customerName,
+          customerEmail: input.customerEmail,
+          customerPhone: input.customerPhone,
+          billingStreet: input.shippingStreet,
+          billingCity: input.shippingCity,
+          billingState: input.shippingState,
+          billingZipCode: input.shippingZipCode,
+          billingCountry: input.shippingCountry,
+          paymentToken: input.paymentToken ?? "",
+        });
 
-    if (userId && input.saveProfile) {
-      await upsertCustomerProfile(userId, {
-        fullName: input.customerName.trim(),
-        phone: input.customerPhone.trim(),
-        shippingStreet: input.shippingStreet.trim(),
-        shippingCity: input.shippingCity.trim(),
-        shippingState: input.shippingState.trim(),
-        shippingZipCode: input.shippingZipCode.trim(),
-        shippingCountry: input.shippingCountry.trim(),
-      });
+        if (!saleResult.approved) {
+          return {
+            success: false,
+            error: formatNmiFailureMessage(saleResult.responseText),
+            errorCode: "VALIDATION_ERROR",
+          };
+        }
 
-      revalidatePath("/account/profile");
-      revalidatePath("/checkout");
-    }
+        paymentTransactionId = saleResult.transactionId;
 
-    if (referralContext) {
-      try {
-        await finalizeReferralForOrder(order, referralContext);
-      } catch (error) {
-        console.error("Failed to finalize referral attribution:", error);
-        return {
-          success: false,
-          error:
-            "We couldn't record the referral discount. Please try again in a moment.",
-          errorCode: "UNKNOWN",
-        };
+        createdOrder = await createOrder({
+          ...baseOrderData,
+          status: "PAID",
+          paymentTransactionId: paymentTransactionId ?? undefined,
+          paidAt: now,
+        });
+      } else {
+        createdOrder = await createOrder({
+          ...baseOrderData,
+          status: "PENDING_PAYMENT",
+        });
       }
+
+      await applyInventoryAdjustments(reservation.adjustments);
+    } catch (checkoutError) {
+      await rollbackFailedCheckout({
+        createdOrder,
+        paymentMethod,
+        paymentTransactionId,
+      });
+      throw checkoutError;
     }
 
-    // Revalidate admin/account pages after all mutations (including referrals) succeed
-    revalidatePath("/admin");
-    revalidatePath("/account");
-    revalidatePath("/account/orders");
-    revalidatePath("/admin?view=referrals");
+    if (!createdOrder) {
+      throw new Error("Order could not be finalized.");
+    }
+
+    await runPostOrderEffects({
+      order: createdOrder,
+      userId,
+      saveProfile: Boolean(userId && input.saveProfile),
+      customerInput: input,
+      referralContext,
+      analyticsConsentGranted,
+    });
 
     return {
       success: true,
-      orderId: order.id,
-      orderNumber: order.orderNumber,
+      orderId: createdOrder.id,
+      orderNumber: createdOrder.orderNumber,
       shippingCost,
       totalAmount,
+      orderStatus: createdOrder.status,
+      paymentMethod,
     };
   } catch (error) {
     console.error("Error creating order:", error);
@@ -359,7 +539,7 @@ export type LookupOrderResult =
 
 export async function lookupOrderAction (input: {
   orderNumber: string;
-  customerEmail?: string;
+  customerEmail: string;
 }): Promise<LookupOrderResult>
 {
   const normalizedOrderNumber = normalizeOrderNumberInput(input.orderNumber);
@@ -371,21 +551,55 @@ export async function lookupOrderAction (input: {
     };
   }
 
-  try {
-    const order = await getOrderByOrderNumber(normalizedOrderNumber);
+  const suppliedEmail = input.customerEmail?.trim().toLowerCase() ?? "";
+  if (!suppliedEmail) {
+    return {
+      success: false,
+      error: "Enter the email used at checkout.",
+    };
+  }
 
-    if (!order) {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(suppliedEmail)) {
+    return {
+      success: false,
+      error: "Enter a valid email address.",
+    };
+  }
+
+  try {
+    let headerList: Awaited<ReturnType<typeof headers>> | null = null;
+
+    try {
+      headerList = await headers();
+    } catch {
+      headerList = null;
+    }
+
+    const clientIp = extractClientIp(headerList);
+    const rateLimitChecks = [
+      orderLookupRateLimiter.check(["ip", clientIp]),
+      orderLookupRateLimiter.check(["email", suppliedEmail]),
+      orderLookupRateLimiter.check(["order", normalizedOrderNumber, suppliedEmail]),
+    ];
+    const blockedCheck = rateLimitChecks.find((check) => !check.success);
+
+    if (blockedCheck) {
+      const { humanized } = formatRetryAfter(
+        blockedCheck.retryAfterMs || blockedCheck.windowMs
+      );
       return {
         success: false,
-        error: "We couldn't find an order with that number.",
+        error: `Too many lookup attempts. Please wait ${humanized} before trying again.`,
       };
     }
 
-    const suppliedEmail = input.customerEmail?.trim().toLowerCase();
-    if (suppliedEmail && order.customerEmail.toLowerCase() !== suppliedEmail) {
+    const order = await getOrderByOrderNumber(normalizedOrderNumber);
+
+    if (!order || order.customerEmail.toLowerCase() !== suppliedEmail) {
       return {
         success: false,
-        error: "That email doesn't match the order on file.",
+        error: "We couldn't verify an order with the provided details.",
       };
     }
 

@@ -162,7 +162,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
           {isPending ? "Resetting..." : "Reset Password"}
         </button>
       </form>
-
+  
       {status === "success" && (
         <p className="mt-6 text-center text-sm text-zinc-400">
           <Link

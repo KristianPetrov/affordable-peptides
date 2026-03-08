@@ -9,7 +9,7 @@ export default async function CheckoutPage() {
     : null;
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
+    <div className="theme-page min-h-screen">
       <NavBar />
       <CheckoutClient profile={profile} sessionUser={session?.user ?? null} />
     </div>

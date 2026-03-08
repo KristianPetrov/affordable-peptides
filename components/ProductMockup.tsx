@@ -75,7 +75,7 @@ export default function ProductMockup ({
   if (!labelSrc) {
     return (
       <div className={containerClassName}>
-        <div className="flex h-full w-full items-center justify-center rounded-[32px] border border-purple-900/40 bg-black/70 text-center text-xs uppercase tracking-[0.3em] text-purple-200">
+        <div className="flex h-full w-full items-center justify-center rounded-[32px] border border-purple-300/50 bg-linear-to-b from-white via-purple-50 to-fuchsia-100 text-center text-xs uppercase tracking-[0.3em] text-purple-700 dark:border-purple-900/40 dark:from-[#12001f] dark:via-[#06000b] dark:to-black dark:text-purple-200">
           Missing label
         </div>
       </div>
@@ -103,8 +103,8 @@ export default function ProductMockup ({
           className="pointer-events-none absolute -inset-5 rounded-[40px] bg-[radial-linear(circle_at_top,_rgba(168,85,247,0.45), transparent_65%)] blur-3xl opacity-70"
         />
       ) : null}
-      <div className="absolute inset-[6%] rounded-[36px] bg-linear-to-b from-[#12001f] via-[#06000b] to-black" />
-      <div className="absolute inset-x-6 top-[10%] h-16 rounded-full bg-linear-to-r from-transparent via-purple-500/30 to-transparent blur-3xl opacity-60" />
+      <div className="absolute inset-[6%] rounded-[36px] bg-linear-to-b from-white via-purple-50 to-fuchsia-100 dark:from-[#12001f] dark:via-[#06000b] dark:to-black" />
+      <div className="absolute inset-x-6 top-[10%] h-16 rounded-full bg-linear-to-r from-transparent via-purple-400/25 to-transparent blur-3xl opacity-50 dark:via-purple-500/30 dark:opacity-60" />
       <div className="absolute inset-0">
         <Image
           src={bottleSrc}

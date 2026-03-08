@@ -359,9 +359,9 @@ export function ProductCard ({
   return (
     <article
       id={`product-${product.slug}`}
-      className="flex h-full flex-col overflow-hidden rounded-3xl border border-purple-900/60 bg-linear-to-b from-[#13001f] via-[#090012] to-black shadow-[0_20px_60px_rgba(45,0,95,0.45)]"
+      className="theme-card-gradient flex h-full flex-col overflow-hidden rounded-3xl"
     >
-      <div className="relative h-64 w-full border-b border-purple-900/40 bg-black/40 p-4">
+      <div className="relative h-64 w-full border-b border-purple-300/50 bg-linear-to-b from-white via-purple-50 to-fuchsia-100 p-4 dark:border-purple-900/40 dark:from-transparent dark:via-transparent dark:to-transparent dark:bg-black/40">
         <MoleculeViewer
           productName={product.name}
           molecules={molecules}
@@ -435,7 +435,7 @@ export function ProductCard ({
           <p className="text-sm text-zinc-400">
             Select the dosage and volume tier that fits your research needs.
           </p>
-          <div className="rounded-2xl border border-purple-900/40 bg-black/60 p-4">
+          <div className="theme-surface rounded-2xl p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
               Analytical Testing
             </p>
@@ -638,10 +638,10 @@ export function ProductCard ({
                   return (
                     <div
                       key={`${product.slug}-${variant.label}`}
-                      className="flex flex-col gap-4 rounded-2xl border border-purple-900/40 bg-black/60 p-4"
+                      className="theme-surface flex flex-col gap-4 rounded-2xl p-4"
                     >
                       {variant.mockupLabel ? (
-                        <div className="flex justify-center rounded-2xl border border-purple-900/30 bg-linear-to-b from-[#1b0924] via-[#0b0014] to-black p-4">
+                        <div className="flex justify-center rounded-2xl border border-purple-300/50 bg-white p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.6)] dark:border-purple-900/30 dark:bg-linear-to-b dark:from-[#1b0924] dark:via-[#0b0014] dark:to-black dark:shadow-none">
                           <ProductMockup
                             labelSrc={variant.mockupLabel}
                             productName={`${product.name} ${variant.label}`}
@@ -803,7 +803,7 @@ export function ProductCard ({
               </div>
             </>
           ) : (
-            <div className="rounded-2xl border border-purple-900/40 bg-black/60 px-4 py-6 text-center text-sm text-zinc-300">
+            <div className="theme-surface rounded-2xl px-4 py-6 text-center text-sm text-zinc-300">
               Buying options are hidden. Use &quot;View buying options&quot; to
               choose a dosage and pricing tier.
             </div>
@@ -866,7 +866,7 @@ export function FloatingCartButton ({
         </span>
       </button>
       {isOpen && (
-        <div className="flex w-[320px] max-w-[90vw] flex-col rounded-3xl border border-purple-900/60 bg-black/95 p-5 shadow-[0_25px_80px_rgba(45,0,95,0.55)] backdrop-blur max-h-[calc(100vh-3rem)] overflow-hidden">
+        <div className="theme-surface-strong flex max-h-[calc(100vh-3rem)] w-[320px] max-w-[90vw] flex-col overflow-hidden rounded-3xl p-5 backdrop-blur">
           <div className="flex items-baseline justify-between">
             <div>
               <h3 className="text-sm font-semibold uppercase tracking-[0.3em] text-purple-200">
@@ -928,10 +928,7 @@ export function FloatingCartButton ({
                       variantLimit !== null &&
                       totalUnitsForVariant + item.tierQuantity > variantLimit;
                     return (
-                      <li
-                        key={item.key}
-                        className="rounded-2xl border border-purple-900/40 bg-zinc-950/80 p-4"
-                      >
+                      <li key={item.key} className="theme-surface rounded-2xl p-4">
                         <div className="space-y-1">
                           <div className="text-sm font-semibold text-white">
                             {item.productName}
@@ -1301,14 +1298,8 @@ export default function StoreClient ({ products }: StoreClientProps)
     <>
       <main className="space-y-16 pb-24">
         <section className="relative px-6 pt-24 pb-20 sm:px-12 lg:px-16">
-          <div
-            className="absolute inset-0 bg-linear-to-b from-black via-[#140018] to-black"
-            aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute inset-0 bg-[radial-linear(circle_at_top,_rgba(148,63,255,0.25), transparent_65%)] mix-blend-screen"
-            aria-hidden
-          />
+          <div className="theme-hero-backdrop absolute inset-0" aria-hidden />
+          <div className="theme-spotlight pointer-events-none absolute inset-0" aria-hidden />
           <div className="relative mx-auto max-w-6xl space-y-8 text-center">
             <span className="inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
               Store
@@ -1374,7 +1365,7 @@ export default function StoreClient ({ products }: StoreClientProps)
                   <label htmlFor="product-search" className="sr-only">
                     Search products
                   </label>
-                  <div className="flex items-center gap-3 rounded-full border border-purple-900/60 bg-black/60 px-5 py-3 text-sm text-white shadow-[0_12px_35px_rgba(45,0,95,0.4)] transition focus-within:border-purple-400 focus-within:bg-black/80 focus-within:shadow-[0_18px_45px_rgba(120,48,255,0.35)]">
+                  <div className="theme-surface-strong flex items-center gap-3 rounded-full px-5 py-3 text-sm text-white transition focus-within:border-purple-400 focus-within:bg-black/80 focus-within:shadow-[0_18px_45px_rgba(120,48,255,0.35)]">
                     <svg
                       className="h-5 w-5 text-purple-300"
                       viewBox="0 0 24 24"
@@ -1417,7 +1408,7 @@ export default function StoreClient ({ products }: StoreClientProps)
                     <ul
                       id={suggestionListId}
                       role="listbox"
-                      className="absolute left-0 right-0 z-30 mt-3 max-h-72 overflow-y-auto rounded-2xl border border-purple-900/60 bg-black/95 p-2 shadow-[0_25px_60px_rgba(45,0,95,0.65)]"
+                      className="theme-surface-strong absolute left-0 right-0 z-30 mt-3 max-h-72 overflow-y-auto rounded-2xl p-2"
                     >
                       {searchSuggestions.map((suggestion) => (
                         <li key={suggestion.slug}>
@@ -1546,7 +1537,7 @@ export default function StoreClient ({ products }: StoreClientProps)
                   ))}
                 </div>
               ) : (
-                <div className="rounded-3xl border border-purple-900/50 bg-black/60 p-8 text-center text-sm text-zinc-400">
+                <div className="theme-surface rounded-3xl p-8 text-center text-sm text-zinc-400">
                   No peptides match your search yet. Adjust filters or reach out for
                   sourcing support.
                 </div>

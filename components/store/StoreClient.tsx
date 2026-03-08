@@ -641,7 +641,7 @@ export function ProductCard ({
                       className="flex flex-col gap-4 rounded-2xl border border-purple-900/40 bg-black/60 p-4"
                     >
                       {variant.mockupLabel ? (
-                        <div className="flex justify-center rounded-2xl border border-purple-900/30 bg-linear-to-b from-[#1b0924] via-[#0b0014] to-black p-4">
+                        <div className="flex justify-center rounded-2xl border border-purple-300/50 bg-linear-to-b from-white via-purple-50 to-fuchsia-100 p-4 dark:border-purple-900/30 dark:from-[#1b0924] dark:via-[#0b0014] dark:to-black">
                           <ProductMockup
                             labelSrc={variant.mockupLabel}
                             productName={`${product.name} ${variant.label}`}

@@ -32,14 +32,14 @@ export default function ProductModal({ product, molecules }: ProductModalProps) 
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-4 py-10 backdrop-blur"
+      className="theme-modal-overlay fixed inset-0 z-50 flex items-center justify-center px-4 py-10 backdrop-blur"
       role="dialog"
       aria-modal="true"
       aria-label={`${product.name} detail`}
       onClick={handleClose}
     >
       <div
-        className="relative w-full max-w-4xl overflow-hidden rounded-3xl border border-purple-900/80 bg-[#070006]/80 backdrop-blur"
+        className="theme-surface-strong relative w-full max-w-4xl overflow-hidden rounded-3xl backdrop-blur"
         onClick={(event) => event.stopPropagation()}
       >
         <button
@@ -51,7 +51,7 @@ export default function ProductModal({ product, molecules }: ProductModalProps) 
         >
           Close
         </button>
-        <div className="max-h-[80vh] overflow-hidden rounded-3xl border border-purple-900/60 bg-black/60">
+        <div className="theme-surface max-h-[80vh] overflow-hidden rounded-3xl">
           <div className="max-h-[80vh] overflow-y-auto px-4 py-6 pt-10 space-y-6">
             <ProductCard
               product={product}

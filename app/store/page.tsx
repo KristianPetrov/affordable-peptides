@@ -50,7 +50,7 @@ export default async function StorePage() {
   const products = await getProductsWithInventory();
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
+    <div className="theme-page min-h-screen">
       <NavBar />
       <StoreClient products={products} />
     </div>

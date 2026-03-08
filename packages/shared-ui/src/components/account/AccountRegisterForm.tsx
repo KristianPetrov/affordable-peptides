@@ -28,6 +28,7 @@ export function AccountRegisterForm() {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState(initialState);
+  const [acceptedPolicies, setAcceptedPolicies] = useState(false);
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -41,6 +42,11 @@ export function AccountRegisterForm() {
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
+
+    if (!acceptedPolicies) {
+      setError("Please accept the legal policies before creating an account.");
+      return;
+    }
 
     startTransition(async () => {
       const registerCustomerAction = requireSharedUiAdapter(
@@ -72,7 +78,7 @@ export function AccountRegisterForm() {
   };
 
   return (
-    <div className="w-full max-w-2xl rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+    <div className="theme-card-gradient w-full max-w-2xl rounded-3xl p-8">
       <h1 className="mb-2 text-2xl font-semibold text-white">
         Create an Account
       </h1>
@@ -226,6 +232,42 @@ export function AccountRegisterForm() {
               />
             </div>
           </div>
+        </div>
+
+        <div className="rounded-2xl border border-purple-900/40 bg-black/40 p-4">
+          <label className="flex items-start gap-3 text-sm text-zinc-300">
+            <input
+              type="checkbox"
+              checked={acceptedPolicies}
+              onChange={(event) => setAcceptedPolicies(event.target.checked)}
+              className="mt-1 h-5 w-5 rounded border border-purple-900/40 bg-black/60 text-purple-500 focus:ring-purple-400"
+              required
+            />
+            <span>
+              I agree to the{" "}
+              <Link
+                href="/legal/terms-of-use"
+                className="text-purple-200 underline decoration-dotted underline-offset-4 hover:text-purple-100"
+              >
+                Terms of Use
+              </Link>
+              ,{" "}
+              <Link
+                href="/legal/privacy-policy"
+                className="text-purple-200 underline decoration-dotted underline-offset-4 hover:text-purple-100"
+              >
+                Privacy Policy
+              </Link>
+              , and{" "}
+              <Link
+                href="/legal/research-use-only"
+                className="text-purple-200 underline decoration-dotted underline-offset-4 hover:text-purple-100"
+              >
+                Research Use Only Disclaimer
+              </Link>
+              .
+            </span>
+          </label>
         </div>
 
         {error && (

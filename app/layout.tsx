@@ -1,4 +1,5 @@
 import { Geist, Geist_Mono } from "next/font/google";
+import Link from "next/link";
 import { Providers } from "@ap/shared-ui";
 import { AgeGateProvider } from "@ap/shared-ui/age-gate-provider";
 import { AGE_VERIFICATION_COOKIE, submitAgeVerification } from "@/app/actions/age";
@@ -33,7 +34,7 @@ export default function RootLayout({
   const globalJsonLd = [organizationJsonLd, websiteJsonLd];
 
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <link
           rel="preconnect"
@@ -53,20 +54,54 @@ export default function RootLayout({
         >
           <AppSharedUiAdapterProvider>
             <Providers>
-              <div className="flex min-h-screen flex-col bg-black text-zinc-100">
+              <div className="theme-page flex min-h-screen flex-col">
                 <div className="flex-1">{children}</div>
-                <footer className="border-t border-purple-900/40 bg-black/80 px-6 py-6 text-center text-xs text-zinc-400 sm:text-sm">
-                  <p>
+                <footer className="theme-footer px-6 py-8 text-center text-xs sm:text-sm">
+                  <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-center gap-x-5 gap-y-3">
+                    <Link
+                      href="/legal/terms-of-use"
+                      className="text-zinc-300 transition hover:text-white"
+                    >
+                      Terms
+                    </Link>
+                    <Link
+                      href="/legal/privacy-policy"
+                      className="text-zinc-300 transition hover:text-white"
+                    >
+                      Privacy
+                    </Link>
+                    <Link
+                      href="/legal/shipping-policy"
+                      className="text-zinc-300 transition hover:text-white"
+                    >
+                      Shipping
+                    </Link>
+                    <Link
+                      href="/legal/refund-policy"
+                      className="text-zinc-300 transition hover:text-white"
+                    >
+                      Refunds
+                    </Link>
+                    <Link
+                      href="/legal/research-use-only"
+                      className="text-zinc-300 transition hover:text-white"
+                    >
+                      Research Use Only
+                    </Link>
+                  </div>
+                  <p className="mx-auto mt-4 max-w-3xl text-zinc-400">
+                    Products listed on this website are for laboratory research use only and are not intended for human or animal consumption.
+                  </p>
+                  <p className="mt-4 text-zinc-400">
                     Website designed by{" "}
                     <a
                       href="https://www.setfreedigitaldisciples.com"
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-purple-200 underline decoration-dotted underline-offset-4 transition hover:text-white"
+                      className="text-(--accent) underline decoration-dotted underline-offset-4 transition hover:text-(--foreground-strong)"
                     >
                       Set Free Digital Disciples
-                    </a>{" "}
-
+                    </a>
                   </p>
                 </footer>
               </div>

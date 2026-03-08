@@ -6,6 +6,7 @@ import type {
   AppliedReferralResult,
   Order,
   OrderStatus,
+  PaymentMethod,
 } from "@ap/shared-core";
 
 export type SharedUiAuthSession = {
@@ -79,6 +80,10 @@ export type CreateOrderInput = {
   shippingCountry: string;
   saveProfile?: boolean;
   referralCode?: string;
+  paymentMethod?: PaymentMethod;
+  paymentToken?: string;
+  acceptedTerms: boolean;
+  acceptedResearchUse: boolean;
 };
 
 export type CreateOrderResult =
@@ -88,6 +93,8 @@ export type CreateOrderResult =
       orderNumber: string;
       shippingCost: number;
       totalAmount: number;
+      orderStatus: OrderStatus;
+      paymentMethod: PaymentMethod;
     }
   | {
       success: false;
@@ -164,7 +171,7 @@ export type SharedUiAdapters = {
     createOrder?: (input: CreateOrderInput) => Promise<CreateOrderResult>;
     lookupOrder?: (input: {
       orderNumber: string;
-      customerEmail?: string;
+      customerEmail: string;
     }) => Promise<LookupOrderResult>;
     submitOrderStatusForm?: (
       prevState: OrderStatusFormState | undefined,

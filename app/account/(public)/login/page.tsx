@@ -18,7 +18,7 @@ export default async function AccountLoginPage({
   }
 
   return (
-    <div className="min-h-screen bg-black text-zinc-100">
+    <div className="theme-page min-h-screen">
       <NavBar />
       <main className="flex min-h-[60vh] items-center justify-center px-6">
         <AccountLoginForm callbackUrl={params.callbackUrl} />
