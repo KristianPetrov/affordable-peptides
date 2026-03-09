@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 
 import { absoluteUrl, siteMetadata } from "@/lib/seo";
+import { LABORATORY_USE_ONLY_NOTICE } from "@/lib/compliance";
 
-const defaultTitle = `${siteMetadata.name} | Research-Grade Peptides Without the Markup`;
+const defaultTitle = `${siteMetadata.name} | Laboratory Research Materials`;
 const socialImage = absoluteUrl(siteMetadata.socialImagePath);
 const logoImage = absoluteUrl(siteMetadata.logoPath);
 
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   },
   description: siteMetadata.description,
   abstract:
-    "Research-grade peptides, transparent testing, and wholesale pricing for serious investigators.",
+    `Laboratory research materials with transparent documentation. ${LABORATORY_USE_ONLY_NOTICE}`,
   keywords: [...siteMetadata.keywords],
   creator: "Set Free Digital Disciples",
   publisher: siteMetadata.name,
@@ -87,18 +88,6 @@ export const metadata: Metadata = {
     "designed-by":
       "This website was designed by Set Free Digital Disciples – https://www.setfreedigitaldisciples.com",
     "og:logo": logoImage,
-    // Social media profiles for better discoverability
-    "og:see_also": [
-      siteMetadata.socialProfiles.tiktok,
-      siteMetadata.socialProfiles.instagram,
-      siteMetadata.socialProfiles.youtube,
-      siteMetadata.socialProfiles.facebook,
-    ].join(","),
-    "social:tiktok": siteMetadata.socialProfiles.tiktok,
-    "social:instagram": siteMetadata.socialProfiles.instagram,
-    "social:youtube": siteMetadata.socialProfiles.youtube,
-    "social:facebook": siteMetadata.socialProfiles.facebook,
-    // Additional meta tags for better SEO
     "og:image:secure_url": socialImage,
     "og:image:type": "image/png",
   },

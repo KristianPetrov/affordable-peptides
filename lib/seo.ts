@@ -1,6 +1,10 @@
 import type { Product, Variant } from "./products";
 import { SUPPORT_PHONE_DISPLAY, SUPPORT_SMS_LINK } from "./support";
-import { BUSINESS_REVIEW_URL } from "./reviews";
+import {
+    LABORATORY_USE_ONLY_NOTICE,
+    WEBSITE_RESEARCH_DISCLAIMER,
+    getCompliantDetailedDescription,
+} from "./compliance";
 
 type SitemapChangeFrequency =
     | "always"
@@ -36,9 +40,9 @@ const SITE_URL = normalizeSiteUrl(
     process.env.NEXT_PUBLIC_SITE_URL ?? DEFAULT_SITE_URL,
 );
 const DEFAULT_DESCRIPTION =
-    "Affordable Peptides delivers high-purity, research-grade peptides backed by transparent testing, fair pricing, and science-first integrity.";
+    "Affordable Peptides supplies laboratory research materials with analytical transparency, cataloged package options, and research-use-only compliance.";
 const DEFAULT_TAGLINE =
-    "High-purity, research-grade peptides delivered with honesty, transparency, and uncompromising quality.";
+    "Laboratory research materials with transparent documentation and research-use-only positioning.";
 
 export const siteMetadata = {
     name: DEFAULT_SITE_NAME,
@@ -54,30 +58,20 @@ export const siteMetadata = {
     phone: SUPPORT_PHONE_DISPLAY,
     phoneDisplay: SUPPORT_PHONE_DISPLAY,
     smsLink: SUPPORT_SMS_LINK,
-    reviewLink: BUSINESS_REVIEW_URL,
     logoPath: "/affordable-peptides-new-logo-transparent.png",
     socialImagePath: "/opengraph-image",
     keywords: [
         "peptides",
-        "research-grade peptides",
-        "third-party tested peptides",
-        "affordable peptides",
-        "peptide research supplies",
-        "peptide transparency",
-        "lab verified peptides",
-        "tirzepatide",
-        "retatrutide",
-        "peptide research company",
-        "affordable peptides research",
-        "affordable peptides online",
-        "buy research peptides",
-        "research peptides supplier",
-        "research peptides USA",
-        "research peptides for sale",
         "laboratory research peptides",
-        "research grade peptides",
-        "peptides for scientific research"
-        // "GLP-1",
+        "research materials",
+        "scientific research materials",
+        "analytical testing",
+        "certificate of analysis",
+        "laboratory supplies",
+        "peptide catalog",
+        "research documentation",
+        "academic research materials",
+        "institutional research materials",
     ],
     socialProfiles: {
         tiktok: "https://www.tiktok.com/@.affordablepeptides",
@@ -177,7 +171,6 @@ export const absoluteUrl = (path = "/"): string =>
 };
 
 const socialImageUrl = absoluteUrl(siteMetadata.socialImagePath);
-const socialProfileUrls = Object.values(siteMetadata.socialProfiles);
 
 export const organizationJsonLd = {
     "@context": SCHEMA_CONTEXT,
@@ -196,7 +189,6 @@ export const organizationJsonLd = {
             availableLanguage: ["English"],
         },
     ],
-    sameAs: socialProfileUrls,
 } as const;
 
 export const websiteJsonLd = {
@@ -212,7 +204,6 @@ export const websiteJsonLd = {
         name: siteMetadata.name,
         logo: absoluteUrl(siteMetadata.logoPath),
     },
-    sameAs: socialProfileUrls,
     hasPart: primaryNavigation.map((link) => ({
         "@type": "WebPage",
         name: link.name,
@@ -256,7 +247,7 @@ export const createProductJsonLd = ({
         })
         .filter((offer): offer is SchemaOffer => Boolean(offer));
 
-    const description = product.detailedDescription ?? product.researchFocus;
+    const description = getCompliantDetailedDescription(product);
 
     return {
         "@context": SCHEMA_CONTEXT,
@@ -274,6 +265,7 @@ export const createProductJsonLd = ({
         isFamilyFriendly: true,
         keywords: keywords.length ? keywords.join(", ") : undefined,
         category: product.categories.join(", "),
+        disclaimer: `${WEBSITE_RESEARCH_DISCLAIMER} ${LABORATORY_USE_ONLY_NOTICE}`,
         audience: {
             "@type": "Audience",
             audienceType: "Professional researchers",

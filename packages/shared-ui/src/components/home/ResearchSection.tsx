@@ -9,17 +9,17 @@ export default function ResearchSection ()
       <div className="relative mx-auto max-w-5xl space-y-10 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#0b0011] via-[#140024] to-[#1d0032] px-6 py-14 shadow-[0_22px_65px_rgba(55,0,105,0.45)] sm:px-12 sm:py-16">
         <div className="space-y-4 text-center">
           <span className="inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
-            Research & Facts
+            Technical Reference
           </span>
           <h2
             id="research-heading"
             className="text-3xl font-semibold text-white sm:text-4xl"
           >
-            Peptide Purity FAQ
+            Analytical Standards
           </h2>
           <p className="text-base text-zinc-300 sm:text-lg">
-            Straight answers about purity, testing, and what the numbers
-            actually mean for real-world research.
+            Technical notes about purity reporting, analytical testing, and
+            laboratory documentation standards.
           </p>
         </div>
         <dl className="space-y-10 text-left">
@@ -29,8 +29,9 @@ export default function ResearchSection ()
             </dt>
             <dd className="text-base leading-7 text-zinc-300">
               Peptide purity describes what percentage of the material is the
-              intended sequence. The remaining fraction is usually harmless
-              moisture, salts, or tiny peptide fragments that form naturally
+              intended sequence. The remaining fraction is usually
+              non-target material such as moisture, salts, or tiny peptide
+              fragments that form naturally
               during synthesis.
             </dd>
           </div>
@@ -80,23 +81,25 @@ export default function ResearchSection ()
 
           <div className="space-y-3">
             <dt className="text-lg font-semibold text-white sm:text-xl">
-              Do slightly lower purity percentages affect effectiveness?
+              How should labs interpret small purity differences?
             </dt>
             <dd className="text-base leading-7 text-zinc-300">
-              No. A peptide at 97-98% purity contains virtually the same
-              functional material as a 99% sample. The remaining fraction is
-              typically moisture or benign fragments, not harmful contaminants.
+              Small differences between 97%, 98%, and 99% purity should be read
+              in the context of the chromatogram, identity data, and overall lot
+              documentation. The dominant material can still be the intended
+              sequence even when a report is below 99%.
             </dd>
           </div>
 
           <div className="space-y-3">
             <dt className="text-lg font-semibold text-white sm:text-xl">
-              Are the remaining 1-3% unsafe?
+              What typically composes the remaining 1-3%?
             </dt>
             <dd className="text-base leading-7 text-zinc-300">
-              No. The small remainder is commonly water, buffer residues, or
-              microscopic peptide fragments formed during purification. They are
-              considered safe within research-grade standards.
+              The small remainder is commonly water, buffer residues, or
+              microscopic peptide fragments formed during synthesis and
+              purification. Analytical reports and identity testing help labs
+              characterize that remainder appropriately.
             </dd>
           </div>
 
@@ -124,21 +127,21 @@ export default function ResearchSection ()
 
           <div className="space-y-3">
             <dt className="text-lg font-semibold text-white sm:text-xl">
-              Does higher purity always mean a better peptide?
+              Does higher purity always mean stronger documentation?
             </dt>
             <dd className="text-base leading-7 text-zinc-300">
-              Not necessarily. A 98% peptide with documented HPLC data is more
-              reliable than a vague 99%+ claim with no supporting evidence.
-              Authentic data beats marketing language every time.
+              Not necessarily. A 98% lot with documented HPLC data and identity
+              confirmation is generally more informative than a vague 99%+ claim
+              with no supporting evidence. Authentic data beats marketing
+              language every time.
             </dd>
           </div>
         </dl>
         <div className="rounded-2xl border border-purple-400/30 bg-purple-500/10 px-6 py-5 text-center sm:px-8 sm:py-6">
           <p className="text-base font-semibold text-white sm:text-lg">
-            Bottom line: purity in the 97-99% range is normal, high-quality, and
-            expected for credible research peptides. Transparent testing and
-            honest reporting matter far more than chasing perfection in a single
-            number.
+            Bottom line: purity in the 97-99% range is commonly reported for
+            research materials, and transparent analytical documentation matters
+            more than marketing language around a single number.
           </p>
         </div>
       </div>

@@ -6,13 +6,14 @@ import {
   peptideProducts,
   type Product,
 } from "./products";
+import { getCompliantProduct } from "./compliance";
 import { getAllProductInventory } from "./db";
 
 function cloneProductWithInventory(
   product: Product,
   inventoryMap: Map<string, number>
 ): Product {
-  return {
+  return getCompliantProduct({
     ...product,
     variants: product.variants.map((variant) => ({
       ...variant,
@@ -21,7 +22,7 @@ function cloneProductWithInventory(
         0
       ),
     })),
-  };
+  });
 }
 
 export async function getProductsWithInventory(): Promise<Product[]> {

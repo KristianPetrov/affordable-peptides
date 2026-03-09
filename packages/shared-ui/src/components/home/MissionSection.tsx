@@ -19,13 +19,12 @@ export default function MissionSection ()
             Mission Statement
           </h2>
           <p className="text-lg leading-8 text-zinc-200 sm:text-xl">
-            Affordable Peptides exists to make high-quality, research-grade
-            peptides accessible without the inflated pricing or industry
-            mark up. Our mission is to deliver reliable purity,
-            transparent third-party testing, and clear information so customers
-            can make informed decisions with confidence. We combine integrity,
-            science, and responsible practices to raise the standard for the
-            entire peptide space.
+            Affordable Peptides exists to supply laboratory, academic, and
+            institutional researchers with clearly cataloged materials,
+            transparent analytical documentation, and straightforward ordering.
+            Our mission is to present research materials responsibly, avoid
+            human-use marketing, and maintain clear research-use-only
+            positioning across the site.
           </p>
         </div>
       </div>

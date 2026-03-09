@@ -10,6 +10,12 @@ import {
   productCategories,
   type Product,
 } from "@/lib/products";
+import {
+  LABORATORY_USE_ONLY_NOTICE,
+  WEBSITE_RESEARCH_DISCLAIMER,
+  getCompliantDetailedDescription,
+  getCompliantProduct,
+} from "@/lib/compliance";
 import { getProductBySlugWithInventory } from "@/lib/products.server";
 import {
   FALLBACK_PRODUCT_IMAGE,
@@ -45,12 +51,11 @@ const getProductKeywords = (product: Product): string[] => {
 
   const baseKeywords = [
     product.name,
-    `${product.name} peptide`,
-    product.researchFocus,
+    `${product.name} research material`,
     ...categoryNames,
-    "research-grade peptides",
-    "lab tested peptides",
-    "peptide research supply",
+    "laboratory research material",
+    "certificate of analysis",
+    "research-use-only",
   ];
 
   return Array.from(
@@ -111,9 +116,10 @@ export async function generateMetadata({
     };
   }
 
+  const compliantProduct = getCompliantProduct(product);
   const description =
-    product.researchFocus ||
-    "Explore the latest research-grade peptides available for your lab.";
+    getCompliantDetailedDescription(compliantProduct) ||
+    "Review laboratory research materials and analytical documentation.";
 
   const title = `${product.name} | ${siteMetadata.name} Store`;
   const imagePath = getProductImagePath(product);
@@ -121,7 +127,7 @@ export async function generateMetadata({
   const keywords = getProductKeywords(product);
   const canonicalPath = `/store/product/${product.slug}`;
   const categoryLabel =
-    categoryLookup.get(product.categories[0]) ?? "Research Peptide";
+    categoryLookup.get(product.categories[0]) ?? "Research Material";
   const canonicalTestUrl =
     product.testResultUrl ||
     product.variants.find((variant) => variant.testResultUrl)?.testResultUrl;
@@ -144,7 +150,7 @@ export async function generateMetadata({
           url: imageUrl,
           width: 1200,
           height: 630,
-          alt: `${product.name} research peptide vial`,
+          alt: `${product.name} laboratory research material`,
         },
       ],
     },
@@ -156,9 +162,12 @@ export async function generateMetadata({
     },
     other: canonicalTestUrl
       ? {
+          "research-use-notice": `${WEBSITE_RESEARCH_DISCLAIMER} ${LABORATORY_USE_ONLY_NOTICE}`,
           "lab-test-report": canonicalTestUrl,
         }
-      : undefined,
+      : {
+          "research-use-notice": `${WEBSITE_RESEARCH_DISCLAIMER} ${LABORATORY_USE_ONLY_NOTICE}`,
+        },
   };
 }
 

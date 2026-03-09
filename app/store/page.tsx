@@ -6,9 +6,9 @@ import { absoluteUrl, siteMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-const storeTitle = "Research Peptide Storefront";
+const storeTitle = "Research Materials Catalog";
 const storeDescription =
-  "Browse transparent, lab-tested peptides, blends, and research injectables with live inventory and wholesale tiers.";
+  "Browse laboratory research materials, package options, analytical certificates, and current catalog availability.";
 const storeCanonicalUrl = absoluteUrl("/store");
 const storeSocialImage = absoluteUrl(siteMetadata.socialImagePath);
 
@@ -16,10 +16,10 @@ export const metadata: Metadata = {
   title: storeTitle,
   description: storeDescription,
   keywords: [
-    "peptide store",
-    "research peptides catalog",
-    "lab-tested peptides",
-    "bulk peptide pricing",
+    "research materials catalog",
+    "laboratory peptide catalog",
+    "certificate of analysis",
+    "package options",
   ],
   alternates: {
     canonical: storeCanonicalUrl,

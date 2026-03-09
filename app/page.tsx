@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import type { ReactElement, SVGProps } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -8,7 +7,6 @@ import {
   MissionSection,
   NavBar,
   ResearchSection,
-  ReviewsSection,
   VisionSection,
 } from "@ap/shared-ui";
 import
@@ -17,100 +15,17 @@ import
   peptideProducts,
   type Product,
 } from "@/lib/products";
-import { SUPPORT_PHONE_DISPLAY, SUPPORT_SMS_LINK } from "@ap/shared-core";
+import { getCompliantProduct } from "@/lib/compliance";
+import {
+  LABORATORY_USE_ONLY_NOTICE,
+  SUPPORT_PHONE_DISPLAY,
+  SUPPORT_SMS_LINK,
+  WEBSITE_RESEARCH_DISCLAIMER,
+} from "@ap/shared-core";
 import { absoluteUrl, siteMetadata } from "@/lib/seo";
-type IconProps = SVGProps<SVGSVGElement>;
-function TikTokIcon (props: IconProps)
-{
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M21 7.5c-1.9-.1-3.7-.9-5.1-2.2v8.9c0 3.6-2.9 6.5-6.5 6.5S3 17.8 3 14.2c0-3.1 2.2-5.8 5.2-6.4v3.4c-1.1.5-1.8 1.6-1.8 3 0 1.8 1.4 3.2 3.2 3.2s3.2-1.4 3.2-3.2V2h3.6c.4 1.9 1.9 3.4 3.8 3.8V7.5z" />
-    </svg>
-  );
-}
-
-function InstagramIcon (props: IconProps)
-{
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={1.5}
-      aria-hidden="true"
-      {...props}
-    >
-      <rect x={3.5} y={3.5} width={17} height={17} rx={5} />
-      <circle cx={12} cy={12} r={4} />
-      <circle cx={17.5} cy={6.5} r={1.2} fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
-function YouTubeIcon (props: IconProps)
-{
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" {...props}>
-      <rect
-        x={3.25}
-        y={6.75}
-        width={17.5}
-        height={10.5}
-        rx={3}
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={1.5}
-      />
-      <path d="m11 10 4 2-4 2v-4Z" fill="currentColor" />
-    </svg>
-  );
-}
-
-function FacebookIcon (props: IconProps)
-{
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M13.5 22v-8h2.7l.5-3h-3.2V9.1c0-.9.4-1.5 1.6-1.5H17V5.1c-.4-.1-1.6-.2-3-.2-3 0-5 1.8-5 5.2V11H6.3v3H9v8h4.5Z" />
-    </svg>
-  );
-}
 
 const homeUrl = absoluteUrl("/");
 const socialPreviewUrl = absoluteUrl(siteMetadata.socialImagePath);
-
-type SocialLink = {
-  label: string;
-  handle: string;
-  href: string;
-  Icon: (props: IconProps) => ReactElement;
-};
-
-const socialLinks: SocialLink[] = [
-  {
-    label: "TikTok",
-    handle: "@affordable.peptides",
-    href: siteMetadata.socialProfiles.tiktok,
-    Icon: TikTokIcon,
-  },
-  {
-    label: "Instagram",
-    handle: "@affordablepeptides",
-    href: siteMetadata.socialProfiles.instagram,
-    Icon: InstagramIcon,
-  },
-  {
-    label: "YouTube",
-    handle: "@AffordablePeptides",
-    href: siteMetadata.socialProfiles.youtube,
-    Icon: YouTubeIcon,
-  },
-  {
-    label: "Facebook",
-    handle: "Affordable Peptides",
-    href: siteMetadata.socialProfiles.facebook,
-    Icon: FacebookIcon,
-  },
-] as const;
 
 export const metadata: Metadata = {
   title: siteMetadata.name,
@@ -153,14 +68,16 @@ function getShowcaseProducts (): Product[]
 
   const selection = orderedFeatured.slice(0, 3);
   if (selection.length === 3) {
-    return selection;
+    return selection.map(getCompliantProduct);
   }
 
   const remainingPool = peptideProducts.filter(
     (product) => !selection.some((selected) => selected.slug === product.slug)
   );
 
-  return [...selection, ...remainingPool.slice(0, 3 - selection.length)];
+  return [...selection, ...remainingPool.slice(0, 3 - selection.length)].map(
+    getCompliantProduct
+  );
 }
 
 export default function Home ()
@@ -186,7 +103,7 @@ export default function Home ()
           />
           <div className="relative mx-auto flex max-w-5xl flex-col items-center text-center">
             <span className="mb-6 inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
-              Lab-Grade Standards. Real-World Prices.
+              Lab-Grade Standards. Transparent Catalog Pricing.
             </span>
             <Image
               src="/affordable-peptides-new-logo-transparent.png"
@@ -199,14 +116,19 @@ export default function Home ()
               className="h-auto w-full max-w-[480px] drop-shadow-[0_0_35px_rgba(168,85,247,0.45)]"
             />
             <h1 className="mt-10 max-w-3xl text-balance text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">
-              High-purity, research-grade peptides delivered with honesty,
-              transparency, and uncompromising quality.
+              Laboratory research materials with transparent documentation and
+              research-use-only compliance.
             </h1>
             <p className="mt-6 max-w-2xl text-balance text-base text-zinc-300 sm:text-lg">
-              Affordable Peptides brings together rigorous science, transparent
-              third-party testing, and fair pricing so you can focus on what
-              matters most—advancing results that make a difference.
+              Affordable Peptides catalogs peptides and related laboratory
+              materials for academic, institutional, and analytical research.
+              Review package options, analytical certificates, and the
+              research-use-only notices before ordering.
             </p>
+            <div className="mt-6 max-w-3xl rounded-3xl border border-purple-900/60 bg-black/50 px-6 py-4 text-sm text-zinc-300">
+              <p>{WEBSITE_RESEARCH_DISCLAIMER}</p>
+              <p className="mt-2">{LABORATORY_USE_ONLY_NOTICE}</p>
+            </div>
             <div className="mt-10 flex flex-wrap justify-center gap-4">
               <Link
                 href="/store"
@@ -231,24 +153,23 @@ export default function Home ()
           <div className="relative mx-auto max-w-6xl space-y-10">
             <div className="space-y-4 text-center">
               <span className="inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
-                Featured Peptides
+                Research Materials
               </span>
               <h2
                 id="featured-heading"
                 className="text-3xl font-semibold text-white sm:text-4xl"
               >
-                Top selections
+                Catalog highlights
               </h2>
               <p className="mx-auto max-w-3xl text-balance text-base text-zinc-300 sm:text-lg">
-                Explore our most requested products, curated for their popularity,
-                reliability, and results. Select a highlight to learn more in
-                the full store.
+                Review a selection of cataloged materials and open the full
+                store for package details, analytical references, and current
+                availability.
               </p>
             </div>
             <HeroShowcase products={showcaseProducts} />
           </div>
         </section>
-        <ReviewsSection />
         <ResearchSection />
         <MissionSection />
         <VisionSection />
@@ -270,12 +191,12 @@ export default function Home ()
                 id="contact-heading"
                 className="text-3xl font-semibold text-white sm:text-4xl"
               >
-                Talk With Affordable Peptides
+                Research Support
               </h2>
               <p className="mx-auto max-w-2xl text-balance text-base text-zinc-300 sm:text-lg">
-                Have a question about products, availability, or lab partnership
-                opportunities? Reach out anytime and we&apos;ll get back to you
-                quickly.
+                Contact us with catalog, availability, or documentation
+                questions related to laboratory, academic, or institutional
+                research orders.
               </p>
               <div className="mx-auto grid w-full max-w-3xl gap-4 md:grid-cols-2">
                 <div className="flex flex-col items-center gap-3 rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-center">
@@ -289,36 +210,22 @@ export default function Home ()
                     Text {SUPPORT_PHONE_DISPLAY}
                   </a>
                   <p className="text-xs text-zinc-400">
-                    Available daily 6am–9pm PST. Send a text after hours and we&apos;ll get
-                    back to you promptly.
+                    Available daily 6am-9pm PST for catalog and documentation
+                    questions.
                   </p>
                 </div>
                 <div className="rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-left">
                   <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
-                    Social
+                    Compliance Notice
                   </span>
                   <p className="mt-2 text-sm text-zinc-400">
-                    Follow the lab for research drops, compliance updates, and education.
+                    Orders are accepted only for research and identification
+                    purposes within laboratory, academic, or institutional
+                    settings.
                   </p>
-                  <div className="mt-4 space-y-3">
-                    {socialLinks.map(({ Icon, ...link }) => (
-                      <Link
-                        key={link.href}
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        aria-label={`${link.label} (${link.handle})`}
-                        className="flex items-center justify-between gap-4 rounded-xl border border-purple-800/50 bg-purple-500/5 px-4 py-3 text-sm text-white transition hover:border-purple-400 hover:bg-purple-500/10"
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-purple-500/10 text-purple-200">
-                            <Icon className="h-5 w-5" />
-                          </span>
-                          <span className="font-semibold text-white">{link.handle}</span>
-                        </span>
-                        <span className="sr-only">{link.label}</span>
-                      </Link>
-                    ))}
+                  <div className="mt-4 rounded-2xl border border-purple-800/50 bg-purple-500/5 px-4 py-4 text-sm text-zinc-300">
+                    <p>{WEBSITE_RESEARCH_DISCLAIMER}</p>
+                    <p className="mt-3">{LABORATORY_USE_ONLY_NOTICE}</p>
                   </div>
                 </div>
               </div>

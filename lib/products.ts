@@ -38,28 +38,28 @@ export type Product = {
 export const productCategories: ProductCategory[] = [
   {
     id: "weight-metabolic",
-    label: "Weight & Metabolic",
-    description: "Peptides that influence appetite, insulin sensitivity, or fat metabolism.",
+    label: "Metabolic Research",
+    description: "Materials commonly cataloged for metabolic pathway and receptor-signaling studies.",
   },
   {
     id: "recovery-performance",
-    label: "Recovery & Performance",
-    description: "Supports soft-tissue repair, joint resiliency, and athletic output.",
+    label: "Tissue Response Research",
+    description: "Materials commonly cataloged for peptide signaling and tissue-response studies.",
   },
   {
     id: "hormone-growth",
-    label: "Hormone & Growth",
-    description: "Modulates growth hormone, IGF-1, and endocrine balance.",
+    label: "Endocrine Signaling",
+    description: "Materials commonly cataloged for endocrine and receptor-signaling studies.",
   },
   {
     id: "longevity-wellness",
-    label: "Longevity & Wellness",
-    description: "Targets healthy aging, skin rejuvenation, immunity, and cellular energy.",
+    label: "Cellular Research",
+    description: "Materials commonly cataloged for cellular maintenance and aging-pathway studies.",
   },
   {
     id: "support-essentials",
-    label: "Lab Essentials",
-    description: "Sterile supplies and injectables that support compounding workflows.",
+    label: "Laboratory Supplies",
+    description: "Laboratory supplies used for preparation, storage, and handling workflows.",
   },
 ];
 
