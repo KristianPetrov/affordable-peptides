@@ -567,7 +567,7 @@ export function ProductCard ({
                 aria-controls={buyingOptionsId}
                 className="inline-flex flex-1 items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-purple-100 transition hover:border-purple-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:flex-none"
               >
-                {expanded ? "Hide catalog options" : "View catalog options"}
+                {expanded ? "Hide buying options" : "View buying options"}
               </button>
             )}
             {showModalLink && (
@@ -809,7 +809,7 @@ export function ProductCard ({
             </>
           ) : (
             <div className="rounded-2xl border border-purple-900/40 bg-black/60 px-4 py-6 text-center text-sm text-zinc-300">
-              Catalog options are hidden. Use &quot;View catalog options&quot; to
+              Buying options are hidden. Use &quot;View buying options&quot; to
               review available package sizes and pricing.
             </div>
           )}

@@ -105,7 +105,7 @@ export default function HeroShowcase ({ products }: HeroShowcaseProps)
                 </h3>
                 {highlight ? (
                   <p className="text-sm text-zinc-300 sm:text-base">
-                    Catalog option:{" "}
+                    Buying option:{" "}
                     <span className="font-semibold text-white">
                       {highlight.variantLabel}
                     </span>{" "}
