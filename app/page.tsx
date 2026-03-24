@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { SVGProps } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -23,6 +24,17 @@ import {
   WEBSITE_RESEARCH_DISCLAIMER,
 } from "@ap/shared-core";
 import { absoluteUrl, siteMetadata } from "@/lib/seo";
+
+type IconProps = SVGProps<SVGSVGElement>;
+
+function TikTokIcon (props: IconProps)
+{
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
+      <path d="M21 7.5c-1.9-.1-3.7-.9-5.1-2.2v8.9c0 3.6-2.9 6.5-6.5 6.5S3 17.8 3 14.2c0-3.1 2.2-5.8 5.2-6.4v3.4c-1.1.5-1.8 1.6-1.8 3 0 1.8 1.4 3.2 3.2 3.2s3.2-1.4 3.2-3.2V2h3.6c.4 1.9 1.9 3.4 3.8 3.8V7.5z" />
+    </svg>
+  );
+}
 
 const homeUrl = absoluteUrl("/");
 const socialPreviewUrl = absoluteUrl(siteMetadata.socialImagePath);
@@ -216,17 +228,45 @@ export default function Home ()
                 </div>
                 <div className="rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-left">
                   <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
-                    Compliance Notice
+                    Social
                   </span>
                   <p className="mt-2 text-sm text-zinc-400">
-                    Orders are accepted only for research and identification
-                    purposes within laboratory, academic, or institutional
-                    settings.
+                    Follow the lab for research updates, documentation notes, and
+                    education.
                   </p>
-                  <div className="mt-4 rounded-2xl border border-purple-800/50 bg-purple-500/5 px-4 py-4 text-sm text-zinc-300">
-                    <p>{WEBSITE_RESEARCH_DISCLAIMER}</p>
-                    <p className="mt-3">{LABORATORY_USE_ONLY_NOTICE}</p>
+                  <div className="mt-4">
+                    <Link
+                      href={siteMetadata.socialProfiles.tiktok}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      aria-label="TikTok (@affordablepeps)"
+                      className="flex items-center gap-4 rounded-xl border border-purple-800/50 bg-purple-500/5 px-4 py-3 text-sm text-white transition hover:border-purple-400 hover:bg-purple-500/10"
+                    >
+                      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-500/10 text-purple-200">
+                        <TikTokIcon className="h-5 w-5" />
+                      </span>
+                      <span>
+                        TikTok
+                        <span className="block text-xs font-semibold uppercase tracking-[0.35em] text-purple-200">
+                          @affordablepeps
+                        </span>
+                      </span>
+                    </Link>
                   </div>
+                </div>
+              </div>
+              <div className="mx-auto mt-4 w-full max-w-3xl rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-left">
+                <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
+                  Compliance Notice
+                </span>
+                <p className="mt-2 text-sm text-zinc-400">
+                  Orders are accepted only for research and identification
+                  purposes within laboratory, academic, or institutional
+                  settings.
+                </p>
+                <div className="mt-4 rounded-2xl border border-purple-800/50 bg-purple-500/5 px-4 py-4 text-sm text-zinc-300">
+                  <p>{WEBSITE_RESEARCH_DISCLAIMER}</p>
+                  <p className="mt-3">{LABORATORY_USE_ONLY_NOTICE}</p>
                 </div>
               </div>
             </div>

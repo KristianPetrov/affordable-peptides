@@ -74,11 +74,7 @@ export const siteMetadata = {
         "institutional research materials",
     ],
     socialProfiles: {
-        tiktok: "https://www.tiktok.com/@.affordablepeptides",
-        instagram:
-            "https://www.instagram.com/affordablepeptides/?utm_source=ig_web_button_share_sheet",
-        youtube: "https://www.youtube.com/@AffordablePeptides",
-        facebook: "https://www.facebook.com/people/Affordable-Peptides/61584706591479/",
+        tiktok: "https://www.tiktok.com/@affordablepeps",
     },
 } as const;
 
@@ -171,6 +167,7 @@ export const absoluteUrl = (path = "/"): string =>
 };
 
 const socialImageUrl = absoluteUrl(siteMetadata.socialImagePath);
+const socialProfileUrls = Object.values(siteMetadata.socialProfiles);
 
 export const organizationJsonLd = {
     "@context": SCHEMA_CONTEXT,
@@ -189,6 +186,7 @@ export const organizationJsonLd = {
             availableLanguage: ["English"],
         },
     ],
+    sameAs: socialProfileUrls,
 } as const;
 
 export const websiteJsonLd = {
@@ -204,6 +202,7 @@ export const websiteJsonLd = {
         name: siteMetadata.name,
         logo: absoluteUrl(siteMetadata.logoPath),
     },
+    sameAs: socialProfileUrls,
     hasPart: primaryNavigation.map((link) => ({
         "@type": "WebPage",
         name: link.name,

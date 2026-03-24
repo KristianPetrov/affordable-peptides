@@ -408,12 +408,12 @@ function formatCustomerReceiptEmail (
   const itemsHtml = order.items
     .map(
       (item) => `
-    <tr>
-      <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.productName}</td>
-      <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.variantLabel}</td>
-      <td style="padding: 8px; border-bottom: 1px solid #eee;">${item.count} × Qty ${item.tierQuantity}</td>
-      <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">$${(pricing.lineItemTotals[item.key] ?? item.tierPrice * item.count).toFixed(2)}</td>
-    </tr>
+    <div style="border: 1px solid #e5e7eb; border-radius: 12px; background: #ffffff; padding: 16px; margin-bottom: 12px;">
+      <p style="margin: 0 0 10px 0; font-size: 16px; font-weight: 700; color: #111827;">${item.productName}</p>
+      <p style="margin: 0 0 6px 0; font-size: 14px; color: #374151;"><strong>Variant:</strong> ${item.variantLabel}</p>
+      <p style="margin: 0 0 6px 0; font-size: 14px; color: #374151;"><strong>Quantity:</strong> ${item.count} × Qty ${item.tierQuantity}</p>
+      <p style="margin: 0; font-size: 14px; color: #111827;"><strong>Price:</strong> $${(pricing.lineItemTotals[item.key] ?? item.tierPrice * item.count).toFixed(2)}</p>
+    </div>
   `
     )
     .join("");
@@ -432,8 +432,6 @@ function formatCustomerReceiptEmail (
     .content { padding: 28px; }
     .cta { display: inline-block; margin: 16px 0; padding: 14px 28px; border-radius: 9999px; background: #7c3aed; color: white; text-decoration: none; font-weight: bold; }
     .info-block { background: #f9fafb; border-radius: 12px; padding: 20px; margin-bottom: 16px; border: 1px solid #ede9fe; }
-    table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
-    th { text-align: left; background: #f3f4f6; padding: 12px; font-size: 13px; color: #4b5563; letter-spacing: 0.08em; text-transform: uppercase; }
     .total { font-size: 20px; font-weight: bold; text-align: right; padding: 16px; }
     .footer { font-size: 13px; color: #6b7280; text-align: center; margin-top: 24px; }
   </style>
@@ -466,34 +464,36 @@ function formatCustomerReceiptEmail (
 
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 12px;">Payment options</h3>
-          <div style="display: flex; flex-direction: column; gap: 16px;">
-            <div style="border-radius: 12px; background: #ecfdf5; border: 1px solid #34d399; padding: 16px;">
-              <p style="margin: 0; font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 600; color: #047857;">Preferred Method</p>
-              <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: 700; color: #065f46;">Pay with Zelle (No Fees)</p>
-              <p style="margin: 6px 0 0 0; color: #065f46; font-size: 14px;">
-                Send <strong>$${amountDisplay}</strong> to <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>) directly from your bank or Zelle app. This is the fastest way to get your order processed.
-              </p>
-              <p style="margin: 6px 0 0 0; color: #065f46; font-size: 13px;">
-                <strong style="color: #92400e;">Include ONLY the order number ${orderNumber} in the memo.</strong>
-              </p>
-            </div>
-            <div>
-              <a href="${cashAppLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;width:100%;">
-                <div style="border-radius: 8px; background: #059669; color: white; text-align: center; padding: 14px 24px; font-weight: bold;">
-                  Pay $${cashAppDisplay} via Cash App
-                </div>
-              </a>
-              <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee. <strong style="color: #92400e;">Add ONLY the order number ${orderNumber} in the memo.</strong></p>
-            </div>
-            <div>
-              <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display:inline-block;text-decoration:none;width:100%;">
-                <div style="border-radius: 8px; background: #2563eb; color: white; text-align: center; padding: 14px 24px; font-weight: bold;">
-                  Pay $${venmoDisplay} via Venmo
-                </div>
-              </a>
-              <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 1.9% + $0.10 processing fee. <strong style="color: #059669;">Order number is pre-filled in the note.</strong></p>
-            </div>
+          <div style="border-radius: 12px; background: #ecfdf5; border: 1px solid #34d399; padding: 16px;">
+            <p style="margin: 0; font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 600; color: #047857;">Preferred Method</p>
+            <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: 700; color: #065f46;">Pay with Zelle (No Fees)</p>
+            <p style="margin: 6px 0 0 0; color: #065f46; font-size: 14px;">
+              Send <strong>$${amountDisplay}</strong> to <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>) directly from your bank or Zelle app. This is the fastest way to get your order processed.
+            </p>
+            <p style="margin: 6px 0 0 0; color: #065f46; font-size: 13px;">
+              <strong style="color: #92400e;">Include ONLY the order number ${orderNumber} in the memo.</strong>
+            </p>
           </div>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
+            <tr>
+              <td style="border-radius: 8px; background: #059669;">
+                <a href="${cashAppLink}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #059669; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
+                  Pay $${cashAppDisplay} via Cash App
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee. <strong style="color: #92400e;">Add ONLY the order number ${orderNumber} in the memo.</strong></p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
+            <tr>
+              <td style="border-radius: 8px; background: #2563eb;">
+                <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #2563eb; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
+                  Pay $${venmoDisplay} via Venmo
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 1.9% + $0.10 processing fee. <strong style="color: #059669;">Order number is pre-filled in the note.</strong></p>
         </div>
 
         <div class="info-block">
@@ -506,19 +506,10 @@ function formatCustomerReceiptEmail (
           </p>
         </div>
 
-        <table>
-          <thead>
-            <tr>
-              <th>Product</th>
-              <th>Variant</th>
-              <th>Quantity</th>
-              <th style="text-align: right;">Price</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${itemsHtml}
-          </tbody>
-        </table>
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 12px;">Order items</h3>
+          ${itemsHtml}
+        </div>
         <div class="total">
           Items Subtotal: $${itemsSubtotal.toFixed(2)}<br />
           ${referralDiscountAmount > 0 ? `Referral Discount: -$${referralDiscountAmount.toFixed(2)}<br />` : ""}
