@@ -22,6 +22,10 @@ export async function applyReferralCodeAction (input: {
   customerEmail: string;
   cartItems: CartItem[];
   cartSubtotal: number;
+  customerPhone?: string;
+  shippingStreet?: string;
+  shippingZipCode?: string;
+  shippingCountry?: string;
 }): Promise<AppliedReferralResult>
 {
   try {

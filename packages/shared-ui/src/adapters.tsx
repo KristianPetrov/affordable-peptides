@@ -180,6 +180,10 @@ export type SharedUiAdapters = {
       customerEmail: string;
       cartItems: SharedUiCartItem[];
       cartSubtotal: number;
+      customerPhone?: string;
+      shippingStreet?: string;
+      shippingZipCode?: string;
+      shippingCountry?: string;
     }) => Promise<AppliedReferralResult>;
   };
   analytics: {

@@ -154,6 +154,10 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
         customerEmail: formData.customerEmail,
         cartItems,
         cartSubtotal: subtotal,
+        customerPhone: formData.customerPhone,
+        shippingStreet: formData.shippingStreet,
+        shippingZipCode: formData.shippingZipCode,
+        shippingCountry: formData.shippingCountry,
       });
       setReferralResult(result);
       if (result.status === "applied") {
@@ -417,7 +421,10 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
                       Referral Program
                     </h2>
                     <p className="text-sm text-zinc-400">
-                      Apply a partner code to unlock a first-order discount.
+                      Apply a partner code to unlock a first-order discount. We
+                      match the phone and shipping address you entered above so
+                      each first-time discount applies only once per phone or
+                      ship-to address.
                     </p>
                   </div>
                   {appliedReferral && (

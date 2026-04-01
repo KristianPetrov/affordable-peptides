@@ -32,6 +32,13 @@ import type
   ReferralPartnerSummary,
   ReferralCodeSummary,
 } from "@/types/referrals";
+import
+{
+  REFERRAL_IDENTITY_ALREADY_USED_MESSAGE,
+  REFERRAL_IDENTITY_PREREQUISITE_MESSAGE,
+  hasPriorReferralDiscountForIdentity,
+  referralIdentityInputsReady,
+} from "./referral-identity";
 
 const REFERRAL_CODE_CLEANUP = /[^A-Z0-9]/g;
 
@@ -266,6 +273,10 @@ export async function evaluateReferralCodeForCheckout (
     cartItems: CartItem[];
     cartSubtotal: number;
     userId?: string | null;
+    customerPhone?: string;
+    shippingStreet?: string;
+    shippingZipCode?: string;
+    shippingCountry?: string;
   }
 ): Promise<AppliedReferralResult>
 {
@@ -304,6 +315,37 @@ export async function evaluateReferralCodeForCheckout (
       partnerName: existingAttribution.partner.name,
       attributionId: existingAttribution.attribution.id,
       message: `This customer is already assigned to ${existingAttribution.partner.name}.`,
+    };
+  }
+
+  const identityPhone = params.customerPhone?.trim() ?? "";
+  const identityStreet = params.shippingStreet?.trim() ?? "";
+  const identityZip = params.shippingZipCode?.trim() ?? "";
+  const identityCountry = params.shippingCountry?.trim() ?? "";
+  if (
+    !referralIdentityInputsReady({
+      customerPhone: identityPhone,
+      shippingStreet: identityStreet,
+      shippingZipCode: identityZip,
+      shippingCountry: identityCountry,
+    })
+  ) {
+    return {
+      status: "error",
+      message: REFERRAL_IDENTITY_PREREQUISITE_MESSAGE,
+    };
+  }
+  if (
+    await hasPriorReferralDiscountForIdentity({
+      customerPhone: identityPhone,
+      shippingStreet: identityStreet,
+      shippingZipCode: identityZip,
+      shippingCountry: identityCountry,
+    })
+  ) {
+    return {
+      status: "error",
+      message: REFERRAL_IDENTITY_ALREADY_USED_MESSAGE,
     };
   }
 
@@ -355,6 +397,10 @@ export async function resolveReferralForOrder (
     customerName: string;
     userId?: string | null;
     subtotal: number;
+    customerPhone: string;
+    shippingStreet: string;
+    shippingZipCode: string;
+    shippingCountry: string;
   }
 ): Promise<ReferralOrderContext>
 {
@@ -386,6 +432,31 @@ export async function resolveReferralForOrder (
 
   if (!params.referralCode) {
     return null;
+  }
+
+  const identityPhone = params.customerPhone.trim();
+  const identityStreet = params.shippingStreet.trim();
+  const identityZip = params.shippingZipCode.trim();
+  const identityCountry = params.shippingCountry.trim();
+  if (
+    !referralIdentityInputsReady({
+      customerPhone: identityPhone,
+      shippingStreet: identityStreet,
+      shippingZipCode: identityZip,
+      shippingCountry: identityCountry,
+    })
+  ) {
+    throw new Error(REFERRAL_IDENTITY_PREREQUISITE_MESSAGE);
+  }
+  if (
+    await hasPriorReferralDiscountForIdentity({
+      customerPhone: identityPhone,
+      shippingStreet: identityStreet,
+      shippingZipCode: identityZip,
+      shippingCountry: identityCountry,
+    })
+  ) {
+    throw new Error(REFERRAL_IDENTITY_ALREADY_USED_MESSAGE);
   }
 
   const normalizedCode = normalizeReferralCode(params.referralCode);

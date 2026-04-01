@@ -234,6 +234,10 @@ export async function createOrderAction (
         customerName: input.customerName.trim(),
         userId,
         subtotal: calculatedSubtotal,
+        customerPhone: input.customerPhone.trim(),
+        shippingStreet: input.shippingStreet.trim(),
+        shippingZipCode: input.shippingZipCode.trim(),
+        shippingCountry: input.shippingCountry.trim(),
       });
     } catch (error: unknown) {
       return {
