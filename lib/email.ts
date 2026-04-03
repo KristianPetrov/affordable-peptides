@@ -12,6 +12,7 @@ import
   ZELLE_RECIPIENT_NAME,
 } from "./payment-links";
 import { SUPPORT_PHONE_DISPLAY } from "./support";
+import { formatDateTimePacific } from "@/lib/datetime";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -24,24 +25,6 @@ const REPLY_TO_EMAIL = process.env.RESEND_REPLY_TO_EMAIL || DEFAULT_REPLY_TO_EMA
 const FROM_LABEL = process.env.RESEND_FROM_LABEL || "Affordable Peptides";
 
 const FALLBACK_SITE_URL = "http://affordablepeptides.life";
-
-const PACIFIC_TIMEZONE = "America/Los_Angeles";
-
-function formatDateTimePacific (input: string | number | Date): string
-{
-  const date = input instanceof Date ? input : new Date(input);
-  if (Number.isNaN(date.getTime())) return "";
-
-  return new Intl.DateTimeFormat("en-US", {
-    timeZone: PACIFIC_TIMEZONE,
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-    timeZoneName: "short",
-  }).format(date);
-}
 
 function normalizeBaseUrl (input: string): string
 {

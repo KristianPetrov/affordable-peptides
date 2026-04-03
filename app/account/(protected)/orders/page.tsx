@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { getOrdersForUser } from "@/lib/db";
+import { formatDateTimePacific } from "@ap/shared-core";
 import { calculateOrderTotals, formatOrderNumber } from "@/lib/orders";
 
 const statusStyles: Record<string, string> = {
@@ -74,7 +75,7 @@ export default async function AccountOrdersPage ()
                       Order {formatOrderNumber(order.orderNumber)}
                     </p>
                     <p className="text-xs text-zinc-500">
-                      {new Date(order.createdAt).toLocaleString()}
+                      {formatDateTimePacific(order.createdAt)}
                     </p>
                   </div>
                   <span

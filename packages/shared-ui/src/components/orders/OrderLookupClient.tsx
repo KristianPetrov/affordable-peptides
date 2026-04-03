@@ -2,7 +2,13 @@
 
 import type { ChangeEvent, FormEvent } from "react";
 import { useCallback, useEffect, useRef, useState, useTransition, useMemo } from "react";
-import { calculateOrderTotals, formatOrderNumber, type Order } from "@ap/shared-core";
+import
+{
+  calculateOrderTotals,
+  formatDateTimePacific,
+  formatOrderNumber,
+  type Order,
+} from "@ap/shared-core";
 import {
   requireSharedUiAdapter,
   useSharedUiAdapters,
@@ -199,7 +205,7 @@ export default function OrderLookupClient ({
                 Order {formatOrderNumber(result.order.orderNumber)}
               </p>
               <p className="text-xs text-zinc-500">
-                Placed {new Date(result.order.createdAt).toLocaleString()}
+                Placed {formatDateTimePacific(result.order.createdAt)}
               </p>
             </div>
             <span

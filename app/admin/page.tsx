@@ -7,6 +7,7 @@ import {
   OrderStatusForm,
   ReferralDashboard,
 } from "@ap/shared-ui";
+import { formatDateTimePacific } from "@ap/shared-core";
 import { getAllOrders } from "@/lib/db";
 import { calculateOrderTotals, formatOrderNumber } from "@/lib/orders";
 import
@@ -61,12 +62,15 @@ const getCommunicationStatusClass = (status?: string): string => {
   return "border-purple-500/40 bg-purple-500/10 text-purple-200";
 };
 
+const ADMIN_PACIFIC = "America/Los_Angeles";
+
 const formatCommunicationTime = (value?: string): string =>
   value
-    ? new Date(value).toLocaleString("en-US", {
+    ? new Intl.DateTimeFormat("en-US", {
+      timeZone: ADMIN_PACIFIC,
       dateStyle: "short",
       timeStyle: "short",
-    })
+    }).format(new Date(value))
     : "—";
 
 const MONTH_OPTIONS = [
@@ -901,12 +905,7 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                     const shippingCost = totals.shippingCost;
                     const orderTotal = totals.total;
                     const formattedOrderNumber = formatOrderNumber(order.orderNumber);
-                    const formattedDate = new Date(
-                      order.createdAt
-                    ).toLocaleString("en-US", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    });
+                    const formattedDate = formatDateTimePacific(order.createdAt);
                     const communicationRows = [
                       {
                         label: "Order Receipt",

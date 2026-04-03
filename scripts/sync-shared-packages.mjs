@@ -6,6 +6,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = join(__dirname, "..");
 
 const sharedCoreSourceFiles = [
+  ["lib/datetime.ts", "packages/shared-core/src/datetime.ts"],
   ["lib/cart-pricing.ts", "packages/shared-core/src/cart-pricing.ts"],
   ["lib/shipping.ts", "packages/shared-core/src/shipping.ts"],
   ["lib/support.ts", "packages/shared-core/src/support.ts"],

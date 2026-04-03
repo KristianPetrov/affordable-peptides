@@ -15,7 +15,6 @@ import
 } from "./StorefrontContext";
 import
 {
-  PRODUCT_RESEARCH_DISCLAIMER,
   productCategories,
   type Product,
   type ProductCategory,
@@ -75,8 +74,8 @@ type SearchSuggestion = {
 const QUICK_FILTERS: QuickFilter[] = [
   {
     id: "featured",
-    label: "Highlights",
-    description: "Show highlighted catalog entries",
+    label: "Featured",
+    description: "Only show curated best sellers",
   },
   {
     id: "labVerified",
@@ -434,11 +433,7 @@ export function ProductCard ({
             })}
           </div>
           <p className="text-sm text-zinc-400">
-            Review the catalog package options and analytical documentation for
-            this material.
-          </p>
-          <p className="rounded-2xl border border-purple-900/40 bg-purple-500/10 px-4 py-3 text-xs text-zinc-300">
-            {PRODUCT_RESEARCH_DISCLAIMER}
+            Select the dosage and volume tier that fits your research needs.
           </p>
           <div className="rounded-2xl border border-purple-900/40 bg-black/60 p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
@@ -803,14 +798,14 @@ export function ProductCard ({
                 })}
               </div>
               <div className="pt-2 text-xs text-zinc-500">
-                Pricing is displayed for research-use catalog orders only.
-                Contact us for bulk or specialized requests.
+                Pricing shown for research use only. Contact us for bulk or
+                specialized requests.
               </div>
             </>
           ) : (
             <div className="rounded-2xl border border-purple-900/40 bg-black/60 px-4 py-6 text-center text-sm text-zinc-300">
               Buying options are hidden. Use &quot;View buying options&quot; to
-              review available package sizes and pricing.
+              choose a dosage and pricing tier.
             </div>
           )}
         </div>
@@ -879,7 +874,7 @@ export function FloatingCartButton ({
               </h3>
               <p className="mt-1 text-xs text-zinc-400">
                 {cartItems.length === 0
-                  ? "No selections yet. Add catalog items to begin order review."
+                  ? "No selections yet. Add peptides to begin checkout."
                   : "Adjust quantities or remove items before finalizing your order."}
               </p>
             </div>
@@ -909,8 +904,8 @@ export function FloatingCartButton ({
                 )}
                 {cartItems.length > 0 && (
                   <div className="text-[11px] text-purple-200">
-                    Volume pricing applies automatically at the listed 5-unit
-                    and 10-unit tiers.
+                    Volume discounts apply automatically after 5 and 10 bottles
+                    per product.
                   </div>
                 )}
               </div>
@@ -1008,7 +1003,7 @@ export function FloatingCartButton ({
                 </ul>
               ) : (
                 <p className="text-sm text-zinc-400">
-                  Browse the catalog and add products using the &quot;Add to
+                  Browse the catalog and add peptides using the &quot;Add to
                   Cart&quot; button on each product.
                 </p>
               )}
@@ -1078,12 +1073,12 @@ export default function StoreClient ({ products }: StoreClientProps)
     return [{
       id: "all",
       label: "All Products",
-      description: "View the full research materials catalog.",
+      description: "View the entire catalog sorted by popularity.",
     },
     {
       id: "featured",
-      label: "Highlights",
-      description: "Selected catalog entries with current documentation and pricing.",
+      label: "Featured",
+      description: "Our most requested products, curated for their popularity, reliability, and results.",
     },
     ...productCategories,
 
@@ -1319,8 +1314,7 @@ export default function StoreClient ({ products }: StoreClientProps)
               Store
             </span>
             <h1 className="text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">
-              Laboratory research materials with transparent package options and
-              analytical documentation.
+              Research-grade peptides available in flexible volume tiers without the industry markup.
             </h1>
             <div className="flex flex-wrap items-center justify-center gap-3 text-xs uppercase tracking-[0.35em] text-white sm:text-sm">
               <div className="rounded-full border border-green-400/50 bg-green-500/10 px-4 py-2 font-semibold text-green-200 shadow-[0_10px_30px_rgba(16,185,129,0.25)]">
@@ -1340,9 +1334,9 @@ export default function StoreClient ({ products }: StoreClientProps)
               </span>
             </div>
             <p className="mx-auto max-w-3xl text-balance text-base text-zinc-300 sm:text-lg">
-              Every listed material is presented for laboratory, academic, or
-              institutional research only. Review package sizes, current
-              availability, and analytical certificates before placing an order.
+              Every product is independently tested to verify purity and potency
+              before it reaches your lab. Choose the dosage and quantity that
+              matches your protocol, then reach out to complete your order.
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Link
@@ -1368,9 +1362,9 @@ export default function StoreClient ({ products }: StoreClientProps)
                 Browse the Catalog
               </h2>
               <p className="text-sm text-zinc-400 sm:text-base">
-                Review package sizes and pricing tiers for each catalog item.
-                Pricing is displayed for 1, 5, and 10 unit orders; contact us
-                for custom quantities.
+                Select a dosage and quantity tier for each peptide. Pricing is
+                displayed for 1, 5, and 10 unit orders; contact us for custom
+                volumes.
               </p>
             </div>
 
@@ -1406,7 +1400,7 @@ export default function StoreClient ({ products }: StoreClientProps)
                       onChange={(event) => setSearchQuery(event.target.value)}
                       onFocus={handleSearchFocus}
                       onBlur={handleSearchBlur}
-                      placeholder="Search by product name, category, or package..."
+                      placeholder="Search by peptide name, goal, or category..."
                       className="flex-1 bg-transparent text-sm text-white placeholder:text-zinc-500 focus:outline-none"
                     />
                     {searchQuery.length > 0 && (
@@ -1444,7 +1438,7 @@ export default function StoreClient ({ products }: StoreClientProps)
                               </span>
                               {suggestion.isFeatured && (
                                 <span className="rounded-full border border-amber-200/60 px-2 py-0.5 text-[0.55rem] font-semibold uppercase tracking-[0.35em] text-amber-100">
-                                  Highlight
+                                  Featured
                                 </span>
                               )}
                             </div>
@@ -1484,11 +1478,11 @@ export default function StoreClient ({ products }: StoreClientProps)
                 <p className="text-center text-xs text-zinc-400" id={searchHelperId}>
                   Showing {filteredProducts.length} of {categoryMatchedProducts.length}{" "}
                   {activeCategory === "featured"
-                    ? "highlighted catalog items"
+                    ? "featured peptides"
                     : activeCategory === "all"
-                      ? "total catalog items"
+                      ? "total peptides"
                       : `${CATEGORY_LOOKUP.get(activeCategory as ProductCategoryId)
-                        ?.label ?? "catalog items"
+                        ?.label ?? "peptides"
                       }`}
                   .
                   {showClearFilters && (
@@ -1536,7 +1530,7 @@ export default function StoreClient ({ products }: StoreClientProps)
                 </div>
                 <p className="text-center text-xs text-zinc-400">
                   {activeCategoryMeta?.description ??
-                    "View the full research materials catalog."}
+                    "View the entire catalog of peptides sorted by popularity."}
                 </p>
               </div>
               {filteredProducts.length > 0 ? (
@@ -1553,8 +1547,8 @@ export default function StoreClient ({ products }: StoreClientProps)
                 </div>
               ) : (
                 <div className="rounded-3xl border border-purple-900/50 bg-black/60 p-8 text-center text-sm text-zinc-400">
-                  No catalog items match your search yet. Adjust filters or
-                  reach out for sourcing support.
+                  No peptides match your search yet. Adjust filters or reach out for
+                  sourcing support.
                 </div>
               )}
             </div>

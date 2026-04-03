@@ -1,9 +1,3 @@
-import {
-  LABORATORY_USE_ONLY_NOTICE,
-  PRODUCT_RESEARCH_DISCLAIMER,
-  WEBSITE_RESEARCH_DISCLAIMER,
-} from "@ap/shared-core";
-
 type DisclaimerProps = {
   className?: string;
   variant?: "default" | "compact";
@@ -23,8 +17,15 @@ export default function Disclaimer ({
           Research Use Only
         </p>
         <p className="text-zinc-300 leading-relaxed">
-          {WEBSITE_RESEARCH_DISCLAIMER} {LABORATORY_USE_ONLY_NOTICE}{" "}
-          {PRODUCT_RESEARCH_DISCLAIMER}
+          All peptides and related products listed on this website are sold
+          strictly for laboratory research use only. They are not intended for
+          human or animal consumption, medical use, diagnostic use,
+          therapeutic use, or as drugs, foods, cosmetics, or household items.
+          None of the statements or product descriptions on this site have been
+          evaluated by the FDA or any other regulatory authority. Research
+          compounds should be handled only by qualified professionals in
+          appropriate laboratory settings, in accordance with all applicable laws
+          and safety guidelines.
         </p>
       </div>
     );
@@ -45,13 +46,17 @@ export default function Disclaimer ({
         </h2>
         <div className="space-y-3 text-sm text-zinc-300 leading-relaxed">
           <p>
-            {WEBSITE_RESEARCH_DISCLAIMER}
+            All peptides and related products listed on this website are sold
+            strictly for laboratory research use only. They are not intended
+            for human or animal consumption, medical use, diagnostic use,
+            therapeutic use, or as drugs, foods, cosmetics, or household items.
           </p>
           <p>
-            {LABORATORY_USE_ONLY_NOTICE}
-          </p>
-          <p>
-            {PRODUCT_RESEARCH_DISCLAIMER}
+            None of the statements or product descriptions on this site have been
+            evaluated by the FDA or any other regulatory authority. Research
+            compounds should be handled only by qualified professionals in
+            appropriate laboratory settings, in accordance with all applicable
+            laws and safety guidelines.
           </p>
         </div>
       </div>

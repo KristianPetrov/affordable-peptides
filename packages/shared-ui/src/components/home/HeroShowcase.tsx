@@ -105,7 +105,7 @@ export default function HeroShowcase ({ products }: HeroShowcaseProps)
                 </h3>
                 {highlight ? (
                   <p className="text-sm text-zinc-300 sm:text-base">
-                    Buying option:{" "}
+                    Featured dosage:{" "}
                     <span className="font-semibold text-white">
                       {highlight.variantLabel}
                     </span>{" "}
@@ -116,8 +116,7 @@ export default function HeroShowcase ({ products }: HeroShowcaseProps)
                   </p>
                 ) : (
                   <p className="text-sm text-zinc-300 sm:text-base">
-                    Multiple package options available. See full catalog details
-                    in the store.
+                    Multiple dosages available—see all pricing in the store.
                   </p>
                 )}
               </div>

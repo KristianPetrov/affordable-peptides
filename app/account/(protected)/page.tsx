@@ -7,6 +7,7 @@ import
     getOrdersForUser,
     type CustomerProfile,
   } from "@/lib/db";
+import { formatDateTimePacific } from "@ap/shared-core";
 import { calculateOrderTotals, formatOrderNumber } from "@/lib/orders";
 
 const formatCurrency = (value: number) =>
@@ -148,7 +149,7 @@ export default async function AccountOverviewPage ()
                         Order {formatOrderNumber(order.orderNumber)}
                       </p>
                       <p className="text-xs text-zinc-500">
-                        {new Date(order.createdAt).toLocaleDateString()}
+                        {formatDateTimePacific(order.createdAt)}
                       </p>
                     </div>
                     <span className="rounded-full border border-purple-500/60 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
