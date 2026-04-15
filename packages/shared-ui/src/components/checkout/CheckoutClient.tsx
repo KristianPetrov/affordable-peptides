@@ -704,8 +704,8 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
                         </h3>
                         <p className="mt-2 text-sm text-zinc-400">
                           <span className="text-emerald-400">Green</span>.Money™
-                          {" may require the billing address tied to"}
-                          your bank account.
+                          {" may require the billing address tied to your bank account."}
+
                         </p>
                       </div>
                     </div>
