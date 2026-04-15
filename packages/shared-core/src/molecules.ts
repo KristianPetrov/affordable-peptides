@@ -267,6 +267,11 @@ export const moleculesByProduct: MoleculeMap = {
             fallback: pubchemSource("Cyanocobalamin"),
         }),
     ],
+    "Melanotan II": [
+        createLocalMoleculeDefinition("melanotan-ii", "Melanotan II (MT-II)", {
+            fallback: pubchemSource("Melanotan II", { recordType: "2d" }),
+        }),
+    ],
     "MOTS-C": [
         createLocalMoleculeDefinition("mots-c", "MOTS-c", {
             fallback: pubchemSource("MOTS-c", { recordType: "2d" }),

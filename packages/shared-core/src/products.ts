@@ -367,6 +367,19 @@ const productDefinitions: ProductDefinition[] = [
     ],
   },
   {
+    name: "Melanotan II",
+    researchFocus:
+      "Melanocortin receptor agonist researched for pigmentation response and related signaling pathways.",
+    detailedDescription:
+      "Melanotan II (MT-II) is a synthetic melanocortin peptide studied for its activity at melanocortin receptors (including MC1R), making it a common subject in pigmentation and melanogenesis research. It is also investigated in broader melanocortin signaling models that touch satiety and behavioral pathways.",
+    categories: ["longevity-wellness"],
+    variants: [
+      createVariant("10mg", 40, {
+        mockupLabel: "/products/label-melanotan-ii-10mg-3ml.png",
+      }),
+    ],
+  },
+  {
     name: "MOTS-C",
     researchFocus: "Mitochondrial peptide improving insulin sensitivity and performance endurance.",
     detailedDescription: "MOTS-C is a mitochondrial-derived peptide gaining attention for its role in insulin sensitivity, metabolic flexibility, and endurance in preclinical models. It's widely viewed as an \"exercise-mimetic\" candidate in longevity and performance research.",

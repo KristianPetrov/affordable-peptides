@@ -77,8 +77,19 @@ export type CreateOrderInput = {
   shippingState: string;
   shippingZipCode: string;
   shippingCountry: string;
+  billingSameAsShipping?: boolean;
+  billingStreet?: string;
+  billingCity?: string;
+  billingState?: string;
+  billingZipCode?: string;
+  billingCountry?: string;
   saveProfile?: boolean;
   referralCode?: string;
+  paymentMethod?: "manual" | "greenbutton";
+  greenAccountName?: string;
+  greenRoutingNumber?: string;
+  greenAccountNumber?: string;
+  greenBankName?: string;
 };
 
 export type CreateOrderResult =

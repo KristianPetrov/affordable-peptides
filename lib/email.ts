@@ -356,7 +356,10 @@ Action Required: Customer will text payment confirmation. Please verify payment 
 
 function formatCustomerReceiptEmail (
   order: Order,
-  receiptUrl: string
+  receiptUrl: string,
+  options?: {
+    paymentMethod?: "manual" | "greenbutton";
+  }
 ):
   {
     subject: string;
@@ -376,6 +379,7 @@ function formatCustomerReceiptEmail (
     shippingCost === 0 ? "FREE" : `$${shippingCost.toFixed(2)}`;
 
   const amountDisplay = totalWithShipping.toFixed(2);
+  const paymentMethod = options?.paymentMethod ?? "manual";
   const cashAppTotal =
     calculateCashAppTotal(totalWithShipping) || totalWithShipping;
   const venmoTotal = calculateVenmoTotal(totalWithShipping) || totalWithShipping;
@@ -388,6 +392,79 @@ function formatCustomerReceiptEmail (
   });
   const cashAppLink = buildBrandedRedirectUrl(cashAppExternalLink);
   const venmoLink = buildBrandedRedirectUrl(venmoExternalLink);
+  const nextStepsHtml =
+    paymentMethod === "greenbutton"
+      ? `
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
+          <ol style="margin: 0; padding-left: 18px;">
+            <li>Your GreenButton bank payment was submitted during checkout.</li>
+            <li>We’ll continue processing your order and follow up with shipping details.</li>
+          </ol>
+        </div>
+      `
+      : `
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
+          <ol style="margin: 0; padding-left: 18px;">
+            <li>Send payment via Cash App, Venmo, or Zelle using the options below.</li>
+            <li>We’ll confirm manually and follow up with shipping details.</li>
+          </ol>
+        </div>
+      `;
+  const paymentDetailsHtml =
+    paymentMethod === "greenbutton"
+      ? `
+        <div class="info-block" style="background: #ecfdf5; border: 1px solid #34d399;">
+          <h3 style="margin-top: 0; margin-bottom: 8px; color: #065f46;">GreenButton payment submitted</h3>
+          <p style="margin: 0; color: #065f46; font-size: 14px;">
+            We submitted your GreenButton bank payment for <strong>$${amountDisplay}</strong> during checkout.
+            If we need any follow-up information, we'll contact you using the order details on file.
+          </p>
+        </div>
+      `
+      : `
+        <div class="info-block" style="background: #fef3c7; border: 1px solid #fbbf24;">
+          <h3 style="margin-top: 0; margin-bottom: 8px; color: #92400e;">Important: Include ONLY Order Number in Cash App, Venmo, or Zelle Payment Memo</h3>
+          <p style="margin: 0; color: #78350f; font-size: 13px;">
+            When sending payment via Cash App, Venmo, or Zelle, please include <strong>ONLY</strong> your order number <strong>${orderNumber}</strong> in the payment memo/note. This helps us quickly match your payment to your order.
+          </p>
+        </div>
+
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 12px;">Payment options</h3>
+          <div style="border-radius: 12px; background: #ecfdf5; border: 1px solid #34d399; padding: 16px;">
+            <p style="margin: 0; font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 600; color: #047857;">Preferred Method</p>
+            <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: 700; color: #065f46;">Pay with Zelle (No Fees)</p>
+            <p style="margin: 6px 0 0 0; color: #065f46; font-size: 14px;">
+              Send <strong>$${amountDisplay}</strong> to <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>) directly from your bank or Zelle app. This is the fastest way to get your order processed.
+            </p>
+            <p style="margin: 6px 0 0 0; color: #065f46; font-size: 13px;">
+              <strong style="color: #92400e;">Include ONLY the order number ${orderNumber} in the memo.</strong>
+            </p>
+          </div>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
+            <tr>
+              <td style="border-radius: 8px; background: #059669;">
+                <a href="${cashAppLink}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #059669; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
+                  Pay $${cashAppDisplay} via Cash App
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee. <strong style="color: #92400e;">Add ONLY the order number ${orderNumber} in the memo.</strong></p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
+            <tr>
+              <td style="border-radius: 8px; background: #2563eb;">
+                <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #2563eb; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
+                  Pay $${venmoDisplay} via Venmo
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 1.9% + $0.10 processing fee. <strong style="color: #059669;">Order number is pre-filled in the note.</strong></p>
+        </div>
+      `;
   const itemsHtml = order.items
     .map(
       (item) => `
@@ -430,54 +507,8 @@ function formatCustomerReceiptEmail (
         <p>Thanks for choosing Affordable Peptides. Save this email for your records. You can review order details or upload payment confirmation anytime.</p>
         <a class="cta" style="color: #ffffff !important;" href="${receiptUrl}" target="_blank" rel="noopener noreferrer">View Your Order</a>
 
-        <div class="info-block">
-          <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
-          <ol style="margin: 0; padding-left: 18px;">
-            <li>Send payment via Cash App, Venmo, or Zelle using the options below.</li>
-            <li>We’ll confirm manually and follow up with shipping details.</li>
-          </ol>
-        </div>
-
-        <div class="info-block" style="background: #fef3c7; border: 1px solid #fbbf24;">
-          <h3 style="margin-top: 0; margin-bottom: 8px; color: #92400e;">⚠️ Important: Include ONLY Order Number in Payment Memo</h3>
-          <p style="margin: 0; color: #78350f; font-size: 13px;">
-            When sending payment via Cash App, Venmo, or Zelle, please include <strong>ONLY</strong> your order number <strong>${orderNumber}</strong> in the payment memo/note. This helps us quickly match your payment to your order.
-          </p>
-        </div>
-
-        <div class="info-block">
-          <h3 style="margin-top: 0; margin-bottom: 12px;">Payment options</h3>
-          <div style="border-radius: 12px; background: #ecfdf5; border: 1px solid #34d399; padding: 16px;">
-            <p style="margin: 0; font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 600; color: #047857;">Preferred Method</p>
-            <p style="margin: 8px 0 0 0; font-size: 18px; font-weight: 700; color: #065f46;">Pay with Zelle (No Fees)</p>
-            <p style="margin: 6px 0 0 0; color: #065f46; font-size: 14px;">
-              Send <strong>$${amountDisplay}</strong> to <strong>${ZELLE_EMAIL}</strong> (recipient: <strong>${ZELLE_RECIPIENT_NAME}</strong>) directly from your bank or Zelle app. This is the fastest way to get your order processed.
-            </p>
-            <p style="margin: 6px 0 0 0; color: #065f46; font-size: 13px;">
-              <strong style="color: #92400e;">Include ONLY the order number ${orderNumber} in the memo.</strong>
-            </p>
-          </div>
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
-            <tr>
-              <td style="border-radius: 8px; background: #059669;">
-                <a href="${cashAppLink}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #059669; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
-                  Pay $${cashAppDisplay} via Cash App
-                </a>
-              </td>
-            </tr>
-          </table>
-          <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee. <strong style="color: #92400e;">Add ONLY the order number ${orderNumber} in the memo.</strong></p>
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
-            <tr>
-              <td style="border-radius: 8px; background: #2563eb;">
-                <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #2563eb; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
-                  Pay $${venmoDisplay} via Venmo
-                </a>
-              </td>
-            </tr>
-          </table>
-          <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 1.9% + $0.10 processing fee. <strong style="color: #059669;">Order number is pre-filled in the note.</strong></p>
-        </div>
+        ${nextStepsHtml}
+        ${paymentDetailsHtml}
 
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 8px;">Shipping to</h3>
@@ -519,16 +550,24 @@ function formatCustomerReceiptEmail (
     ``,
     `View your order: ${receiptUrl}`,
     ``,
-    `Payment options:`,
-    ``,
-    `⚠️ IMPORTANT: Include order number ${orderNumber} in the payment memo/note for all payment methods.`,
-    ``,
-    `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
-    `  → Include order number ${orderNumber} in the memo`,
-    `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
-    `  → Add order number ${orderNumber} in the memo`,
-    `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
-    `  → Order number is pre-filled in the note`,
+    ...(paymentMethod === "greenbutton"
+      ? [
+          `GreenButton payment submitted:`,
+          `- Your GreenButton bank payment for $${amountDisplay} was submitted during checkout.`,
+          `- We'll contact you if we need any follow-up information.`,
+        ]
+      : [
+          `Payment options:`,
+          ``,
+          `IMPORTANT: Include order number ${orderNumber} in the payment memo/note for Cash App, Venmo, and Zelle.`,
+          ``,
+          `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
+          `  → Include order number ${orderNumber} in the memo`,
+          `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
+          `  → Add order number ${orderNumber} in the memo`,
+          `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
+          `  → Order number is pre-filled in the note`,
+        ]),
     ``,
     `Shipping To:`,
     `${order.customerName}`,
@@ -551,8 +590,15 @@ function formatCustomerReceiptEmail (
     `Total: $${totalWithShipping.toFixed(2)} • ${order.totalUnits} units`,
     ``,
     `Next Steps:`,
-    `1. Send payment via Cash App, Venmo, or Zelle.`,
-    `2. We'll confirm manually and update you once your order ships.`,
+    ...(paymentMethod === "greenbutton"
+      ? [
+          `1. Your GreenButton payment was submitted successfully.`,
+          `2. We'll continue processing the order and update you once it ships.`,
+        ]
+      : [
+          `1. Send payment via Cash App, Venmo, or Zelle.`,
+          `2. We'll confirm manually and update you once your order ships.`,
+        ]),
   ].join("\n");
 
   return {
@@ -585,12 +631,18 @@ function formatOrderSms (order: Order): string
     .join("\n");
 }
 
-export async function sendOrderEmail (order: Order): Promise<void>
+export async function sendOrderEmail (
+  order: Order,
+  options?: {
+    paymentMethod?: "manual" | "greenbutton";
+  }
+): Promise<void>
 {
   const adminEmailContent = formatOrderEmail(order);
   const customerEmailContent = formatCustomerReceiptEmail(
     order,
-    buildOrderLookupUrl(order)
+    buildOrderLookupUrl(order),
+    options
   );
   const smsContent = ADMIN_SMS_EMAIL ? formatOrderSms(order) : null;
 

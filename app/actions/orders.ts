@@ -5,7 +5,9 @@ import { headers } from "next/headers";
 import
 {
   createOrder,
+  deleteOrder,
   getOrderByOrderNumber,
+  updateOrderStatus,
   upsertCustomerProfile,
 } from "@/lib/db";
 import { sendOrderEmail } from "@/lib/email";
@@ -33,6 +35,7 @@ import
   finalizeReferralForOrder,
   resolveReferralForOrder,
 } from "@/lib/referrals";
+import { submitGreenOneTimeDraftRTV } from "@/lib/green";
 
 type CreateOrderInput = {
   items: CartItem[];
@@ -47,8 +50,19 @@ type CreateOrderInput = {
   shippingState: string;
   shippingZipCode: string;
   shippingCountry: string;
+  billingSameAsShipping?: boolean;
+  billingStreet?: string;
+  billingCity?: string;
+  billingState?: string;
+  billingZipCode?: string;
+  billingCountry?: string;
   saveProfile?: boolean;
   referralCode?: string;
+  paymentMethod?: "manual" | "greenbutton";
+  greenAccountName?: string;
+  greenRoutingNumber?: string;
+  greenAccountNumber?: string;
+  greenBankName?: string;
 };
 
 export type CreateOrderResult =
@@ -98,11 +112,33 @@ function formatRetryAfter (ms: number):
   };
 }
 
+function buildGreenOrderNotes (details: {
+  checkId?: string;
+  checkNumber?: string;
+  verifyResult: string;
+  verifyResultDescription: string;
+}): string
+{
+  return [
+    "GreenButton API payment submitted.",
+    details.checkId ? `Green Check_ID: ${details.checkId}` : "",
+    details.checkNumber ? `Green CheckNumber: ${details.checkNumber}` : "",
+    `Green VerifyResult: ${details.verifyResult}`,
+    details.verifyResultDescription
+      ? `Green VerifyResultDescription: ${details.verifyResultDescription}`
+      : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
 export async function createOrderAction (
   input: CreateOrderInput
 ): Promise<CreateOrderResult>
 {
   try {
+    const paymentMethod = input.paymentMethod ?? "manual";
+
     // Validate required fields
     if (
       !input.items ||
@@ -114,6 +150,37 @@ export async function createOrderAction (
         error: "Cart is empty",
         errorCode: "VALIDATION_ERROR",
       };
+    }
+
+    if (paymentMethod === "greenbutton") {
+      if (
+        !input.greenRoutingNumber?.trim() ||
+        !input.greenAccountNumber?.trim() ||
+        !input.greenBankName?.trim()
+      ) {
+        return {
+          success: false,
+          error: "Enter your routing number, account number, and bank name to pay with GreenButton.",
+          errorCode: "VALIDATION_ERROR",
+        };
+      }
+
+      const billingSameAsShipping = input.billingSameAsShipping ?? true;
+      if (!billingSameAsShipping) {
+        if (
+          !input.billingStreet?.trim() ||
+          !input.billingCity?.trim() ||
+          !input.billingState?.trim() ||
+          !input.billingZipCode?.trim() ||
+          !input.billingCountry?.trim()
+        ) {
+          return {
+            success: false,
+            error: "Enter your billing address (or mark it as the same as shipping) to pay with GreenButton.",
+            errorCode: "VALIDATION_ERROR",
+          };
+        }
+      }
     }
 
     if (
@@ -263,7 +330,7 @@ export async function createOrderAction (
     const shippingCost = calculateShippingCost(calculatedSubtotal);
     const totalAmount = finalSubtotal + shippingCost;
 
-    const order = await createOrder({
+    let order = await createOrder({
       id: randomUUID(),
       orderNumber,
       status: "PENDING_PAYMENT",
@@ -295,10 +362,85 @@ export async function createOrderAction (
       referralCommissionAmount: referralContext?.referralCommissionAmount ?? 0,
     });
 
+    if (paymentMethod === "greenbutton") {
+      const greenRoutingNumber = input.greenRoutingNumber?.trim();
+      const greenAccountNumber = input.greenAccountNumber?.trim();
+      const greenBankName = input.greenBankName?.trim();
+      const billingSameAsShipping = input.billingSameAsShipping ?? true;
+      const billingStreet = billingSameAsShipping
+        ? input.shippingStreet
+        : input.billingStreet ?? "";
+      const billingCity = billingSameAsShipping
+        ? input.shippingCity
+        : input.billingCity ?? "";
+      const billingState = billingSameAsShipping
+        ? input.shippingState
+        : input.billingState ?? "";
+      const billingZipCode = billingSameAsShipping
+        ? input.shippingZipCode
+        : input.billingZipCode ?? "";
+      const billingCountry = billingSameAsShipping
+        ? input.shippingCountry
+        : input.billingCountry ?? "";
+
+      let greenResult:
+        | Awaited<ReturnType<typeof submitGreenOneTimeDraftRTV>>
+        | null = null;
+
+      try {
+        greenResult = await submitGreenOneTimeDraftRTV({
+          name: input.greenAccountName?.trim() || input.customerName.trim(),
+          emailAddress: input.customerEmail.trim(),
+          phone: input.customerPhone.trim(),
+          address1: billingStreet.trim(),
+          city: billingCity.trim(),
+          state: billingState.trim(),
+          zip: billingZipCode.trim(),
+          country: billingCountry.trim(),
+          routingNumber: greenRoutingNumber || "",
+          accountNumber: greenAccountNumber || "",
+          bankName: greenBankName || "",
+          checkMemo: `Affordable Peptides Order ${orderNumber}`,
+          checkAmount: totalAmount.toFixed(2),
+          checkDate: now,
+          checkNumber: orderNumber,
+        });
+      } catch (error) {
+        await deleteOrder(order.id);
+        return {
+          success: false,
+          error:
+            error instanceof Error
+              ? error.message
+              : "GreenButton could not process this payment.",
+          errorCode: "UNKNOWN",
+        };
+      }
+
+      const updatedOrder = await updateOrderStatus(
+        order.id,
+        "PAID",
+        buildGreenOrderNotes(greenResult)
+      );
+
+      if (!updatedOrder) {
+        return {
+          success: false,
+          error:
+            "Your GreenButton payment was accepted, but we couldn't finalize the local order record. Please contact support with your order number.",
+          errorCode: "UNKNOWN",
+        };
+      }
+
+      order = updatedOrder;
+    }
+
     await applyInventoryAdjustments(reservation.adjustments);
 
     // Send email notification (non-blocking, don't fail order if email fails)
-    sendOrderEmail(order).catch((error) =>
+    sendOrderEmail(order, {
+      paymentMethod,
+    }).catch((error) =>
     {
       console.error("Failed to send order email:", error);
       // Log but don't throw - order is still created

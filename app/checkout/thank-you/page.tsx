@@ -27,6 +27,7 @@ function ThankYouContent ()
   const orderNumber = searchParams.get("orderNumber");
   const orderId = searchParams.get("orderId");
   const orderAmountParam = searchParams.get("orderAmount");
+  const paymentMethod = searchParams.get("paymentMethod");
   const hasTrackedCheckoutRef = useRef(false);
   const orderAmount = useMemo(() =>
   {
@@ -83,6 +84,7 @@ function ThankYouContent ()
   const venmoLabel = venmoCharge
     ? `Pay via Venmo ($${venmoCharge.toFixed(2)})`
     : "Pay via Venmo";
+  const isGreenButtonPayment = paymentMethod === "greenbutton";
 
   useEffect(() =>
   {
@@ -150,7 +152,9 @@ function ThankYouContent ()
                 </svg>
               </div>
               <h1 className="mb-4 text-3xl font-semibold text-white sm:text-4xl">
-                Order Received!
+                {isGreenButtonPayment
+                  ? "Payment Submitted!"
+                  : "Order Received!"}
               </h1>
               <p className="mb-8 text-lg text-zinc-300">
                 Your Order ID:{" "}
@@ -172,12 +176,14 @@ function ThankYouContent ()
                     </span>
                     <div>
                       <p className="font-medium text-white">
-                        Send your payment via Cash App, Venmo, or Zelle using
-                        the quick links below.
+                        {isGreenButtonPayment
+                          ? "Your GreenButton bank payment was submitted during checkout."
+                          : "Send your payment via Cash App, Venmo, or Zelle using the quick links below."}
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
-                        Include ONLY your order number in the payment note so we can
-                        match it instantly.
+                        {isGreenButtonPayment
+                          ? "We'll continue processing your order and reach out if any follow-up is needed."
+                          : "Include ONLY your order number in the payment note so we can match it instantly."}
                       </p>
                     </div>
                   </li>
@@ -187,11 +193,14 @@ function ThankYouContent ()
                     </span>
                     <div>
                       <p className="font-medium text-white">
-                        Your order ships after manual confirmation.
+                        {isGreenButtonPayment
+                          ? "Your order is now in our fulfillment queue."
+                          : "Your order ships after manual confirmation."}
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
-                        We&apos;ll notify you once your payment is confirmed and
-                        your order is shipped.
+                        {isGreenButtonPayment
+                          ? "We&apos;ll notify you once your order is shipped."
+                          : "We&apos;ll notify you once your payment is confirmed and your order is shipped."}
                       </p>
                     </div>
                   </li>
@@ -202,110 +211,131 @@ function ThankYouContent ()
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-blue-500/40 bg-blue-500/10 p-6 text-center">
-                <p className="text-2xl font-semibold text-blue-100 sm:text-3xl">
-                  If you need to use a credit card, you can check out using Venmo and
-                  use your credit card on there.
-                </p>
-              </div>
-
-              <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 p-6">
-                <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
-                  Instant Payment Links
-                </h3>
-                <div className="rounded-2xl border border-green-500/60 bg-green-500/10 p-4 shadow-[0_10px_35px_rgba(16,185,129,0.25)]">
-                  <p className="text-xs font-semibold uppercase tracking-[0.35em] text-green-200">
-                    Preferred • No Fees
+              {isGreenButtonPayment ? (
+                <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-6">
+                  <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-200">
+                    GreenButton Payment
+                  </h3>
+                  <p className="text-sm text-zinc-100">
+                    Your GreenButton bank payment for{" "}
+                    <span className="font-semibold text-white">
+                      {paymentAmountDisplay ?? "your order total"}
+                    </span>{" "}
+                    was submitted during checkout.
                   </p>
-                  <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p className="text-2xl font-semibold text-green-100">
-                        Pay with Zelle
-                      </p>
-                      <p className="mt-1 text-sm text-green-50/80">
-                        Send{" "}
-                        <span className="font-semibold text-green-50">
-                          {paymentAmountDisplay ?? "your order total"}
-                        </span>{" "}
-                        to{" "}
-                        <span className="font-semibold text-green-50">
-                          {ZELLE_EMAIL}
-                        </span>{" "}
-                        (recipient:{" "}
-                        <span className="font-semibold text-green-50">
-                          {ZELLE_RECIPIENT_NAME}
-                        </span>
-                        ) via the Zelle app or your bank. This is the fastest way to
-                        get your order moving.
-                      </p>
-                      <p className="mt-2 text-xs text-green-100/70">
-                        Include ONLY the order number {orderReference} in the memo so we can match it immediately.
-                      </p>
-                    </div>
-                    <div className="flex flex-col items-stretch gap-2 md:items-end">
-                      <span className="rounded-lg border border-green-400/50 bg-green-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-green-100">
-                        Zelle Details
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => navigator.clipboard?.writeText(ZELLE_EMAIL)}
-                        className="rounded-full bg-green-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-green-400"
-                      >
-                        Copy Email
-                      </button>
-                    </div>
+                  <p className="mt-3 text-sm text-zinc-300">
+                    If we need anything else, we&apos;ll contact you using the
+                    email or phone number on this order.
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="rounded-2xl border border-blue-500/40 bg-blue-500/10 p-6 text-center">
+                    <p className="text-2xl font-semibold text-blue-100 sm:text-3xl">
+                      If you need to use a credit card, you can check out using Venmo and
+                      use your credit card on there.
+                    </p>
                   </div>
-                </div>
-                <p className="mt-6 text-sm text-zinc-300">
-                  Amount due for app payments:{" "}
-                  <span className="font-semibold text-white">
-                    {paymentAmountDisplay ?? "use the total shown above"}
-                  </span>
-                </p>
-                <div className="mt-4 flex flex-col gap-3 md:flex-row">
-                  <Link
-                    href={cashAppLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 rounded-full bg-emerald-500 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-400"
-                  >
-                    {cashAppLabel}
-                  </Link>
-                  <Link
-                    href={venmoLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex-1 rounded-full bg-blue-600 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-blue-500"
-                  >
-                    {venmoLabel}
-                  </Link>
-                </div>
-                <div className="mt-4 rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-4">
-                  <p className="text-sm font-semibold text-yellow-200 mb-2">
-                    ⚠️ Important: Include ONLY the Order Number in Payment Memo
-                  </p>
-                  <p className="text-xs text-yellow-100/90">
-                    When sending payment via Cash App, Venmo, or Zelle, please include ONLY your order number{" "}
-                    <span className="font-semibold">({orderReference})</span> in the payment memo/note. This helps us quickly match your payment to your order. Do not include any other information in the memo.
-                  </p>
-                </div>
-                <ul className="mt-4 space-y-3 text-sm text-zinc-300">
-                  <li className="rounded-xl border border-green-500/40 bg-green-500/5 p-3">
-                    <span className="font-semibold text-green-200">Zelle (Preferred):</span> Free, instant, and no limits from us. Send{" "}
-                    {paymentAmountDisplay ?? "your total"} to{" "}
-                    <span className="font-semibold text-white">{ZELLE_EMAIL}</span> (recipient:{" "}
-                    <span className="font-semibold text-white">{ZELLE_RECIPIENT_NAME}</span>) and place ONLY the order number {orderReference} in the memo.
-                  </li>
-                  <li>
-                    <span className="font-semibold text-white">Cash App:</span> Includes a 2.6% + $0.15 processing fee.{" "}
-                    <span className="text-yellow-200">Add ONLY the order number {orderReference} in the memo.</span>
-                  </li>
-                  <li>
-                    <span className="font-semibold text-white">Venmo:</span> Includes a 1.9% + $0.10 fee.{" "}
-                    <span className="text-yellow-200">The order number is pre-filled in the note.</span>
-                  </li>
-                </ul>
-              </div>
+
+                  <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 p-6">
+                    <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
+                      Instant Payment Links
+                    </h3>
+                    <p className="mt-6 text-sm text-zinc-300">
+                      Amount due for app payments:{" "}
+                      <span className="font-semibold text-white">
+                        {paymentAmountDisplay ?? "use the total shown above"}
+                      </span>
+                    </p>
+                    <div className="rounded-2xl border border-green-500/60 bg-green-500/10 p-4 shadow-[0_10px_35px_rgba(16,185,129,0.25)]">
+                      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-green-200">
+                        Preferred • No Fees
+                      </p>
+                      <div className="mt-3 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <p className="text-2xl font-semibold text-green-100">
+                            Pay with Zelle
+                          </p>
+                          <p className="mt-1 text-sm text-green-50/80">
+                            Send{" "}
+                            <span className="font-semibold text-green-50">
+                              {paymentAmountDisplay ?? "your order total"}
+                            </span>{" "}
+                            to{" "}
+                            <span className="font-semibold text-green-50">
+                              {ZELLE_EMAIL}
+                            </span>{" "}
+                            (recipient:{" "}
+                            <span className="font-semibold text-green-50">
+                              {ZELLE_RECIPIENT_NAME}
+                            </span>
+                            ) via the Zelle app or your bank. This is the fastest way to
+                            get your order moving.
+                          </p>
+                          <p className="mt-2 text-xs text-green-100/70">
+                            Include ONLY the order number {orderReference} in the memo so we can match it immediately.
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-stretch gap-2 md:items-end">
+                          <span className="rounded-lg border     border-green-400/50 bg-green-400/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-green-100">
+                            Zelle Details
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => navigator.clipboard?.writeText(ZELLE_EMAIL)}
+                            className="rounded-full bg-green-500 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white transition hover:bg-green-400"
+                          >
+                            Copy Email
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-4 flex flex-col gap-3 md:flex-row">
+                      <Link
+                        href={cashAppLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 rounded-full bg-emerald-500 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-400"
+                      >
+                        {cashAppLabel}
+                      </Link>
+                      <Link
+                        href={venmoLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex-1 rounded-full bg-blue-600 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-blue-500"
+                      >
+                        {venmoLabel}
+                      </Link>
+                    </div>
+                    <div className="mt-4 rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-4">
+                      <p className="text-sm font-semibold text-yellow-200 mb-2">
+                        ⚠️ Important: Include ONLY the Order Number in Payment Memo
+                      </p>
+                      <p className="text-xs text-yellow-100/90">
+                        When sending payment via Cash App, Venmo, or Zelle, please include ONLY your order number{" "}
+                        <span className="font-semibold">({orderReference})</span> in the payment memo/note. This helps us quickly match your payment to your order. Do not include any other information in the memo.
+                      </p>
+                    </div>
+                    <ul className="mt-4 space-y-3 text-sm text-zinc-300">
+                      <li className="rounded-xl border border-green-500/40 bg-green-500/5 p-3">
+                        <span className="font-semibold text-green-200">Zelle (Preferred):</span> Free, instant, and no limits from us. Send{" "}
+                        {paymentAmountDisplay ?? "your total"} to{" "}
+                        <span className="font-semibold text-white">{ZELLE_EMAIL}</span> (recipient:{" "}
+                        <span className="font-semibold text-white">{ZELLE_RECIPIENT_NAME}</span>) and place ONLY the order number {orderReference} in the memo.
+                      </li>
+                      <li>
+                        <span className="font-semibold text-white">Cash App:</span> Includes a 2.6% + $0.15 processing fee.{" "}
+                        <span className="text-yellow-200">Add ONLY the order number {orderReference} in the memo.</span>
+                      </li>
+                      <li>
+                        <span className="font-semibold text-white">Venmo:</span> Includes a 1.9% + $0.10 fee.{" "}
+                        <span className="text-yellow-200">The order number is pre-filled in the note.</span>
+                      </li>
+                    </ul>
+                  </div>
+                </>
+              )}
 
               <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 p-6">
                 <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">

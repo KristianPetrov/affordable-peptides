@@ -29,6 +29,16 @@ type SessionUser = {
   role?: string;
 } | null;
 
+type PaymentMethod = "greenbutton" | "manual";
+
+type GreenPaymentData = {
+  accountName: string;
+  bankName: string;
+  routingNumber: string;
+  accountNumber: string;
+  confirmAccountNumber: string;
+};
+
 type CheckoutClientProps = {
   profile: CustomerProfile | null;
   sessionUser: SessionUser;
@@ -43,6 +53,8 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
   const [isApplyingReferral, startReferralTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saveProfile, setSaveProfile] = useState(Boolean(sessionUser));
+  const [paymentMethod, setPaymentMethod] =
+    useState<PaymentMethod>("greenbutton");
   const [referralInput, setReferralInput] = useState("");
   const [referralResult, setReferralResult] =
     useState<AppliedReferralResult | null>(null);
@@ -76,13 +88,27 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
       shippingState: profile?.shippingState ?? "",
       shippingZipCode: profile?.shippingZipCode ?? "",
       shippingCountry: profile?.shippingCountry ?? "United States",
+      billingStreet: profile?.shippingStreet ?? "",
+      billingCity: profile?.shippingCity ?? "",
+      billingState: profile?.shippingState ?? "",
+      billingZipCode: profile?.shippingZipCode ?? "",
+      billingCountry: profile?.shippingCountry ?? "United States",
     }),
     [profile, sessionUser]
   );
 
   const [formData, setFormData] = useState(defaultFormValues);
+  const [billingSameAsShipping, setBillingSameAsShipping] = useState(true);
+  const [greenPaymentData, setGreenPaymentData] = useState<GreenPaymentData>({
+    accountName: defaultFormValues.customerName,
+    bankName: "",
+    routingNumber: "",
+    accountNumber: "",
+    confirmAccountNumber: "",
+  });
 
   const isLoggedIn = Boolean(sessionUser);
+  const isOpeningGreenButton = false;
 
   useEffect(() =>
   {
@@ -122,6 +148,16 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
   {
     setFormData({
       ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleGreenPaymentChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) =>
+  {
+    setGreenPaymentData({
+      ...greenPaymentData,
       [e.target.name]: e.target.value,
     });
   };
@@ -177,6 +213,14 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
     e.preventDefault();
     setError(null);
 
+    if (
+      paymentMethod === "greenbutton" &&
+      greenPaymentData.accountNumber !== greenPaymentData.confirmAccountNumber
+    ) {
+      setError("Bank account numbers do not match.");
+      return;
+    }
+
     startTransition(async () =>
     {
       const createOrderAction = requireSharedUiAdapter(
@@ -190,6 +234,12 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
         totalUnits,
         saveProfile: isLoggedIn && saveProfile,
         referralCode: appliedReferral?.code,
+        paymentMethod,
+        greenAccountName: greenPaymentData.accountName,
+        greenRoutingNumber: greenPaymentData.routingNumber,
+        greenAccountNumber: greenPaymentData.accountNumber,
+        greenBankName: greenPaymentData.bankName,
+        billingSameAsShipping,
         ...formData,
       });
 
@@ -198,7 +248,7 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
         router.push(
           `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${result.totalAmount.toFixed(
             2
-          )}`
+          )}&paymentMethod=${paymentMethod}`
         );
         return;
       }
@@ -480,6 +530,299 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
                 )}
               </div>
 
+              <div className="rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(70,0,110,0.45)]">
+                <h2 className="text-xl font-semibold text-white">
+                  Payment Method
+                </h2>
+                <p className="mt-2 text-sm text-zinc-400">
+                  Choose how you'd like to pay for your order.
+                </p>
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("greenbutton")}
+                    className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "greenbutton"
+                      ? "border-emerald-400/70 bg-emerald-500/10 shadow-[0_10px_35px_rgba(16,185,129,0.18)]"
+                      : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                      }`}
+                  >
+                    <span className="mt-3 block text-xl font-semibold text-white">
+                      Pay with{" "}
+                      <span className="text-emerald-400">Green</span>.Money™
+                    </span>
+                    <span className="mt-2 block text-sm text-zinc-300">
+                      Enter your bank details and submit your eCheck directly
+                      from checkout.
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("manual")}
+                    className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "manual"
+                      ? "border-purple-400/70 bg-purple-500/10 shadow-[0_10px_35px_rgba(147,51,234,0.18)]"
+                      : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                      }`}
+                  >
+                    <span className="mt-3 block text-xl font-semibold text-white">
+                      Manual payment
+                    </span>
+                    <span className="mt-2 block text-sm text-zinc-300">
+                      Place the order first, then pay manually on the next
+                      screen using Zelle, Cash App, or Venmo.
+                    </span>
+                  </button>
+                </div>
+                <p className="mt-4 text-xs text-zinc-400">
+                  {paymentMethod === "greenbutton"
+                    ? (
+                        <>
+                          <span className="text-emerald-400">Green</span>.Money™
+                          {" will process the eCheck during checkout."}
+                        </>
+                      )
+                    : "Manual payment instructions appear after the order is placed."}
+                </p>
+              </div>
+
+              {paymentMethod === "greenbutton" && (
+                <div className="rounded-3xl border border-emerald-900/60 bg-linear-to-br from-[#06110d] via-[#07110f] to-black p-6 sm:p-8 shadow-[0_25px_70px_rgba(16,185,129,0.12)]">
+                  <h2 className="text-xl font-semibold text-white">
+                    Bank Account Details
+                  </h2>
+                  <p className="mt-2 text-sm text-zinc-400">
+                    These details are sent securely to{" "}
+                    <span className="text-emerald-400">Green</span>.Money™ from
+                    the
+                    server and are not stored in your order record.
+                  </p>
+                  <div className="mt-6 space-y-4">
+                    <div>
+                      <label
+                        htmlFor="greenAccountName"
+                        className="mb-2 block text-sm font-medium text-emerald-200"
+                      >
+                        Name on Bank Account *
+                      </label>
+                      <input
+                        type="text"
+                        id="greenAccountName"
+                        name="accountName"
+                        required
+                        value={greenPaymentData.accountName}
+                        onChange={handleGreenPaymentChange}
+                        className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                        placeholder="John Doe"
+                      />
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="greenBankName"
+                        className="mb-2 block text-sm font-medium text-emerald-200"
+                      >
+                        Bank Name *
+                      </label>
+                      <input
+                        type="text"
+                        id="greenBankName"
+                        name="bankName"
+                        required
+                        value={greenPaymentData.bankName}
+                        onChange={handleGreenPaymentChange}
+                        className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                        placeholder="Chase"
+                      />
+                    </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <label
+                          htmlFor="greenRoutingNumber"
+                          className="mb-2 block text-sm font-medium text-emerald-200"
+                        >
+                          Routing Number *
+                        </label>
+                        <input
+                          type="text"
+                          id="greenRoutingNumber"
+                          name="routingNumber"
+                          required
+                          inputMode="numeric"
+                          autoComplete="off"
+                          value={greenPaymentData.routingNumber}
+                          onChange={handleGreenPaymentChange}
+                          className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                          placeholder="123456789"
+                        />
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="greenAccountNumber"
+                          className="mb-2 block text-sm font-medium text-emerald-200"
+                        >
+                          Account Number *
+                        </label>
+                        <input
+                          type="password"
+                          id="greenAccountNumber"
+                          name="accountNumber"
+                          required
+                          inputMode="numeric"
+                          autoComplete="off"
+                          value={greenPaymentData.accountNumber}
+                          onChange={handleGreenPaymentChange}
+                          className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                          placeholder="Account number"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label
+                        htmlFor="greenConfirmAccountNumber"
+                        className="mb-2 block text-sm font-medium text-emerald-200"
+                      >
+                        Confirm Account Number *
+                      </label>
+                      <input
+                        type="password"
+                        id="greenConfirmAccountNumber"
+                        name="confirmAccountNumber"
+                        required
+                        inputMode="numeric"
+                        autoComplete="off"
+                        value={greenPaymentData.confirmAccountNumber}
+                        onChange={handleGreenPaymentChange}
+                        className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                        placeholder="Re-enter account number"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="mt-8 rounded-2xl border border-emerald-900/40 bg-black/40 p-5">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-200">
+                          Billing Address
+                        </h3>
+                        <p className="mt-2 text-sm text-zinc-400">
+                          <span className="text-emerald-400">Green</span>.Money™
+                          {" may require the billing address tied to"}
+                          your bank account.
+                        </p>
+                      </div>
+                    </div>
+
+                    <label className="mt-4 flex items-center gap-3 text-sm text-zinc-300">
+                      <input
+                        type="checkbox"
+                        className="h-5 w-5 rounded border border-emerald-900/40 bg-black/60 text-emerald-500 focus:ring-emerald-400"
+                        checked={billingSameAsShipping}
+                        onChange={(event) =>
+                          setBillingSameAsShipping(event.target.checked)
+                        }
+                      />
+                      Billing address is the same as shipping
+                    </label>
+
+                    {!billingSameAsShipping && (
+                      <div className="mt-6 space-y-4">
+                        <div>
+                          <label
+                            htmlFor="billingStreet"
+                            className="mb-2 block text-sm font-medium text-emerald-200"
+                          >
+                            Street Address *
+                          </label>
+                          <input
+                            type="text"
+                            id="billingStreet"
+                            name="billingStreet"
+                            required={!billingSameAsShipping}
+                            value={formData.billingStreet}
+                            onChange={handleChange}
+                            className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                            placeholder="123 Main St"
+                          />
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div>
+                            <label
+                              htmlFor="billingCity"
+                              className="mb-2 block text-sm font-medium text-emerald-200"
+                            >
+                              City *
+                            </label>
+                            <input
+                              type="text"
+                              id="billingCity"
+                              name="billingCity"
+                              required={!billingSameAsShipping}
+                              value={formData.billingCity}
+                              onChange={handleChange}
+                              className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                              placeholder="Los Angeles"
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="billingState"
+                              className="mb-2 block text-sm font-medium text-emerald-200"
+                            >
+                              State *
+                            </label>
+                            <input
+                              type="text"
+                              id="billingState"
+                              name="billingState"
+                              required={!billingSameAsShipping}
+                              value={formData.billingState}
+                              onChange={handleChange}
+                              className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                              placeholder="CA"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid gap-4 sm:grid-cols-2">
+                          <div>
+                            <label
+                              htmlFor="billingZipCode"
+                              className="mb-2 block text-sm font-medium text-emerald-200"
+                            >
+                              ZIP Code *
+                            </label>
+                            <input
+                              type="text"
+                              id="billingZipCode"
+                              name="billingZipCode"
+                              required={!billingSameAsShipping}
+                              value={formData.billingZipCode}
+                              onChange={handleChange}
+                              className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                              placeholder="90001"
+                            />
+                          </div>
+                          <div>
+                            <label
+                              htmlFor="billingCountry"
+                              className="mb-2 block text-sm font-medium text-emerald-200"
+                            >
+                              Country *
+                            </label>
+                            <input
+                              type="text"
+                              id="billingCountry"
+                              name="billingCountry"
+                              required={!billingSameAsShipping}
+                              value={formData.billingCountry}
+                              onChange={handleChange}
+                              className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {error && (
                 <div className="rounded-xl border border-red-500/60 bg-red-500/10 p-4 text-sm text-red-200">
                   {error}
@@ -491,7 +834,18 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
                 disabled={isPending}
                 className="w-full rounded-full bg-purple-600 px-6 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus:visible:ring-2 focus:visible:ring-purple-400 focus:visible:ring-offset-2 focus:visible:ring-offset-black disabled:cursor-not-allowed disabled:bg-purple-900/40"
               >
-                {isPending ? "Submitting Order..." : "Place Order (Pay Manually)"}
+                {isPending
+                  ? paymentMethod === "greenbutton"
+                    ? "Processing Bank Payment..."
+                    : "Submitting Order..."
+                  : paymentMethod === "greenbutton"
+                    ? (
+                        <>
+                          Place Order & Pay with{" "}
+                          <span className="text-emerald-300">Green</span>.Money™
+                        </>
+                      )
+                    : "Place Order (Pay Manually)"}
               </button>
             </form>
           </div>
