@@ -76,7 +76,7 @@ export type PrepareGreenPlaidPayorInput = {
 };
 
 export type PrepareGreenPlaidPayorResult =
-  | { success: true; payorId: string }
+  | { success: true; payorId: string; greenClientId: string }
   | { success: false; error: string };
 
 export type GreenPlaidLinkedBankDisplay = {

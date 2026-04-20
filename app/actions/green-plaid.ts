@@ -1,5 +1,9 @@
 "use server";
 
+import type {
+  PrepareGreenPlaidPayorInput,
+  PrepareGreenPlaidPayorResult,
+} from "@ap/shared-ui/adapters";
 import {
   createGreenPayorForPlaidCheckout,
   getGreenPayorBankDisplay,
@@ -9,21 +13,6 @@ import {
   readCheckoutGreenPayorId,
   setCheckoutGreenPayorCookie,
 } from "@/lib/green-payor-session";
-
-export type PrepareGreenPlaidPayorInput = {
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  shippingStreet: string;
-  shippingCity: string;
-  shippingState: string;
-  shippingZipCode: string;
-  shippingCountry: string;
-};
-
-export type PrepareGreenPlaidPayorResult =
-  | { success: true; payorId: string }
-  | { success: false; error: string };
 
 export type FetchGreenPlaidBankResult =
   | {
@@ -59,7 +48,7 @@ export async function prepareGreenPlaidPayorAction (
       };
     }
 
-    const { payorId } = await createGreenPayorForPlaidCheckout({
+    const { payorId, clientId } = await createGreenPayorForPlaidCheckout({
       customerName: input.customerName,
       customerEmail: input.customerEmail,
       customerPhone: input.customerPhone,
@@ -72,7 +61,7 @@ export async function prepareGreenPlaidPayorAction (
 
     await setCheckoutGreenPayorCookie(payorId);
 
-    return { success: true, payorId };
+    return { success: true, payorId, greenClientId: clientId };
   } catch (error) {
     return {
       success: false,

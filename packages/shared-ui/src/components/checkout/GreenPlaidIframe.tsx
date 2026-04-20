@@ -63,7 +63,7 @@ export function GreenPlaidIframe ({
 {
   const src = useMemo(
     () =>
-      `https://greenbyphone.com/Plaid?client_id=${encodeURIComponent(
+      `https://www.greenbyphone.com/Plaid?client_id=${encodeURIComponent(
         clientId
       )}&customer_id=${encodeURIComponent(payorId)}`,
     [clientId, payorId]

@@ -660,7 +660,7 @@ export async function createGreenPayorForPlaidCheckout (input: {
   shippingState: string;
   shippingZipCode: string;
   shippingCountry: string;
-}): Promise<{ payorId: string }>
+}): Promise<{ payorId: string; clientId: string }>
 {
   const { clientId, apiPassword } = getGreenCredentials();
   const fullName = input.customerName.trim();
@@ -727,7 +727,7 @@ export async function createGreenPayorForPlaidCheckout (input: {
     );
   }
 
-  return { payorId };
+  return { payorId, clientId };
 }
 
 export async function getGreenPayorBankDisplay (

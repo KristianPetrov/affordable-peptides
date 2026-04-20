@@ -142,6 +142,10 @@ export function CheckoutClient ({
   const [greenPlaidPayorId, setGreenPlaidPayorId] = useState<string | null>(
     null
   );
+  /** Same Client_ID Green used in CreateCustomer — must match Plaid iframe or Green returns "customer not found". */
+  const [greenPlaidMerchantClientId, setGreenPlaidMerchantClientId] = useState<
+    string | null
+  >(null);
   const [plaidBankLinkComplete, setPlaidBankLinkComplete] = useState(false);
   const [plaidMaskedBank, setPlaidMaskedBank] = useState<{
     bankName: string;
@@ -173,6 +177,7 @@ export function CheckoutClient ({
     if (paymentMethod !== "greenbutton") {
       setGreenBankEntryMode(plaidLinkingAvailable ? "plaid" : "manual");
       setGreenPlaidPayorId(null);
+      setGreenPlaidMerchantClientId(null);
       setPlaidBankLinkComplete(false);
       setPlaidMaskedBank(null);
       void greenMoneyActions.clearPlaidSession?.();
@@ -266,6 +271,7 @@ export function CheckoutClient ({
   const resetPlaidLinkingState = () =>
   {
     setGreenPlaidPayorId(null);
+    setGreenPlaidMerchantClientId(null);
     setPlaidBankLinkComplete(false);
     setPlaidMaskedBank(null);
     void greenMoneyActions.clearPlaidSession?.();
@@ -295,6 +301,7 @@ export function CheckoutClient ({
         return;
       }
       setGreenPlaidPayorId(result.payorId);
+      setGreenPlaidMerchantClientId(result.greenClientId);
       setPlaidBankLinkComplete(false);
       setPlaidMaskedBank(null);
     });
@@ -794,7 +801,10 @@ export function CheckoutClient ({
                         : (
                             <>
                               <GreenPlaidIframe
-                                clientId={greenMidForPlaidIframe}
+                                clientId={
+                                  greenPlaidMerchantClientId ??
+                                  greenMidForPlaidIframe
+                                }
                                 payorId={greenPlaidPayorId}
                                 onExit={() => setError(null)}
                                 onSuccess={() =>
