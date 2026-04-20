@@ -643,3 +643,214 @@ export async function verifyGreenPayment(input: {
     raw: {},
   };
 }
+
+export type GreenPayorBankDisplay = {
+  payorId: string;
+  bankName: string;
+  routingDisplay: string;
+  accountDisplay: string;
+};
+
+export async function createGreenPayorForPlaidCheckout (input: {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  shippingStreet: string;
+  shippingCity: string;
+  shippingState: string;
+  shippingZipCode: string;
+  shippingCountry: string;
+}): Promise<{ payorId: string }>
+{
+  const { clientId, apiPassword } = getGreenCredentials();
+  const fullName = input.customerName.trim();
+  const nameParts = fullName.split(/\s+/).filter(Boolean);
+  const nameFirst = nameParts[0] ?? "Customer";
+  const nameLast =
+    nameParts.length > 1 ? nameParts.slice(1).join(" ") : nameFirst;
+  const emailSlug = input.customerEmail
+    .trim()
+    .replace(/[^\w@.-]+/g, "")
+    .slice(0, 48);
+  const nick = `chk-${emailSlug}-${Date.now().toString(36)}`.slice(0, 120);
+
+  const body = new URLSearchParams({
+    Client_ID: clientId,
+    ApiPassword: apiPassword,
+    NickName: nick,
+    NameFirst: nameFirst,
+    NameLast: nameLast,
+    PhoneWork: normalizePhone(input.customerPhone),
+    PhoneWorkExtension: "",
+    EmailAddress: input.customerEmail.trim(),
+    MerchantAccountNumber: "",
+    BankAccountCompanyName: (fullName || `${nameFirst} ${nameLast}`).trim(),
+    BankAccountAddress1: input.shippingStreet.trim(),
+    BankAccountAddress2: "",
+    BankAccountCity: input.shippingCity.trim(),
+    BankAccountState: normalizeState(input.shippingState),
+    BankAccountZip: normalizeZip(input.shippingZipCode),
+    BankAccountCountry: normalizeCountry(input.shippingCountry),
+    BankName: "",
+    RoutingNumber: "",
+    AccountNumber: "",
+    Note: "Affordable Peptides checkout — Plaid bank linking pending",
+    x_delim_data: "",
+    x_delim_char: "|",
+  });
+
+  const response = await fetch(getGreenMethodUrl("CreateCustomer"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
+    cache: "no-store",
+  });
+
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    throw new Error(
+      extractXmlValue(responseText, "faultstring") ??
+        "Green could not create a customer record for Plaid linking."
+    );
+  }
+
+  const payorId = extractXmlValue(responseText, "Payor_ID")?.trim();
+  if (!payorId) {
+    const fault =
+      extractXmlValue(responseText, "faultstring") ??
+      extractXmlValue(responseText, "ResultDescription");
+    throw new Error(
+      fault || "Green did not return a Payor_ID for this customer."
+    );
+  }
+
+  return { payorId };
+}
+
+export async function getGreenPayorBankDisplay (
+  payorId: string
+): Promise<GreenPayorBankDisplay>
+{
+  const { clientId, apiPassword } = getGreenCredentials();
+  const body = new URLSearchParams({
+    Client_ID: clientId,
+    ApiPassword: apiPassword,
+    Payor_ID: payorId.trim(),
+    x_delim_data: "",
+    x_delim_char: "|",
+  });
+
+  const response = await fetch(getGreenMethodUrl("GetCustomerInformation"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
+    cache: "no-store",
+  });
+
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    throw new Error(
+      extractXmlValue(responseText, "faultstring") ??
+        "Green could not load linked bank information."
+    );
+  }
+
+  const routingDisplay = extractXmlValue(responseText, "RoutingNumber")?.trim() ?? "";
+  const accountDisplay = extractXmlValue(responseText, "AccountNumber")?.trim() ?? "";
+  const bankName = extractXmlValue(responseText, "BankName")?.trim() ?? "";
+
+  if (!routingDisplay && !accountDisplay) {
+    throw new Error(
+      "No bank account is on file yet. Complete the Plaid flow in the secure frame."
+    );
+  }
+
+  return {
+    payorId: payorId.trim(),
+    bankName,
+    routingDisplay,
+    accountDisplay,
+  };
+}
+
+export async function submitGreenCustomerOneTimeDraftRTV (input: {
+  payorId: string;
+  checkMemo: string;
+  checkAmount: string;
+  checkDate: string | Date;
+  checkNumber: string;
+}): Promise<GreenDraftVerificationResult>
+{
+  const { clientId, apiPassword } = getGreenCredentials();
+  const checkDate =
+    typeof input.checkDate === "string"
+      ? input.checkDate
+      : input.checkDate.toISOString();
+
+  const body = new URLSearchParams({
+    Client_ID: clientId,
+    ApiPassword: apiPassword,
+    Payor_ID: input.payorId.trim(),
+    CheckMemo: input.checkMemo.trim(),
+    CheckAmount: normalizeAmount(input.checkAmount),
+    CheckDate: formatCheckDate(checkDate),
+    x_delim_data: "",
+    x_delim_char: "|",
+  });
+
+  const response = await fetch(getGreenMethodUrl("CustomerOneTimeDraftRTV"), {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/x-www-form-urlencoded",
+    },
+    body,
+    cache: "no-store",
+  });
+
+  const responseText = await response.text();
+
+  if (!response.ok) {
+    const faultString =
+      extractXmlValue(responseText, "faultstring") ??
+      extractXmlValue(responseText, "message");
+    throw new Error(
+      faultString || "GreenButton rejected the payment request."
+    );
+  }
+
+  const result: GreenDraftVerificationResult = {
+    result: extractXmlValue(responseText, "Result"),
+    resultDescription: extractXmlValue(responseText, "ResultDescription"),
+    verifyResult: extractXmlValue(responseText, "VerifyResult") ?? "",
+    verifyResultDescription:
+      extractXmlValue(responseText, "VerifyResultDescription") ?? "",
+    checkNumber: extractXmlValue(responseText, "CheckNumber"),
+    checkId: extractXmlValue(responseText, "Check_ID"),
+  };
+
+  if (result.result && result.result !== "0") {
+    throw new Error(
+      result.resultDescription ||
+        "GreenButton did not accept the payment request."
+    );
+  }
+
+  if (!result.verifyResult) {
+    throw new Error("GreenButton returned an unexpected payment response.");
+  }
+
+  if (result.verifyResult !== "0") {
+    throw new Error(
+      result.verifyResultDescription ||
+        "GreenButton could not verify the bank account."
+    );
+  }
+
+  return result;
+}

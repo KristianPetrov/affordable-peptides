@@ -64,6 +64,32 @@ export type ResetPasswordWithTokenInput = {
   confirmPassword: string;
 };
 
+export type PrepareGreenPlaidPayorInput = {
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  shippingStreet: string;
+  shippingCity: string;
+  shippingState: string;
+  shippingZipCode: string;
+  shippingCountry: string;
+};
+
+export type PrepareGreenPlaidPayorResult =
+  | { success: true; payorId: string }
+  | { success: false; error: string };
+
+export type GreenPlaidLinkedBankDisplay = {
+  payorId: string;
+  bankName: string;
+  routingDisplay: string;
+  accountDisplay: string;
+};
+
+export type FetchGreenPlaidBankResult =
+  | { success: true; display: GreenPlaidLinkedBankDisplay }
+  | { success: false; error: string };
+
 export type CreateOrderInput = {
   items: SharedUiCartItem[];
   subtotal: number;
@@ -90,6 +116,8 @@ export type CreateOrderInput = {
   greenRoutingNumber?: string;
   greenAccountNumber?: string;
   greenBankName?: string;
+  /** When set, checkout used Green.Money Plaid linking; server charges via CustomerOneTimeDraftRTV. */
+  greenPayorId?: string;
 };
 
 export type CreateOrderResult =
@@ -197,6 +225,13 @@ export type SharedUiAdapters = {
       shippingCountry?: string;
     }) => Promise<AppliedReferralResult>;
   };
+  greenMoneyActions: {
+    preparePlaidPayor?: (
+      input: PrepareGreenPlaidPayorInput
+    ) => Promise<PrepareGreenPlaidPayorResult>;
+    fetchPlaidLinkedBank?: () => Promise<FetchGreenPlaidBankResult>;
+    clearPlaidSession?: () => Promise<void>;
+  };
   analytics: {
     trackAddToCart?: (payload: {
       productName: string;
@@ -237,6 +272,7 @@ type SharedUiAdapterOverrides = Partial<{
   customerActions: SharedUiAdapters["customerActions"];
   orderActions: SharedUiAdapters["orderActions"];
   referralActions: SharedUiAdapters["referralActions"];
+  greenMoneyActions: SharedUiAdapters["greenMoneyActions"];
   analytics: SharedUiAdapters["analytics"];
   ageGate: SharedUiAdapters["ageGate"];
 }>;
@@ -250,6 +286,7 @@ const defaultAdapters: SharedUiAdapters = {
   customerActions: {},
   orderActions: {},
   referralActions: {},
+  greenMoneyActions: {},
   analytics: {},
   ageGate: {},
 };
@@ -284,6 +321,10 @@ export function SharedUiAdapterProvider({
       referralActions: {
         ...defaultAdapters.referralActions,
         ...adapters?.referralActions,
+      },
+      greenMoneyActions: {
+        ...defaultAdapters.greenMoneyActions,
+        ...adapters?.greenMoneyActions,
       },
       analytics: {
         ...defaultAdapters.analytics,

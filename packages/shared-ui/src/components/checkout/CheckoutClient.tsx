@@ -12,6 +12,8 @@ import {
   useSharedUiAdapters,
 } from "@ap/shared-ui/adapters";
 
+import { GreenPlaidIframe } from "./GreenPlaidIframe";
+
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
@@ -42,12 +44,24 @@ type GreenPaymentData = {
 type CheckoutClientProps = {
   profile: CustomerProfile | null;
   sessionUser: SessionUser;
+  /**
+   * Green.Money `Client_ID` (MID) for the Plaid iframe. Pass from the server
+   * using `GREEN_CLIENT_ID` / `GREEN_API_CLIENT_ID` so you do not need
+   * `NEXT_PUBLIC_*` duplicates. Optional `NEXT_PUBLIC_GREEN_PLAID_CLIENT_ID` or
+   * `NEXT_PUBLIC_GREEN_CLIENT_ID` still override when set.
+   */
+  greenMoneyPlaidClientId?: string | null;
 };
 
-export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
+export function CheckoutClient ({
+  profile,
+  sessionUser,
+  greenMoneyPlaidClientId,
+}: CheckoutClientProps)
 {
   const router = useRouter();
-  const { orderActions, referralActions } = useSharedUiAdapters();
+  const { orderActions, referralActions, greenMoneyActions } =
+    useSharedUiAdapters();
   const { cartItems, subtotal, totalUnits, lineItemTotals, clearCart } = useStorefront();
   const [isPending, startTransition] = useTransition();
   const [isApplyingReferral, startReferralTransition] = useTransition();
@@ -107,6 +121,36 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
     confirmAccountNumber: "",
   });
 
+  const greenMidForPlaidIframe = useMemo(() =>
+  {
+    const fromServer = (greenMoneyPlaidClientId ?? "").trim();
+    if (fromServer) {
+      return fromServer;
+    }
+    return (
+      process.env.NEXT_PUBLIC_GREEN_PLAID_CLIENT_ID?.trim() ||
+      process.env.NEXT_PUBLIC_GREEN_CLIENT_ID?.trim() ||
+      ""
+    );
+  }, [greenMoneyPlaidClientId]);
+
+  const plaidLinkingAvailable = Boolean(greenMidForPlaidIframe);
+
+  const [greenBankEntryMode, setGreenBankEntryMode] = useState<
+    "manual" | "plaid"
+  >(() => (plaidLinkingAvailable ? "plaid" : "manual"));
+  const [greenPlaidPayorId, setGreenPlaidPayorId] = useState<string | null>(
+    null
+  );
+  const [plaidBankLinkComplete, setPlaidBankLinkComplete] = useState(false);
+  const [plaidMaskedBank, setPlaidMaskedBank] = useState<{
+    bankName: string;
+    routingDisplay: string;
+    accountDisplay: string;
+  } | null>(null);
+  const [isPreparingPlaid, startPlaidPrepare] = useTransition();
+  const [isSyncingPlaidBank, startPlaidBankSync] = useTransition();
+
   const isLoggedIn = Boolean(sessionUser);
   const isOpeningGreenButton = false;
 
@@ -123,6 +167,17 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
       return () => window.clearTimeout(timeoutId);
     }
   }, [subtotal, appliedReferral]);
+
+  useEffect(() =>
+  {
+    if (paymentMethod !== "greenbutton") {
+      setGreenBankEntryMode(plaidLinkingAvailable ? "plaid" : "manual");
+      setGreenPlaidPayorId(null);
+      setPlaidBankLinkComplete(false);
+      setPlaidMaskedBank(null);
+      void greenMoneyActions.clearPlaidSession?.();
+    }
+  }, [paymentMethod, greenMoneyActions, plaidLinkingAvailable]);
 
   if (cartItems.length === 0) {
     return (
@@ -208,6 +263,67 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
     setReferralInput("");
   };
 
+  const resetPlaidLinkingState = () =>
+  {
+    setGreenPlaidPayorId(null);
+    setPlaidBankLinkComplete(false);
+    setPlaidMaskedBank(null);
+    void greenMoneyActions.clearPlaidSession?.();
+  };
+
+  const handlePrepareGreenPlaid = () =>
+  {
+    setError(null);
+    startPlaidPrepare(async () =>
+    {
+      const preparePlaidPayor = requireSharedUiAdapter(
+        greenMoneyActions.preparePlaidPayor,
+        "greenMoneyActions.preparePlaidPayor"
+      );
+      const result = await preparePlaidPayor({
+        customerName: formData.customerName,
+        customerEmail: formData.customerEmail,
+        customerPhone: formData.customerPhone,
+        shippingStreet: formData.shippingStreet,
+        shippingCity: formData.shippingCity,
+        shippingState: formData.shippingState,
+        shippingZipCode: formData.shippingZipCode,
+        shippingCountry: formData.shippingCountry,
+      });
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+      setGreenPlaidPayorId(result.payorId);
+      setPlaidBankLinkComplete(false);
+      setPlaidMaskedBank(null);
+    });
+  };
+
+  const syncPlaidLinkedBank = () =>
+  {
+    startPlaidBankSync(async () =>
+    {
+      const fetchPlaidLinkedBank = requireSharedUiAdapter(
+        greenMoneyActions.fetchPlaidLinkedBank,
+        "greenMoneyActions.fetchPlaidLinkedBank"
+      );
+      const result = await fetchPlaidLinkedBank();
+      if (!result.success) {
+        setError(result.error);
+        setPlaidBankLinkComplete(false);
+        return;
+      }
+      setPlaidMaskedBank({
+        bankName: result.display.bankName,
+        routingDisplay: result.display.routingDisplay,
+        accountDisplay: result.display.accountDisplay,
+      });
+      setPlaidBankLinkComplete(true);
+      setError(null);
+    });
+  };
+
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) =>
   {
     e.preventDefault();
@@ -215,6 +331,16 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
 
     if (
       paymentMethod === "greenbutton" &&
+      greenBankEntryMode === "plaid" &&
+      (!plaidBankLinkComplete || !greenPlaidPayorId)
+    ) {
+      setError("Complete Plaid bank linking before placing your order.");
+      return;
+    }
+
+    if (
+      paymentMethod === "greenbutton" &&
+      greenBankEntryMode === "manual" &&
       greenPaymentData.accountNumber !== greenPaymentData.confirmAccountNumber
     ) {
       setError("Bank account numbers do not match.");
@@ -239,6 +365,12 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
         greenRoutingNumber: greenPaymentData.routingNumber,
         greenAccountNumber: greenPaymentData.accountNumber,
         greenBankName: greenPaymentData.bankName,
+        greenPayorId:
+          paymentMethod === "greenbutton" &&
+            greenBankEntryMode === "plaid" &&
+            greenPlaidPayorId
+            ? greenPlaidPayorId
+            : undefined,
         billingSameAsShipping,
         ...formData,
       });
@@ -590,111 +722,240 @@ export function CheckoutClient ({ profile, sessionUser }: CheckoutClientProps)
                     Bank Account Details
                   </h2>
                   <p className="mt-2 text-sm text-zinc-400">
-                    These details are sent securely to{" "}
-                    <span className="text-emerald-400">Green</span>.Money™ from
-                    the
-                    server and are not stored in your order record.
+                    {greenBankEntryMode === "plaid" && plaidLinkingAvailable
+                      ? (
+                          <>
+                            Link your bank through Green's Plaid flow, confirm
+                            the masked account Green returns, then place your order.
+                            You can switch to manual entry anytime.
+                          </>
+                        )
+                      : (
+                          <>
+                            These details are sent securely to{" "}
+                            <span className="text-emerald-400">Green</span>.Money™
+                            from the server and are not stored in your order record.
+                          </>
+                        )}
                   </p>
-                  <div className="mt-6 space-y-4">
-                    <div>
-                      <label
-                        htmlFor="greenAccountName"
-                        className="mb-2 block text-sm font-medium text-emerald-200"
+
+                  {plaidLinkingAvailable && (
+                    <div className="mt-6 flex flex-wrap gap-2 rounded-2xl border border-emerald-900/40 bg-black/30 p-1">
+                      <button
+                        type="button"
+                        onClick={() =>
+                        {
+                          setGreenBankEntryMode("plaid");
+                          setError(null);
+                        }}
+                        className={`min-h-[44px] flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition sm:flex-none ${greenBankEntryMode === "plaid"
+                          ? "bg-emerald-600 text-white shadow-[0_8px_24px_rgba(16,185,129,0.25)]"
+                          : "text-emerald-100/80 hover:bg-black/40 hover:text-white"
+                          }`}
                       >
-                        Name on Bank Account *
-                      </label>
-                      <input
-                        type="text"
-                        id="greenAccountName"
-                        name="accountName"
-                        required
-                        value={greenPaymentData.accountName}
-                        onChange={handleGreenPaymentChange}
-                        className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
-                        placeholder="John Doe"
-                      />
-                    </div>
-                    <div>
-                      <label
-                        htmlFor="greenBankName"
-                        className="mb-2 block text-sm font-medium text-emerald-200"
+                        Plaid bank link
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                        {
+                          setGreenBankEntryMode("manual");
+                          setError(null);
+                          resetPlaidLinkingState();
+                        }}
+                        className={`min-h-[44px] flex-1 rounded-xl px-4 py-2 text-sm font-semibold transition sm:flex-none ${greenBankEntryMode === "manual"
+                          ? "bg-emerald-600 text-white shadow-[0_8px_24px_rgba(16,185,129,0.25)]"
+                          : "text-emerald-100/80 hover:bg-black/40 hover:text-white"
+                          }`}
                       >
-                        Bank Name *
-                      </label>
-                      <input
-                        type="text"
-                        id="greenBankName"
-                        name="bankName"
-                        required
-                        value={greenPaymentData.bankName}
-                        onChange={handleGreenPaymentChange}
-                        className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
-                        placeholder="Chase"
-                      />
+                        Manual bank entry
+                      </button>
                     </div>
-                    <div className="grid gap-4 sm:grid-cols-2">
+                  )}
+
+                  {plaidLinkingAvailable && greenBankEntryMode === "plaid" && (
+                    <div className="mt-6 space-y-4">
+                      <p className="text-sm text-zinc-400">
+                        Create a secure Green payor for this checkout, finish Plaid in
+                        the frame, then we load your obfuscated routing and account
+                        numbers from Green so you can confirm before paying.
+                      </p>
+                      {!greenPlaidPayorId
+                        ? (
+                            <button
+                              type="button"
+                              onClick={handlePrepareGreenPlaid}
+                              disabled={isPreparingPlaid}
+                              className="w-full rounded-full bg-emerald-600 px-6 py-3 text-sm font-semibold uppercase tracking-[0.15em] text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:bg-emerald-900/50 sm:w-auto"
+                            >
+                              {isPreparingPlaid ? "Preparing…" : "Prepare bank linking"}
+                            </button>
+                          )
+                        : (
+                            <>
+                              <GreenPlaidIframe
+                                clientId={greenMidForPlaidIframe}
+                                payorId={greenPlaidPayorId}
+                                onExit={() => setError(null)}
+                                onSuccess={() =>
+                                {
+                                  setError(null);
+                                  syncPlaidLinkedBank();
+                                }}
+                                onError={(data) =>
+                                {
+                                  const message =
+                                    typeof data === "string"
+                                      ? data
+                                      : data &&
+                                        typeof data === "object" &&
+                                        "message" in data &&
+                                        typeof (data as { message?: string }).message ===
+                                        "string"
+                                        ? (data as { message: string }).message
+                                        : "Plaid reported an error while linking your bank.";
+                                  setError(message);
+                                }}
+                              />
+                              {isSyncingPlaidBank && (
+                                <p className="text-sm text-emerald-200">
+                                  Confirming your bank with Green…
+                                </p>
+                              )}
+                            </>
+                          )}
+                      {plaidMaskedBank && (
+                        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-sm text-zinc-200">
+                          <p className="font-semibold text-emerald-100">
+                            Bank on file (masked)
+                          </p>
+                          <ul className="mt-2 list-none space-y-1 font-mono text-xs sm:text-sm">
+                            <li>
+                              <span className="text-zinc-500">Bank: </span>
+                              {plaidMaskedBank.bankName || "—"}
+                            </li>
+                            <li>
+                              <span className="text-zinc-500">Routing: </span>
+                              {plaidMaskedBank.routingDisplay}
+                            </li>
+                            <li>
+                              <span className="text-zinc-500">Account: </span>
+                              {plaidMaskedBank.accountDisplay}
+                            </li>
+                          </ul>
+                          {plaidBankLinkComplete && (
+                            <p className="mt-3 text-sm text-green-300">
+                              You can place your order — Green has a linked account for
+                              this checkout session.
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {(!plaidLinkingAvailable || greenBankEntryMode === "manual") && (
+                    <div className="mt-6 space-y-4">
                       <div>
                         <label
-                          htmlFor="greenRoutingNumber"
+                          htmlFor="greenAccountName"
                           className="mb-2 block text-sm font-medium text-emerald-200"
                         >
-                          Routing Number *
+                          Name on Bank Account *
                         </label>
                         <input
                           type="text"
-                          id="greenRoutingNumber"
-                          name="routingNumber"
+                          id="greenAccountName"
+                          name="accountName"
                           required
-                          inputMode="numeric"
-                          autoComplete="off"
-                          value={greenPaymentData.routingNumber}
+                          value={greenPaymentData.accountName}
                           onChange={handleGreenPaymentChange}
                           className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
-                          placeholder="123456789"
+                          placeholder="John Doe"
                         />
                       </div>
                       <div>
                         <label
-                          htmlFor="greenAccountNumber"
+                          htmlFor="greenBankName"
                           className="mb-2 block text-sm font-medium text-emerald-200"
                         >
-                          Account Number *
+                          Bank Name *
+                        </label>
+                        <input
+                          type="text"
+                          id="greenBankName"
+                          name="bankName"
+                          required
+                          value={greenPaymentData.bankName}
+                          onChange={handleGreenPaymentChange}
+                          className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                          placeholder="Chase"
+                        />
+                      </div>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div>
+                          <label
+                            htmlFor="greenRoutingNumber"
+                            className="mb-2 block text-sm font-medium text-emerald-200"
+                          >
+                            Routing Number *
+                          </label>
+                          <input
+                            type="text"
+                            id="greenRoutingNumber"
+                            name="routingNumber"
+                            required
+                            inputMode="numeric"
+                            autoComplete="off"
+                            value={greenPaymentData.routingNumber}
+                            onChange={handleGreenPaymentChange}
+                            className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                            placeholder="123456789"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor="greenAccountNumber"
+                            className="mb-2 block text-sm font-medium text-emerald-200"
+                          >
+                            Account Number *
+                          </label>
+                          <input
+                            type="password"
+                            id="greenAccountNumber"
+                            name="accountNumber"
+                            required
+                            inputMode="numeric"
+                            autoComplete="off"
+                            value={greenPaymentData.accountNumber}
+                            onChange={handleGreenPaymentChange}
+                            className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
+                            placeholder="Account number"
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label
+                          htmlFor="greenConfirmAccountNumber"
+                          className="mb-2 block text-sm font-medium text-emerald-200"
+                        >
+                          Confirm Account Number *
                         </label>
                         <input
                           type="password"
-                          id="greenAccountNumber"
-                          name="accountNumber"
+                          id="greenConfirmAccountNumber"
+                          name="confirmAccountNumber"
                           required
                           inputMode="numeric"
                           autoComplete="off"
-                          value={greenPaymentData.accountNumber}
+                          value={greenPaymentData.confirmAccountNumber}
                           onChange={handleGreenPaymentChange}
                           className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
-                          placeholder="Account number"
+                          placeholder="Re-enter account number"
                         />
                       </div>
                     </div>
-                    <div>
-                      <label
-                        htmlFor="greenConfirmAccountNumber"
-                        className="mb-2 block text-sm font-medium text-emerald-200"
-                      >
-                        Confirm Account Number *
-                      </label>
-                      <input
-                        type="password"
-                        id="greenConfirmAccountNumber"
-                        name="confirmAccountNumber"
-                        required
-                        inputMode="numeric"
-                        autoComplete="off"
-                        value={greenPaymentData.confirmAccountNumber}
-                        onChange={handleGreenPaymentChange}
-                        className="w-full rounded-xl border border-emerald-900/40 bg-black/60 px-4 py-3 text-white placeholder-zinc-500 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:ring-offset-2 focus:ring-offset-black"
-                        placeholder="Re-enter account number"
-                      />
-                    </div>
-                  </div>
+                  )}
 
                   <div className="mt-8 rounded-2xl border border-emerald-900/40 bg-black/40 p-5">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">

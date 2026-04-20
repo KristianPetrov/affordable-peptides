@@ -17,6 +17,10 @@ export type {
   AgeGateAction,
   AgeGateFormState,
   ReferralDashboardActions,
+  PrepareGreenPlaidPayorInput,
+  PrepareGreenPlaidPayorResult,
+  GreenPlaidLinkedBankDisplay,
+  FetchGreenPlaidBankResult,
 } from "./adapters";
 
 export { default as NavBar } from "./components/NavBar";

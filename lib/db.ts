@@ -440,6 +440,23 @@ function dbRowToCustomerProfile (
   };
 }
 
+function logCustomerProfileReadError (error: unknown): void
+{
+  if (error instanceof Error) {
+    const cause =
+      "cause" in error && error.cause instanceof Error
+        ? error.cause.message
+        : undefined;
+    console.error(
+      "getCustomerProfile failed:",
+      error.message,
+      cause ? `cause: ${cause}` : ""
+    );
+    return;
+  }
+  console.error("getCustomerProfile failed:", error);
+}
+
 export async function getCustomerProfile (
   userId: string
 ): Promise<CustomerProfile | null>
@@ -448,13 +465,18 @@ export async function getCustomerProfile (
     return null;
   }
 
-  const [row] = await db
-    .select()
-    .from(customerProfiles)
-    .where(eq(customerProfiles.userId, userId))
-    .limit(1);
+  try {
+    const [row] = await db
+      .select()
+      .from(customerProfiles)
+      .where(eq(customerProfiles.userId, userId))
+      .limit(1);
 
-  return row ? dbRowToCustomerProfile(row) : null;
+    return row ? dbRowToCustomerProfile(row) : null;
+  } catch (error) {
+    logCustomerProfileReadError(error);
+    return null;
+  }
 }
 
 export async function upsertCustomerProfile (
