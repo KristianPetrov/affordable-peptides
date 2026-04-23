@@ -270,18 +270,31 @@ export default function Home ()
                 </div>
               </div>
               <address className="mx-auto w-full max-w-3xl rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-left not-italic shadow-[inset_0_1px_0_rgba(255,255,255,0.04)] sm:p-8">
-                <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
-                  Business address
-                </span>
-                <div className="mt-5 flex flex-col gap-8 sm:mt-6 sm:flex-row sm:items-start sm:gap-10">
+                <div className="flex flex-col gap-8 sm:flex-row sm:items-start sm:gap-10">
                   <div className="sm:min-w-0 sm:flex-1">
-                    <p className="text-lg font-semibold tracking-tight text-white">
+                    <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
+                      Business address
+                    </span>
+                    <p className="mt-3 text-lg font-semibold tracking-tight text-white">
                       Affordable Holdings, Inc
                     </p>
                     <p className="mt-3 text-sm leading-relaxed text-zinc-300">
                       1603 Capitol Avenue Suite 405
                       <br />
                       Cheyenne, WY 82001
+                    </p>
+                  </div>
+                  <div className="sm:min-w-0 sm:flex-1 sm:border-l sm:border-purple-800/40 sm:pl-10">
+                    <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
+                      Mailing address
+                    </span>
+                    <p className="mt-3 text-lg font-semibold tracking-tight text-white">
+                      Affordable Holdings, Inc
+                    </p>
+                    <p className="mt-3 text-sm leading-relaxed text-zinc-300">
+                      9825 Magnolia Ave Suite B-375
+                      <br />
+                      Riverside, CA 92503
                     </p>
                   </div>
                   <div className="sm:min-w-0 sm:flex-1 sm:border-l sm:border-purple-800/40 sm:pl-10">
