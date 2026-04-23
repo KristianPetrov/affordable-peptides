@@ -279,9 +279,9 @@ export default function Home ()
                       Affordable Holdings, Inc
                     </p>
                     <p className="mt-3 text-sm leading-relaxed text-zinc-300">
-                      9825 Magnolia Ave Suite B-375
+                      1603 Capitol Avenue Suite 405
                       <br />
-                      Riverside, CA 92503
+                      Cheyenne, WY 82001
                     </p>
                   </div>
                   <div className="sm:min-w-0 sm:flex-1 sm:border-l sm:border-purple-800/40 sm:pl-10">
