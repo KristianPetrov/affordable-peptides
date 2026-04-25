@@ -68,7 +68,7 @@ export function CheckoutClient ({
   const [error, setError] = useState<string | null>(null);
   const [saveProfile, setSaveProfile] = useState(Boolean(sessionUser));
   const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>("greenbutton");
+    useState<PaymentMethod>("manual");
   const [referralInput, setReferralInput] = useState("");
   const [referralResult, setReferralResult] =
     useState<AppliedReferralResult | null>(null);
@@ -155,6 +155,9 @@ export function CheckoutClient ({
   const [isPreparingPlaid, startPlaidPrepare] = useTransition();
   const [isSyncingPlaidBank, startPlaidBankSync] = useTransition();
 
+  const clearPlaidSessionRef = useRef(greenMoneyActions.clearPlaidSession);
+  clearPlaidSessionRef.current = greenMoneyActions.clearPlaidSession;
+
   const isLoggedIn = Boolean(sessionUser);
   const isOpeningGreenButton = false;
 
@@ -180,9 +183,12 @@ export function CheckoutClient ({
       setGreenPlaidMerchantClientId(null);
       setPlaidBankLinkComplete(false);
       setPlaidMaskedBank(null);
-      void greenMoneyActions.clearPlaidSession?.();
+      void clearPlaidSessionRef.current?.();
     }
-  }, [paymentMethod, greenMoneyActions, plaidLinkingAvailable]);
+    // Intentionally omit `greenMoneyActions`: the context object is recreated when
+    // adapter props are unstable; only paymentMethod / plaid availability should
+    // drive this cleanup (latest clearPlaidSession via ref).
+  }, [paymentMethod, plaidLinkingAvailable]);
 
   if (cartItems.length === 0) {
     return (
@@ -674,40 +680,49 @@ export function CheckoutClient ({
                   Payment Method
                 </h2>
                 <p className="mt-2 text-sm text-zinc-400">
-                  Choose how you'd like to pay for your order.
+                  Complete checkout with manual payment (Zelle, Cash App, or
+                  Venmo).{" "}
+                  <span className="text-zinc-500">
+                    Green.Money™ eCheck is optional if you prefer to pay from
+                    your bank during checkout.
+                  </span>
                 </p>
-                <div className="mt-6 grid gap-4 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod("greenbutton")}
-                    className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "greenbutton"
-                      ? "border-emerald-400/70 bg-emerald-500/10 shadow-[0_10px_35px_rgba(16,185,129,0.18)]"
-                      : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
-                      }`}
-                  >
-                    <span className="mt-3 block text-xl font-semibold text-white">
-                      Pay with{" "}
-                      <span className="text-emerald-400">Green</span>.Money™
-                    </span>
-                    <span className="mt-2 block text-sm text-zinc-300">
-                      Enter your bank details and submit your eCheck directly
-                      from checkout.
-                    </span>
-                  </button>
+                <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-stretch">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("manual")}
-                    className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "manual"
+                    className={`rounded-2xl border p-5 text-left transition lg:min-w-0 lg:flex-1 ${paymentMethod === "manual"
                       ? "border-purple-400/70 bg-purple-500/10 shadow-[0_10px_35px_rgba(147,51,234,0.18)]"
                       : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
                       }`}
                   >
-                    <span className="mt-3 block text-xl font-semibold text-white">
+                    <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-purple-300/90">
+                      Recommended
+                    </span>
+                    <span className="mt-2 block text-xl font-semibold text-white">
                       Manual payment
                     </span>
                     <span className="mt-2 block text-sm text-zinc-300">
                       Place the order first, then pay manually on the next
                       screen using Zelle, Cash App, or Venmo.
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod("greenbutton")}
+                    className={`rounded-2xl border p-4 text-left transition lg:w-72 lg:shrink-0 ${paymentMethod === "greenbutton"
+                      ? "border-emerald-400/70 bg-emerald-500/10 shadow-[0_10px_35px_rgba(16,185,129,0.18)]"
+                      : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                      }`}
+                  >
+                    <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                      Optional
+                    </span>
+                    <span className="mt-2 block text-lg font-semibold text-white">
+                      <span className="text-emerald-400">Green</span>.Money™
+                    </span>
+                    <span className="mt-2 block text-sm text-zinc-400">
+                      eCheck with bank details or Plaid during checkout.
                     </span>
                   </button>
                 </div>
