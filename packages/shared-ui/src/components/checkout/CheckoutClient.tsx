@@ -31,7 +31,7 @@ type SessionUser = {
   role?: string;
 } | null;
 
-type PaymentMethod = "greenbutton" | "manual" | "stripe_link";
+type PaymentMethod = "greenbutton" | "manual" | "card_link";
 
 type GreenPaymentData = {
   accountName: string;
@@ -680,8 +680,9 @@ export function CheckoutClient ({
                   Payment Method
                 </h2>
                 <p className="mt-2 text-sm text-zinc-400">
-                  Choose manual payment (Zelle, Cash App, or Venmo), pay by card
-                  via a Stripe link we email you after checkout, or use optional{" "}
+                  Choose manual payment (Zelle, Cash App, or Venmo), pay with a
+                  debit or credit card using a secure link we email you after
+                  checkout, or use optional{" "}
                   <span className="text-zinc-500">
                     <span className="text-emerald-400">Green</span>.Money™ eCheck
                     during checkout.
@@ -709,8 +710,8 @@ export function CheckoutClient ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod("stripe_link")}
-                    className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "stripe_link"
+                    onClick={() => setPaymentMethod("card_link")}
+                    className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "card_link"
                       ? "border-indigo-400/70 bg-indigo-500/10 shadow-[0_10px_35px_rgba(99,102,241,0.22)]"
                       : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
                       }`}
@@ -719,11 +720,12 @@ export function CheckoutClient ({
                       Card by email
                     </span>
                     <span className="mt-2 block text-xl font-semibold text-white">
-                      Pay with Stripe
+                      Debit / credit card
                     </span>
                     <span className="mt-2 block text-sm text-zinc-300">
-                      We email you a secure link to pay by card after you place
-                      the order (no card details collected on this site).
+                      We email you a secure link to pay with your debit or credit
+                      card after you place the order (no card details collected on
+                      this site).
                     </span>
                   </button>
                   <button
@@ -753,8 +755,8 @@ export function CheckoutClient ({
                           {" will process the eCheck during checkout."}
                         </>
                       )
-                    : paymentMethod === "stripe_link"
-                      ? "The Stripe payment link is sent only in your order confirmation email."
+                    : paymentMethod === "card_link"
+                      ? "The card payment link is sent only in your order confirmation email."
                       : "Manual payment instructions appear after the order is placed."}
                 </p>
               </div>
@@ -1152,8 +1154,8 @@ export function CheckoutClient ({
                           <span className="text-emerald-300">Green</span>.Money™
                         </>
                       )
-                    : paymentMethod === "stripe_link"
-                      ? "Place Order (Stripe link in email)"
+                    : paymentMethod === "card_link"
+                      ? "Place Order (card link in email)"
                       : "Place Order (Pay Manually)"}
               </button>
             </form>

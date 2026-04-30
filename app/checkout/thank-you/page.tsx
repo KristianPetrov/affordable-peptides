@@ -85,7 +85,7 @@ function ThankYouContent ()
     ? `Pay via Venmo ($${venmoCharge.toFixed(2)})`
     : "Pay via Venmo";
   const isGreenButtonPayment = paymentMethod === "greenbutton";
-  const isStripeLinkPayment = paymentMethod === "stripe_link";
+  const isCardLinkPayment = paymentMethod === "card_link";
 
   useEffect(() =>
   {
@@ -155,7 +155,7 @@ function ThankYouContent ()
               <h1 className="mb-4 text-3xl font-semibold text-white sm:text-4xl">
                 {isGreenButtonPayment
                   ? "Payment Submitted!"
-                  : isStripeLinkPayment
+                  : isCardLinkPayment
                     ? "Order received — check your email"
                     : "Order Received!"}
               </h1>
@@ -181,14 +181,14 @@ function ThankYouContent ()
                       <p className="font-medium text-white">
                         {isGreenButtonPayment
                           ? "Your GreenButton bank payment was submitted during checkout."
-                          : isStripeLinkPayment
-                            ? "Open your order confirmation email and use the Pay with card (Stripe) button or link."
+                          : isCardLinkPayment
+                            ? "Open your order confirmation email and use the Pay with debit or credit card button or link."
                             : "Send your payment via Cash App, Venmo, or Zelle using the quick links below."}
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
                         {isGreenButtonPayment
                           ? "We'll continue processing your order and reach out if any follow-up is needed."
-                          : isStripeLinkPayment
+                          : isCardLinkPayment
                             ? "The secure checkout page opens on our payment partner site. Zelle, Cash App, and Venmo instructions are also in that email if you change your mind."
                             : "Include ONLY your order number in the payment note so we can match it instantly."}
                       </p>
@@ -202,14 +202,14 @@ function ThankYouContent ()
                       <p className="font-medium text-white">
                         {isGreenButtonPayment
                           ? "Your order is now in our fulfillment queue."
-                          : isStripeLinkPayment
+                          : isCardLinkPayment
                             ? "We ship after your payment is confirmed."
                             : "Your order ships after manual confirmation."}
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
                         {isGreenButtonPayment
                           ? "We&apos;ll notify you once your order is shipped."
-                          : isStripeLinkPayment
+                          : isCardLinkPayment
                             ? "We&apos;ll notify you once your payment is confirmed and your order ships."
                             : "We&apos;ll notify you once your payment is confirmed and your order is shipped."}
                       </p>
@@ -239,15 +239,15 @@ function ThankYouContent ()
                     email or phone number on this order.
                   </p>
                 </div>
-              ) : isStripeLinkPayment ? (
+              ) : isCardLinkPayment ? (
                 <div className="rounded-2xl border border-indigo-500/40 bg-indigo-500/10 p-6">
                   <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-200">
-                    Stripe (card) payment
+                    Debit / credit card payment
                   </h3>
                   <p className="text-sm text-zinc-100">
                     We sent a secure{" "}
                     <span className="font-semibold text-white">
-                      Pay with card
+                      Pay with debit/credit card
                     </span>{" "}
                     link to the email address on this order for{" "}
                     <span className="font-semibold text-white">

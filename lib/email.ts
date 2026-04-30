@@ -13,7 +13,7 @@ import
 } from "./payment-links";
 import { SUPPORT_PHONE_DISPLAY } from "./support";
 import { formatDateTimePacific } from "@/lib/datetime";
-import { buildStripeCheckoutPayUrl } from "@/lib/stripe-pay-url";
+import { buildCardCheckoutPayUrl } from "@/lib/card-checkout-pay-url";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -186,7 +186,7 @@ function formatPasswordResetEmail (resetUrl: string):
 export function formatOrderEmail (
   order: Order,
   options?: {
-    paymentMethod?: "manual" | "greenbutton" | "stripe_link";
+    paymentMethod?: "manual" | "greenbutton" | "card_link";
   }
 ):
   {
@@ -197,16 +197,16 @@ export function formatOrderEmail (
 {
   const paymentMethod = options?.paymentMethod ?? "manual";
   const adminActionHtml =
-    paymentMethod === "stripe_link"
+    paymentMethod === "card_link"
       ? `<p style="margin-top: 20px; padding: 15px; background: #e0e7ff; border-radius: 4px;">
-        <strong>Payment:</strong> Customer chose card checkout via Stripe. A secure payment link was sent to their email (${order.customerEmail}). After they pay on the partner site, update this order when fulfillment is ready.
+        <strong>Payment:</strong> Customer chose debit/credit card checkout. A secure payment link was sent to their email (${order.customerEmail}). After they pay on the partner site, update this order when fulfillment is ready.
       </p>`
       : `<p style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 4px;">
         <strong>Action Required:</strong> Customer will text payment confirmation. Please verify payment and update order status in the admin panel.
       </p>`;
   const adminActionText =
-    paymentMethod === "stripe_link"
-      ? `Payment: Customer chose Stripe (card). A secure checkout link was emailed to ${order.customerEmail}. Verify payment and update order status when appropriate.`
+    paymentMethod === "card_link"
+      ? `Payment: Customer chose debit/credit card checkout. A secure checkout link was emailed to ${order.customerEmail}. Verify payment and update order status when appropriate.`
       : `Action Required: Customer will text payment confirmation. Please verify payment and update order status in the admin panel.`;
   const orderNumber = formatOrderNumber(order.orderNumber);
   const formattedDate = formatDateTimePacific(order.createdAt);
@@ -375,7 +375,7 @@ function formatCustomerReceiptEmail (
   order: Order,
   receiptUrl: string,
   options?: {
-    paymentMethod?: "manual" | "greenbutton" | "stripe_link";
+    paymentMethod?: "manual" | "greenbutton" | "card_link";
   }
 ):
   {
@@ -409,7 +409,7 @@ function formatCustomerReceiptEmail (
   });
   const cashAppLink = buildBrandedRedirectUrl(cashAppExternalLink);
   const venmoLink = buildBrandedRedirectUrl(venmoExternalLink);
-  const stripeCheckoutPayUrl = buildStripeCheckoutPayUrl(order.id);
+  const cardCheckoutPayUrl = buildCardCheckoutPayUrl(order.id);
 
   const manualPaymentMemoAndOptionsHtml = `
         <div class="info-block" style="background: #fef3c7; border: 1px solid #fbbf24;">
@@ -454,24 +454,24 @@ function formatCustomerReceiptEmail (
         </div>
       `;
 
-  const stripePayCardBlockHtml = `
+  const cardPayBlockHtml = `
         <div class="info-block" style="background: #eef2ff; border: 1px solid #6366f1;">
-          <h3 style="margin-top: 0; margin-bottom: 8px; color: #312e81;">Pay with card (Stripe)</h3>
+          <h3 style="margin-top: 0; margin-bottom: 8px; color: #312e81;">Pay with debit or credit card</h3>
           <p style="margin: 0; color: #3730a3; font-size: 14px;">
-            Pay <strong>$${amountDisplay}</strong> with a credit or debit card on our secure checkout page (you will open a separate site to finish payment).
+            Pay <strong>$${amountDisplay}</strong> on our secure checkout page (you will open a separate site to finish payment).
           </p>
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
             <tr>
               <td style="border-radius: 8px; background: #4f46e5;">
-                <a href="${stripeCheckoutPayUrl}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #4f46e5; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
-                  Pay $${amountDisplay} with card
+                <a href="${cardCheckoutPayUrl}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #4f46e5; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
+                  Pay $${amountDisplay} with debit/credit card
                 </a>
               </td>
             </tr>
           </table>
           <p style="margin: 12px 0 0 0; color: #4338ca; font-size: 12px;">
             If the button does not work, copy and paste this link into your browser:<br />
-            <span style="word-break: break-all;">${stripeCheckoutPayUrl}</span>
+            <span style="word-break: break-all;">${cardCheckoutPayUrl}</span>
           </p>
         </div>
       `;
@@ -487,12 +487,12 @@ function formatCustomerReceiptEmail (
           </ol>
         </div>
       `
-      : paymentMethod === "stripe_link"
+      : paymentMethod === "card_link"
         ? `
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
           <ol style="margin: 0; padding-left: 18px;">
-            <li>Use the <strong>Pay with card</strong> section below (or pay manually with Zelle, Cash App, or Venmo).</li>
+            <li>Use the <strong>Pay with debit or credit card</strong> section below (or pay manually with Zelle, Cash App, or Venmo).</li>
             <li>We’ll confirm payment and follow up with shipping details.</li>
           </ol>
         </div>
@@ -517,8 +517,8 @@ function formatCustomerReceiptEmail (
           </p>
         </div>
       `
-      : paymentMethod === "stripe_link"
-        ? `${stripePayCardBlockHtml}
+      : paymentMethod === "card_link"
+        ? `${cardPayBlockHtml}
         <p style="margin: 20px 0 8px 0; font-size: 15px; font-weight: 600; color: #374151;">Prefer Zelle, Cash App, or Venmo?</p>
         ${manualPaymentMemoAndOptionsHtml}`
         : manualPaymentMemoAndOptionsHtml;
@@ -613,10 +613,10 @@ function formatCustomerReceiptEmail (
           `- Your GreenButton bank payment for $${amountDisplay} was submitted during checkout.`,
           `- We'll contact you if we need any follow-up information.`,
         ]
-      : paymentMethod === "stripe_link"
+      : paymentMethod === "card_link"
         ? [
-            `Pay with card (Stripe):`,
-            stripeCheckoutPayUrl,
+            `Pay with debit/credit card:`,
+            cardCheckoutPayUrl,
             ``,
             `Or pay manually (include order number ${orderNumber} in memos where noted):`,
             ``,
@@ -666,9 +666,9 @@ function formatCustomerReceiptEmail (
           `1. Your GreenButton payment was submitted successfully.`,
           `2. We'll continue processing the order and update you once it ships.`,
         ]
-      : paymentMethod === "stripe_link"
+      : paymentMethod === "card_link"
         ? [
-            `1. Complete payment using the Stripe link above, or use Zelle / Cash App / Venmo.`,
+            `1. Complete payment using the debit/credit card link above, or use Zelle / Cash App / Venmo.`,
             `2. We'll confirm payment and update you once your order ships.`,
           ]
         : [
@@ -710,7 +710,7 @@ function formatOrderSms (order: Order): string
 export async function sendOrderEmail (
   order: Order,
   options?: {
-    paymentMethod?: "manual" | "greenbutton" | "stripe_link";
+    paymentMethod?: "manual" | "greenbutton" | "card_link";
   }
 ): Promise<void>
 {
