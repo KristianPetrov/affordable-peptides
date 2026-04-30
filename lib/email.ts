@@ -1028,6 +1028,125 @@ export async function sendOrderPaidEmail (order: Order): Promise<void>
   }
 }
 
+function formatAdminPaymentReceivedEmail (
+  order: Order,
+  details?: {
+    provider?: string;
+    paymentId?: string;
+    amountPaid?: number;
+    currency?: string;
+  }
+):
+  {
+    subject: string;
+    html: string;
+    text: string;
+  }
+{
+  const orderNumber = formatOrderNumber(order.orderNumber);
+  const formattedDate = formatDateTimePacific(order.createdAt);
+  const totals = calculateOrderTotals(order);
+  const amount = (details?.amountPaid ?? totals.total).toFixed(2);
+  const currency = (details?.currency ?? "USD").toUpperCase();
+  const provider = details?.provider?.trim() || "Debit/credit card";
+  const paymentId = details?.paymentId?.trim() || null;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.6; color: #111827; background: #f3f4f6; margin: 0; padding: 0; }
+    .container { max-width: 640px; margin: 0 auto; padding: 24px; }
+    .card { background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(17, 24, 39, 0.12); }
+    .header { background: linear-gradient(135deg, #4f46e5, #7c3aed); color: white; padding: 28px; }
+    .content { padding: 24px; }
+    .row { margin: 10px 0; }
+    .label { color: #6b7280; font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; }
+    .value { color: #111827; font-size: 15px; }
+    .pill { display: inline-block; padding: 6px 12px; border-radius: 9999px; background: #dcfce7; color: #166534; font-weight: 700; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="header">
+        <h1 style="margin: 0 0 8px 0; font-size: 22px;">Payment received</h1>
+        <div style="opacity: 0.9; font-size: 14px;">Order ${orderNumber} • ${formattedDate}</div>
+      </div>
+      <div class="content">
+        <div class="row"><span class="pill">PAID</span></div>
+        <div class="row"><div class="label">Customer</div><div class="value">${order.customerName} • ${order.customerEmail} • ${order.customerPhone}</div></div>
+        <div class="row"><div class="label">Amount</div><div class="value">$${amount} ${currency}</div></div>
+        <div class="row"><div class="label">Method</div><div class="value">${provider}</div></div>
+        ${paymentId ? `<div class="row"><div class="label">Payment id</div><div class="value" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \\\"Liberation Mono\\\", \\\"Courier New\\\", monospace;">${paymentId}</div></div>` : ""}
+        <div class="row"><div class="label">Order id</div><div class="value" style="font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \\\"Liberation Mono\\\", \\\"Courier New\\\", monospace;">${order.id}</div></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const text = [
+    `Payment received`,
+    ``,
+    `Order ${orderNumber}`,
+    `Status: PAID`,
+    `Customer: ${order.customerName} • ${order.customerEmail} • ${order.customerPhone}`,
+    `Amount: $${amount} ${currency}`,
+    `Method: ${provider}`,
+    ...(paymentId ? [`Payment id: ${paymentId}`] : []),
+    `Order id: ${order.id}`,
+  ].join("\n");
+
+  return {
+    subject: `Payment received for order ${orderNumber}`,
+    html,
+    text,
+  };
+}
+
+export async function sendAdminPaymentReceivedEmail (
+  order: Order,
+  details?: {
+    provider?: string;
+    paymentId?: string;
+    amountPaid?: number;
+    currency?: string;
+  }
+): Promise<void>
+{
+  const emailContent = formatAdminPaymentReceivedEmail(order, details);
+
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("RESEND_API_KEY not configured. Email not sent.");
+    logEmailPreview(ADMIN_EMAIL, emailContent);
+    return;
+  }
+
+  try {
+    await resend.emails.send({
+      from: getFromAddress(),
+      to: ADMIN_EMAIL,
+      subject: emailContent.subject,
+      html: emailContent.html,
+      text: emailContent.text,
+      replyTo: REPLY_TO_EMAIL,
+      headers: {
+        "Reply-To": REPLY_TO_EMAIL,
+        "X-Auto-Response-Suppress": "All",
+        "Auto-Submitted": "auto-generated",
+      },
+    });
+    console.log("ADMIN payment email sent successfully to", ADMIN_EMAIL);
+  } catch (error) {
+    console.error("Failed to send ADMIN payment email via Resend:", error);
+    throw error;
+  }
+}
+
 export async function sendOrderShippedEmail (order: Order): Promise<void>
 {
   const emailContent = formatOrderShippedEmail(order);
