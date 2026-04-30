@@ -13,6 +13,7 @@ import
 } from "./payment-links";
 import { SUPPORT_PHONE_DISPLAY } from "./support";
 import { formatDateTimePacific } from "@/lib/datetime";
+import { buildStripeCheckoutPayUrl } from "@/lib/stripe-pay-url";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -182,13 +183,31 @@ function formatPasswordResetEmail (resetUrl: string):
   };
 }
 
-export function formatOrderEmail (order: Order):
+export function formatOrderEmail (
+  order: Order,
+  options?: {
+    paymentMethod?: "manual" | "greenbutton" | "stripe_link";
+  }
+):
   {
     subject: string;
     html: string;
     text: string;
   }
 {
+  const paymentMethod = options?.paymentMethod ?? "manual";
+  const adminActionHtml =
+    paymentMethod === "stripe_link"
+      ? `<p style="margin-top: 20px; padding: 15px; background: #e0e7ff; border-radius: 4px;">
+        <strong>Payment:</strong> Customer chose card checkout via Stripe. A secure payment link was sent to their email (${order.customerEmail}). After they pay on the partner site, update this order when fulfillment is ready.
+      </p>`
+      : `<p style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 4px;">
+        <strong>Action Required:</strong> Customer will text payment confirmation. Please verify payment and update order status in the admin panel.
+      </p>`;
+  const adminActionText =
+    paymentMethod === "stripe_link"
+      ? `Payment: Customer chose Stripe (card). A secure checkout link was emailed to ${order.customerEmail}. Verify payment and update order status when appropriate.`
+      : `Action Required: Customer will text payment confirmation. Please verify payment and update order status in the admin panel.`;
   const orderNumber = formatOrderNumber(order.orderNumber);
   const formattedDate = formatDateTimePacific(order.createdAt);
   const pricing = calculateVolumePricing(order.items);
@@ -301,9 +320,7 @@ export function formatOrderEmail (order: Order):
           <small>Total Units: ${order.totalUnits}</small>
         </div>
       </div>
-      <p style="margin-top: 20px; padding: 15px; background: #fef3c7; border-radius: 4px;">
-        <strong>Action Required:</strong> Customer will text payment confirmation. Please verify payment and update order status in the admin panel.
-      </p>
+      ${adminActionHtml}
     </div>
   </div>
 </body>
@@ -344,7 +361,7 @@ Shipping: ${shippingDisplay}
 Total: $${totalWithShipping.toFixed(2)}
 Total Units: ${order.totalUnits}
 
-Action Required: Customer will text payment confirmation. Please verify payment and update order status in the admin panel.
+${adminActionText}
   `;
 
   return {
@@ -358,7 +375,7 @@ function formatCustomerReceiptEmail (
   order: Order,
   receiptUrl: string,
   options?: {
-    paymentMethod?: "manual" | "greenbutton";
+    paymentMethod?: "manual" | "greenbutton" | "stripe_link";
   }
 ):
   {
@@ -392,38 +409,9 @@ function formatCustomerReceiptEmail (
   });
   const cashAppLink = buildBrandedRedirectUrl(cashAppExternalLink);
   const venmoLink = buildBrandedRedirectUrl(venmoExternalLink);
-  const nextStepsHtml =
-    paymentMethod === "greenbutton"
-      ? `
-        <div class="info-block">
-          <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
-          <ol style="margin: 0; padding-left: 18px;">
-            <li>Your GreenButton bank payment was submitted during checkout.</li>
-            <li>We’ll continue processing your order and follow up with shipping details.</li>
-          </ol>
-        </div>
-      `
-      : `
-        <div class="info-block">
-          <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
-          <ol style="margin: 0; padding-left: 18px;">
-            <li>Send payment via Cash App, Venmo, or Zelle using the options below.</li>
-            <li>We’ll confirm manually and follow up with shipping details.</li>
-          </ol>
-        </div>
-      `;
-  const paymentDetailsHtml =
-    paymentMethod === "greenbutton"
-      ? `
-        <div class="info-block" style="background: #ecfdf5; border: 1px solid #34d399;">
-          <h3 style="margin-top: 0; margin-bottom: 8px; color: #065f46;">GreenButton payment submitted</h3>
-          <p style="margin: 0; color: #065f46; font-size: 14px;">
-            We submitted your GreenButton bank payment for <strong>$${amountDisplay}</strong> during checkout.
-            If we need any follow-up information, we'll contact you using the order details on file.
-          </p>
-        </div>
-      `
-      : `
+  const stripeCheckoutPayUrl = buildStripeCheckoutPayUrl(order.id);
+
+  const manualPaymentMemoAndOptionsHtml = `
         <div class="info-block" style="background: #fef3c7; border: 1px solid #fbbf24;">
           <h3 style="margin-top: 0; margin-bottom: 8px; color: #92400e;">Important: Include ONLY Order Number in Cash App, Venmo, or Zelle Payment Memo</h3>
           <p style="margin: 0; color: #78350f; font-size: 13px;">
@@ -465,6 +453,75 @@ function formatCustomerReceiptEmail (
           <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 1.9% + $0.10 processing fee. <strong style="color: #059669;">Order number is pre-filled in the note.</strong></p>
         </div>
       `;
+
+  const stripePayCardBlockHtml = `
+        <div class="info-block" style="background: #eef2ff; border: 1px solid #6366f1;">
+          <h3 style="margin-top: 0; margin-bottom: 8px; color: #312e81;">Pay with card (Stripe)</h3>
+          <p style="margin: 0; color: #3730a3; font-size: 14px;">
+            Pay <strong>$${amountDisplay}</strong> with a credit or debit card on our secure checkout page (you will open a separate site to finish payment).
+          </p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
+            <tr>
+              <td style="border-radius: 8px; background: #4f46e5;">
+                <a href="${stripeCheckoutPayUrl}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #4f46e5; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
+                  Pay $${amountDisplay} with card
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="margin: 12px 0 0 0; color: #4338ca; font-size: 12px;">
+            If the button does not work, copy and paste this link into your browser:<br />
+            <span style="word-break: break-all;">${stripeCheckoutPayUrl}</span>
+          </p>
+        </div>
+      `;
+
+  const nextStepsHtml =
+    paymentMethod === "greenbutton"
+      ? `
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
+          <ol style="margin: 0; padding-left: 18px;">
+            <li>Your GreenButton bank payment was submitted during checkout.</li>
+            <li>We’ll continue processing your order and follow up with shipping details.</li>
+          </ol>
+        </div>
+      `
+      : paymentMethod === "stripe_link"
+        ? `
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
+          <ol style="margin: 0; padding-left: 18px;">
+            <li>Use the <strong>Pay with card</strong> section below (or pay manually with Zelle, Cash App, or Venmo).</li>
+            <li>We’ll confirm payment and follow up with shipping details.</li>
+          </ol>
+        </div>
+      `
+        : `
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
+          <ol style="margin: 0; padding-left: 18px;">
+            <li>Send payment via Cash App, Venmo, or Zelle using the options below.</li>
+            <li>We’ll confirm manually and follow up with shipping details.</li>
+          </ol>
+        </div>
+      `;
+  const paymentDetailsHtml =
+    paymentMethod === "greenbutton"
+      ? `
+        <div class="info-block" style="background: #ecfdf5; border: 1px solid #34d399;">
+          <h3 style="margin-top: 0; margin-bottom: 8px; color: #065f46;">GreenButton payment submitted</h3>
+          <p style="margin: 0; color: #065f46; font-size: 14px;">
+            We submitted your GreenButton bank payment for <strong>$${amountDisplay}</strong> during checkout.
+            If we need any follow-up information, we'll contact you using the order details on file.
+          </p>
+        </div>
+      `
+      : paymentMethod === "stripe_link"
+        ? `${stripePayCardBlockHtml}
+        <p style="margin: 20px 0 8px 0; font-size: 15px; font-weight: 600; color: #374151;">Prefer Zelle, Cash App, or Venmo?</p>
+        ${manualPaymentMemoAndOptionsHtml}`
+        : manualPaymentMemoAndOptionsHtml;
   const itemsHtml = order.items
     .map(
       (item) => `
@@ -556,18 +613,32 @@ function formatCustomerReceiptEmail (
           `- Your GreenButton bank payment for $${amountDisplay} was submitted during checkout.`,
           `- We'll contact you if we need any follow-up information.`,
         ]
-      : [
-          `Payment options:`,
-          ``,
-          `IMPORTANT: Include order number ${orderNumber} in the payment memo/note for Cash App, Venmo, and Zelle.`,
-          ``,
-          `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
-          `  → Include order number ${orderNumber} in the memo`,
-          `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
-          `  → Add order number ${orderNumber} in the memo`,
-          `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
-          `  → Order number is pre-filled in the note`,
-        ]),
+      : paymentMethod === "stripe_link"
+        ? [
+            `Pay with card (Stripe):`,
+            stripeCheckoutPayUrl,
+            ``,
+            `Or pay manually (include order number ${orderNumber} in memos where noted):`,
+            ``,
+            `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
+            `  → Include order number ${orderNumber} in the memo`,
+            `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
+            `  → Add order number ${orderNumber} in the memo`,
+            `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
+            `  → Order number is pre-filled in the note`,
+          ]
+        : [
+            `Payment options:`,
+            ``,
+            `IMPORTANT: Include order number ${orderNumber} in the payment memo/note for Cash App, Venmo, and Zelle.`,
+            ``,
+            `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
+            `  → Include order number ${orderNumber} in the memo`,
+            `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
+            `  → Add order number ${orderNumber} in the memo`,
+            `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
+            `  → Order number is pre-filled in the note`,
+          ]),
     ``,
     `Shipping To:`,
     `${order.customerName}`,
@@ -595,10 +666,15 @@ function formatCustomerReceiptEmail (
           `1. Your GreenButton payment was submitted successfully.`,
           `2. We'll continue processing the order and update you once it ships.`,
         ]
-      : [
-          `1. Send payment via Cash App, Venmo, or Zelle.`,
-          `2. We'll confirm manually and update you once your order ships.`,
-        ]),
+      : paymentMethod === "stripe_link"
+        ? [
+            `1. Complete payment using the Stripe link above, or use Zelle / Cash App / Venmo.`,
+            `2. We'll confirm payment and update you once your order ships.`,
+          ]
+        : [
+            `1. Send payment via Cash App, Venmo, or Zelle.`,
+            `2. We'll confirm manually and update you once your order ships.`,
+          ]),
   ].join("\n");
 
   return {
@@ -634,11 +710,11 @@ function formatOrderSms (order: Order): string
 export async function sendOrderEmail (
   order: Order,
   options?: {
-    paymentMethod?: "manual" | "greenbutton";
+    paymentMethod?: "manual" | "greenbutton" | "stripe_link";
   }
 ): Promise<void>
 {
-  const adminEmailContent = formatOrderEmail(order);
+  const adminEmailContent = formatOrderEmail(order, options);
   const customerEmailContent = formatCustomerReceiptEmail(
     order,
     buildOrderLookupUrl(order),

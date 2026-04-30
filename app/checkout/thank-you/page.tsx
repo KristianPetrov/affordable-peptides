@@ -85,6 +85,7 @@ function ThankYouContent ()
     ? `Pay via Venmo ($${venmoCharge.toFixed(2)})`
     : "Pay via Venmo";
   const isGreenButtonPayment = paymentMethod === "greenbutton";
+  const isStripeLinkPayment = paymentMethod === "stripe_link";
 
   useEffect(() =>
   {
@@ -154,7 +155,9 @@ function ThankYouContent ()
               <h1 className="mb-4 text-3xl font-semibold text-white sm:text-4xl">
                 {isGreenButtonPayment
                   ? "Payment Submitted!"
-                  : "Order Received!"}
+                  : isStripeLinkPayment
+                    ? "Order received — check your email"
+                    : "Order Received!"}
               </h1>
               <p className="mb-8 text-lg text-zinc-300">
                 Your Order ID:{" "}
@@ -178,12 +181,16 @@ function ThankYouContent ()
                       <p className="font-medium text-white">
                         {isGreenButtonPayment
                           ? "Your GreenButton bank payment was submitted during checkout."
-                          : "Send your payment via Cash App, Venmo, or Zelle using the quick links below."}
+                          : isStripeLinkPayment
+                            ? "Open your order confirmation email and use the Pay with card (Stripe) button or link."
+                            : "Send your payment via Cash App, Venmo, or Zelle using the quick links below."}
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
                         {isGreenButtonPayment
                           ? "We'll continue processing your order and reach out if any follow-up is needed."
-                          : "Include ONLY your order number in the payment note so we can match it instantly."}
+                          : isStripeLinkPayment
+                            ? "The secure checkout page opens on our payment partner site. Zelle, Cash App, and Venmo instructions are also in that email if you change your mind."
+                            : "Include ONLY your order number in the payment note so we can match it instantly."}
                       </p>
                     </div>
                   </li>
@@ -195,12 +202,16 @@ function ThankYouContent ()
                       <p className="font-medium text-white">
                         {isGreenButtonPayment
                           ? "Your order is now in our fulfillment queue."
-                          : "Your order ships after manual confirmation."}
+                          : isStripeLinkPayment
+                            ? "We ship after your payment is confirmed."
+                            : "Your order ships after manual confirmation."}
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
                         {isGreenButtonPayment
                           ? "We&apos;ll notify you once your order is shipped."
-                          : "We&apos;ll notify you once your payment is confirmed and your order is shipped."}
+                          : isStripeLinkPayment
+                            ? "We&apos;ll notify you once your payment is confirmed and your order ships."
+                            : "We&apos;ll notify you once your payment is confirmed and your order is shipped."}
                       </p>
                     </div>
                   </li>
@@ -226,6 +237,28 @@ function ThankYouContent ()
                   <p className="mt-3 text-sm text-zinc-300">
                     If we need anything else, we&apos;ll contact you using the
                     email or phone number on this order.
+                  </p>
+                </div>
+              ) : isStripeLinkPayment ? (
+                <div className="rounded-2xl border border-indigo-500/40 bg-indigo-500/10 p-6">
+                  <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-200">
+                    Stripe (card) payment
+                  </h3>
+                  <p className="text-sm text-zinc-100">
+                    We sent a secure{" "}
+                    <span className="font-semibold text-white">
+                      Pay with card
+                    </span>{" "}
+                    link to the email address on this order for{" "}
+                    <span className="font-semibold text-white">
+                      {paymentAmountDisplay ?? "your order total"}
+                    </span>
+                    . Card checkout happens on our payment partner site, not on
+                    this page.
+                  </p>
+                  <p className="mt-3 text-sm text-zinc-300">
+                    Didn&apos;t see it? Check spam or promotions, then text us
+                    at {SUPPORT_PHONE_DISPLAY} with your order number.
                   </p>
                 </div>
               ) : (

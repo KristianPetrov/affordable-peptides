@@ -65,7 +65,7 @@ type CreateOrderInput = {
   billingCountry?: string;
   saveProfile?: boolean;
   referralCode?: string;
-  paymentMethod?: "manual" | "greenbutton";
+  paymentMethod?: "manual" | "greenbutton" | "stripe_link";
   greenAccountName?: string;
   greenRoutingNumber?: string;
   greenAccountNumber?: string;
