@@ -503,7 +503,7 @@ export function CheckoutClient ({
                   debit or credit card using a secure link we email you after
                   checkout
                 </p>
-                <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3 lg:items-stretch">
+                <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch">
                   <button
                     type="button"
                     onClick={() => setPaymentMethod("manual")}
