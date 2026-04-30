@@ -8,19 +8,10 @@ export default async function CheckoutPage() {
     ? await getCustomerProfile(session.user.id)
     : null;
 
-  const greenMoneyPlaidClientId =
-    process.env.GREEN_CLIENT_ID?.trim() ||
-    process.env.GREEN_API_CLIENT_ID?.trim() ||
-    null;
-
   return (
     <div className="min-h-screen bg-black text-zinc-100">
       <NavBar />
-      <CheckoutClient
-        profile={profile}
-        sessionUser={session?.user ?? null}
-        greenMoneyPlaidClientId={greenMoneyPlaidClientId}
-      />
+      <CheckoutClient profile={profile} sessionUser={session?.user ?? null} />
     </div>
   );
 }

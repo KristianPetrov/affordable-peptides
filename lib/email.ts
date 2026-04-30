@@ -186,7 +186,7 @@ function formatPasswordResetEmail (resetUrl: string):
 export function formatOrderEmail (
   order: Order,
   options?: {
-    paymentMethod?: "manual" | "greenbutton" | "card_link";
+    paymentMethod?: "manual" | "card_link";
   }
 ):
   {
@@ -375,7 +375,7 @@ function formatCustomerReceiptEmail (
   order: Order,
   receiptUrl: string,
   options?: {
-    paymentMethod?: "manual" | "greenbutton" | "card_link";
+    paymentMethod?: "manual" | "card_link";
   }
 ):
   {
@@ -477,18 +477,8 @@ function formatCustomerReceiptEmail (
       `;
 
   const nextStepsHtml =
-    paymentMethod === "greenbutton"
+    paymentMethod === "card_link"
       ? `
-        <div class="info-block">
-          <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
-          <ol style="margin: 0; padding-left: 18px;">
-            <li>Your GreenButton bank payment was submitted during checkout.</li>
-            <li>We’ll continue processing your order and follow up with shipping details.</li>
-          </ol>
-        </div>
-      `
-      : paymentMethod === "card_link"
-        ? `
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
           <ol style="margin: 0; padding-left: 18px;">
@@ -497,7 +487,7 @@ function formatCustomerReceiptEmail (
           </ol>
         </div>
       `
-        : `
+      : `
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
           <ol style="margin: 0; padding-left: 18px;">
@@ -507,21 +497,11 @@ function formatCustomerReceiptEmail (
         </div>
       `;
   const paymentDetailsHtml =
-    paymentMethod === "greenbutton"
-      ? `
-        <div class="info-block" style="background: #ecfdf5; border: 1px solid #34d399;">
-          <h3 style="margin-top: 0; margin-bottom: 8px; color: #065f46;">GreenButton payment submitted</h3>
-          <p style="margin: 0; color: #065f46; font-size: 14px;">
-            We submitted your GreenButton bank payment for <strong>$${amountDisplay}</strong> during checkout.
-            If we need any follow-up information, we'll contact you using the order details on file.
-          </p>
-        </div>
-      `
-      : paymentMethod === "card_link"
-        ? `${cardPayBlockHtml}
+    paymentMethod === "card_link"
+      ? `${cardPayBlockHtml}
         <p style="margin: 20px 0 8px 0; font-size: 15px; font-weight: 600; color: #374151;">Prefer Zelle, Cash App, or Venmo?</p>
         ${manualPaymentMemoAndOptionsHtml}`
-        : manualPaymentMemoAndOptionsHtml;
+      : manualPaymentMemoAndOptionsHtml;
   const itemsHtml = order.items
     .map(
       (item) => `
@@ -607,38 +587,32 @@ function formatCustomerReceiptEmail (
     ``,
     `View your order: ${receiptUrl}`,
     ``,
-    ...(paymentMethod === "greenbutton"
+    ...(paymentMethod === "card_link"
       ? [
-          `GreenButton payment submitted:`,
-          `- Your GreenButton bank payment for $${amountDisplay} was submitted during checkout.`,
-          `- We'll contact you if we need any follow-up information.`,
+          `Pay with debit/credit card:`,
+          cardCheckoutPayUrl,
+          ``,
+          `Or pay manually (include order number ${orderNumber} in memos where noted):`,
+          ``,
+          `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
+          `  → Include order number ${orderNumber} in the memo`,
+          `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
+          `  → Add order number ${orderNumber} in the memo`,
+          `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
+          `  → Order number is pre-filled in the note`,
         ]
-      : paymentMethod === "card_link"
-        ? [
-            `Pay with debit/credit card:`,
-            cardCheckoutPayUrl,
-            ``,
-            `Or pay manually (include order number ${orderNumber} in memos where noted):`,
-            ``,
-            `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
-            `  → Include order number ${orderNumber} in the memo`,
-            `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
-            `  → Add order number ${orderNumber} in the memo`,
-            `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
-            `  → Order number is pre-filled in the note`,
-          ]
-        : [
-            `Payment options:`,
-            ``,
-            `IMPORTANT: Include order number ${orderNumber} in the payment memo/note for Cash App, Venmo, and Zelle.`,
-            ``,
-            `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
-            `  → Include order number ${orderNumber} in the memo`,
-            `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
-            `  → Add order number ${orderNumber} in the memo`,
-            `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
-            `  → Order number is pre-filled in the note`,
-          ]),
+      : [
+          `Payment options:`,
+          ``,
+          `IMPORTANT: Include order number ${orderNumber} in the payment memo/note for Cash App, Venmo, and Zelle.`,
+          ``,
+          `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
+          `  → Include order number ${orderNumber} in the memo`,
+          `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
+          `  → Add order number ${orderNumber} in the memo`,
+          `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
+          `  → Order number is pre-filled in the note`,
+        ]),
     ``,
     `Shipping To:`,
     `${order.customerName}`,
@@ -661,20 +635,15 @@ function formatCustomerReceiptEmail (
     `Total: $${totalWithShipping.toFixed(2)} • ${order.totalUnits} units`,
     ``,
     `Next Steps:`,
-    ...(paymentMethod === "greenbutton"
+    ...(paymentMethod === "card_link"
       ? [
-          `1. Your GreenButton payment was submitted successfully.`,
-          `2. We'll continue processing the order and update you once it ships.`,
+          `1. Complete payment using the debit/credit card link above, or use Zelle / Cash App / Venmo.`,
+          `2. We'll confirm payment and update you once your order ships.`,
         ]
-      : paymentMethod === "card_link"
-        ? [
-            `1. Complete payment using the debit/credit card link above, or use Zelle / Cash App / Venmo.`,
-            `2. We'll confirm payment and update you once your order ships.`,
-          ]
-        : [
-            `1. Send payment via Cash App, Venmo, or Zelle.`,
-            `2. We'll confirm manually and update you once your order ships.`,
-          ]),
+      : [
+          `1. Send payment via Cash App, Venmo, or Zelle.`,
+          `2. We'll confirm manually and update you once your order ships.`,
+        ]),
   ].join("\n");
 
   return {
@@ -710,7 +679,7 @@ function formatOrderSms (order: Order): string
 export async function sendOrderEmail (
   order: Order,
   options?: {
-    paymentMethod?: "manual" | "greenbutton" | "card_link";
+    paymentMethod?: "manual" | "card_link";
   }
 ): Promise<void>
 {

@@ -78,49 +78,6 @@ const formatCommunicationTime = (value?: string): string =>
     }).format(new Date(value))
     : "—";
 
-/** Matches `buildGreenOrderNotes` in `app/actions/orders.ts` (Green.Money / GreenButton checkout). */
-const GREEN_MONEY_ORDER_NOTES_MARKER = "GreenButton API payment submitted.";
-
-function orderPaidWithGreenMoney (order: {
-  notes?: string;
-  status: OrderStatus;
-}): boolean
-{
-  if (!order.notes?.includes(GREEN_MONEY_ORDER_NOTES_MARKER)) {
-    return false;
-  }
-  return order.status === "PAID" || order.status === "SHIPPED";
-}
-
-type GreenMoneyCommunicationOverrides = {
-  receipt: { status: string; updatedAt?: string };
-  paid: { status: string; updatedAt?: string };
-};
-
-function getGreenMoneyCommunicationOverrides (order: {
-  notes?: string;
-  status: OrderStatus;
-  orderReceiptEmailUpdatedAt?: string;
-  orderPaidEmailUpdatedAt?: string;
-  updatedAt: string;
-}): GreenMoneyCommunicationOverrides | null
-{
-  if (!orderPaidWithGreenMoney(order)) {
-    return null;
-  }
-  const fallbackTime = order.updatedAt;
-  return {
-    receipt: {
-      status: "email.delivered",
-      updatedAt: order.orderReceiptEmailUpdatedAt ?? fallbackTime,
-    },
-    paid: {
-      status: "email.delivered",
-      updatedAt: order.orderPaidEmailUpdatedAt ?? fallbackTime,
-    },
-  };
-}
-
 const MONTH_OPTIONS = [
   { value: 1, label: "January", short: "Jan" },
   { value: 2, label: "February", short: "Feb" },
@@ -954,24 +911,17 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                     const orderTotal = totals.total;
                     const formattedOrderNumber = formatOrderNumber(order.orderNumber);
                     const formattedDate = formatDateTimePacific(order.createdAt);
-                    const greenMoneyComms = getGreenMoneyCommunicationOverrides(order);
                     const communicationRows = [
                       {
                         label: "Order Receipt",
-                        status:
-                          greenMoneyComms?.receipt.status ??
-                          order.orderReceiptEmailStatus,
+                        status: order.orderReceiptEmailStatus,
                         updatedAt:
-                          greenMoneyComms?.receipt.updatedAt ??
                           order.orderReceiptEmailUpdatedAt,
                       },
                       {
                         label: "Payment Confirmed",
-                        status:
-                          greenMoneyComms?.paid.status ??
-                          order.orderPaidEmailStatus,
+                        status: order.orderPaidEmailStatus,
                         updatedAt:
-                          greenMoneyComms?.paid.updatedAt ??
                           order.orderPaidEmailUpdatedAt,
                       },
                       {

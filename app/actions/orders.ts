@@ -35,14 +35,6 @@ import
   finalizeReferralForOrder,
   resolveReferralForOrder,
 } from "@/lib/referrals";
-import {
-  submitGreenCustomerOneTimeDraftRTV,
-  submitGreenOneTimeDraftRTV,
-} from "@/lib/green";
-import {
-  assertCheckoutGreenPayorMatches,
-  clearCheckoutGreenPayorCookie,
-} from "@/lib/green-payor-session";
 
 type CreateOrderInput = {
   items: CartItem[];
@@ -65,12 +57,7 @@ type CreateOrderInput = {
   billingCountry?: string;
   saveProfile?: boolean;
   referralCode?: string;
-  paymentMethod?: "manual" | "greenbutton" | "card_link";
-  greenAccountName?: string;
-  greenRoutingNumber?: string;
-  greenAccountNumber?: string;
-  greenBankName?: string;
-  greenPayorId?: string;
+  paymentMethod?: "manual" | "card_link";
 };
 
 export type CreateOrderResult =
@@ -120,30 +107,6 @@ function formatRetryAfter (ms: number):
   };
 }
 
-function buildGreenOrderNotes (
-  details: {
-    checkId?: string;
-    checkNumber?: string;
-    verifyResult: string;
-    verifyResultDescription: string;
-  },
-  options?: { payorId?: string }
-): string
-{
-  return [
-    "GreenButton API payment submitted.",
-    options?.payorId ? `Green Payor_ID (Plaid): ${options.payorId}` : "",
-    details.checkId ? `Green Check_ID: ${details.checkId}` : "",
-    details.checkNumber ? `Green CheckNumber: ${details.checkNumber}` : "",
-    `Green VerifyResult: ${details.verifyResult}`,
-    details.verifyResultDescription
-      ? `Green VerifyResultDescription: ${details.verifyResultDescription}`
-      : "",
-  ]
-    .filter(Boolean)
-    .join("\n");
-}
-
 export async function createOrderAction (
   input: CreateOrderInput
 ): Promise<CreateOrderResult>
@@ -162,43 +125,6 @@ export async function createOrderAction (
         error: "Cart is empty",
         errorCode: "VALIDATION_ERROR",
       };
-    }
-
-    if (paymentMethod === "greenbutton") {
-      const plaidPayorIdRaw = input.greenPayorId?.trim();
-      const usePlaidPayor = Boolean(plaidPayorIdRaw);
-
-      if (!usePlaidPayor) {
-        if (
-          !input.greenRoutingNumber?.trim() ||
-          !input.greenAccountNumber?.trim() ||
-          !input.greenBankName?.trim()
-        ) {
-          return {
-            success: false,
-            error:
-              "Enter your routing number, account number, and bank name to pay with GreenButton, or complete Plaid bank linking.",
-            errorCode: "VALIDATION_ERROR",
-          };
-        }
-      }
-
-      const billingSameAsShipping = input.billingSameAsShipping ?? true;
-      if (!billingSameAsShipping) {
-        if (
-          !input.billingStreet?.trim() ||
-          !input.billingCity?.trim() ||
-          !input.billingState?.trim() ||
-          !input.billingZipCode?.trim() ||
-          !input.billingCountry?.trim()
-        ) {
-          return {
-            success: false,
-            error: "Enter your billing address (or mark it as the same as shipping) to pay with GreenButton.",
-            errorCode: "VALIDATION_ERROR",
-          };
-        }
-      }
     }
 
     if (
@@ -379,97 +305,6 @@ export async function createOrderAction (
       referralCommissionPercent: referralContext?.referralCommissionPercent ?? 0,
       referralCommissionAmount: referralContext?.referralCommissionAmount ?? 0,
     });
-
-    if (paymentMethod === "greenbutton") {
-      const plaidPayorIdRaw = input.greenPayorId?.trim();
-      const usePlaidPayor = Boolean(plaidPayorIdRaw);
-      const greenRoutingNumber = input.greenRoutingNumber?.trim();
-      const greenAccountNumber = input.greenAccountNumber?.trim();
-      const greenBankName = input.greenBankName?.trim();
-      const billingSameAsShipping = input.billingSameAsShipping ?? true;
-      const billingStreet = billingSameAsShipping
-        ? input.shippingStreet
-        : input.billingStreet ?? "";
-      const billingCity = billingSameAsShipping
-        ? input.shippingCity
-        : input.billingCity ?? "";
-      const billingState = billingSameAsShipping
-        ? input.shippingState
-        : input.billingState ?? "";
-      const billingZipCode = billingSameAsShipping
-        ? input.shippingZipCode
-        : input.billingZipCode ?? "";
-      const billingCountry = billingSameAsShipping
-        ? input.shippingCountry
-        : input.billingCountry ?? "";
-
-      let greenResult:
-        | Awaited<ReturnType<typeof submitGreenOneTimeDraftRTV>>
-        | Awaited<ReturnType<typeof submitGreenCustomerOneTimeDraftRTV>>
-        | null = null;
-
-      try {
-        if (usePlaidPayor && plaidPayorIdRaw) {
-          await assertCheckoutGreenPayorMatches(plaidPayorIdRaw);
-          greenResult = await submitGreenCustomerOneTimeDraftRTV({
-            payorId: plaidPayorIdRaw,
-            checkMemo: `Affordable Peptides Order ${orderNumber}`,
-            checkAmount: totalAmount.toFixed(2),
-            checkDate: now,
-            checkNumber: orderNumber,
-          });
-          await clearCheckoutGreenPayorCookie();
-        } else {
-          greenResult = await submitGreenOneTimeDraftRTV({
-            name: input.greenAccountName?.trim() || input.customerName.trim(),
-            emailAddress: input.customerEmail.trim(),
-            phone: input.customerPhone.trim(),
-            address1: billingStreet.trim(),
-            city: billingCity.trim(),
-            state: billingState.trim(),
-            zip: billingZipCode.trim(),
-            country: billingCountry.trim(),
-            routingNumber: greenRoutingNumber || "",
-            accountNumber: greenAccountNumber || "",
-            bankName: greenBankName || "",
-            checkMemo: `Affordable Peptides Order ${orderNumber}`,
-            checkAmount: totalAmount.toFixed(2),
-            checkDate: now,
-            checkNumber: orderNumber,
-          });
-        }
-      } catch (error) {
-        await deleteOrder(order.id);
-        await clearCheckoutGreenPayorCookie();
-        return {
-          success: false,
-          error:
-            error instanceof Error
-              ? error.message
-              : "GreenButton could not process this payment.",
-          errorCode: "UNKNOWN",
-        };
-      }
-
-      const updatedOrder = await updateOrderStatus(
-        order.id,
-        "PAID",
-        buildGreenOrderNotes(greenResult, {
-          payorId: usePlaidPayor ? plaidPayorIdRaw : undefined,
-        })
-      );
-
-      if (!updatedOrder) {
-        return {
-          success: false,
-          error:
-            "Your GreenButton payment was accepted, but we couldn't finalize the local order record. Please contact support with your order number.",
-          errorCode: "UNKNOWN",
-        };
-      }
-
-      order = updatedOrder;
-    }
 
     await applyInventoryAdjustments(reservation.adjustments);
 

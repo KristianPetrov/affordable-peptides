@@ -84,7 +84,6 @@ function ThankYouContent ()
   const venmoLabel = venmoCharge
     ? `Pay via Venmo ($${venmoCharge.toFixed(2)})`
     : "Pay via Venmo";
-  const isGreenButtonPayment = paymentMethod === "greenbutton";
   const isCardLinkPayment = paymentMethod === "card_link";
 
   useEffect(() =>
@@ -153,11 +152,7 @@ function ThankYouContent ()
                 </svg>
               </div>
               <h1 className="mb-4 text-3xl font-semibold text-white sm:text-4xl">
-                {isGreenButtonPayment
-                  ? "Payment Submitted!"
-                  : isCardLinkPayment
-                    ? "Order received — check your email"
-                    : "Order Received!"}
+                {isCardLinkPayment ? "Order received — check your email" : "Order Received!"}
               </h1>
               <p className="mb-8 text-lg text-zinc-300">
                 Your Order ID:{" "}
@@ -179,18 +174,14 @@ function ThankYouContent ()
                     </span>
                     <div>
                       <p className="font-medium text-white">
-                        {isGreenButtonPayment
-                          ? "Your GreenButton bank payment was submitted during checkout."
-                          : isCardLinkPayment
-                            ? "Open your order confirmation email and use the Pay with debit or credit card button or link."
-                            : "Send your payment via Cash App, Venmo, or Zelle using the quick links below."}
+                        {isCardLinkPayment
+                          ? "Open your order confirmation email and use the Pay with debit or credit card button or link."
+                          : "Send your payment via Cash App, Venmo, or Zelle using the quick links below."}
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
-                        {isGreenButtonPayment
-                          ? "We'll continue processing your order and reach out if any follow-up is needed."
-                          : isCardLinkPayment
-                            ? "The secure checkout page opens on our payment partner site. Zelle, Cash App, and Venmo instructions are also in that email if you change your mind."
-                            : "Include ONLY your order number in the payment note so we can match it instantly."}
+                        {isCardLinkPayment
+                          ? "The secure checkout page opens on our payment partner site. Zelle, Cash App, and Venmo instructions are also in that email if you change your mind."
+                          : "Include ONLY your order number in the payment note so we can match it instantly."}
                       </p>
                     </div>
                   </li>
@@ -200,18 +191,14 @@ function ThankYouContent ()
                     </span>
                     <div>
                       <p className="font-medium text-white">
-                        {isGreenButtonPayment
-                          ? "Your order is now in our fulfillment queue."
-                          : isCardLinkPayment
-                            ? "We ship after your payment is confirmed."
-                            : "Your order ships after manual confirmation."}
+                        {isCardLinkPayment
+                          ? "We ship after your payment is confirmed."
+                          : "Your order ships after manual confirmation."}
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
-                        {isGreenButtonPayment
-                          ? "We&apos;ll notify you once your order is shipped."
-                          : isCardLinkPayment
-                            ? "We&apos;ll notify you once your payment is confirmed and your order ships."
-                            : "We&apos;ll notify you once your payment is confirmed and your order is shipped."}
+                        {isCardLinkPayment
+                          ? "We&apos;ll notify you once your payment is confirmed and your order ships."
+                          : "We&apos;ll notify you once your payment is confirmed and your order is shipped."}
                       </p>
                     </div>
                   </li>
@@ -222,24 +209,7 @@ function ThankYouContent ()
                 </p>
               </div>
 
-              {isGreenButtonPayment ? (
-                <div className="rounded-2xl border border-emerald-500/40 bg-emerald-500/10 p-6">
-                  <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-emerald-200">
-                    GreenButton Payment
-                  </h3>
-                  <p className="text-sm text-zinc-100">
-                    Your GreenButton bank payment for{" "}
-                    <span className="font-semibold text-white">
-                      {paymentAmountDisplay ?? "your order total"}
-                    </span>{" "}
-                    was submitted during checkout.
-                  </p>
-                  <p className="mt-3 text-sm text-zinc-300">
-                    If we need anything else, we&apos;ll contact you using the
-                    email or phone number on this order.
-                  </p>
-                </div>
-              ) : isCardLinkPayment ? (
+              {isCardLinkPayment ? (
                 <div className="rounded-2xl border border-indigo-500/40 bg-indigo-500/10 p-6">
                   <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-indigo-200">
                     Debit / credit card payment

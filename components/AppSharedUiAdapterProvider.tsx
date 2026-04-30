@@ -17,11 +17,6 @@ import {
 import { createOrderAction, lookupOrderAction } from "@/app/actions/orders";
 import { submitOrderStatusForm, deleteOrderAction } from "@/app/actions/admin";
 import { applyReferralCodeAction } from "@/app/actions/referrals";
-import {
-  clearGreenPlaidSessionAction,
-  fetchGreenPlaidLinkedBankAction,
-  prepareGreenPlaidPayorAction,
-} from "@/app/actions/green-plaid";
 
 type AppSharedUiAdapterProviderProps = {
   children: ReactNode;
@@ -56,11 +51,6 @@ export function AppSharedUiAdapterProvider({
       },
       referralActions: {
         applyReferralCode: applyReferralCodeAction,
-      },
-      greenMoneyActions: {
-        preparePlaidPayor: prepareGreenPlaidPayorAction,
-        fetchPlaidLinkedBank: fetchGreenPlaidLinkedBankAction,
-        clearPlaidSession: clearGreenPlaidSessionAction,
       },
     }),
     []
