@@ -190,12 +190,12 @@ export default function Home ()
           className="relative px-6 sm:px-12 lg:px-16"
           aria-labelledby="contact-heading"
         >
-          <div className="relative mx-auto max-w-4xl">
+          <div className="relative mx-auto min-w-0 max-w-4xl">
             <div
               className="absolute inset-0 rounded-3xl border border-purple-900/60 bg-linear-to-br from-[#150022] via-[#090012] to-black shadow-[0_25px_70px_rgba(70,0,110,0.45)]"
               aria-hidden
             />
-            <div className="relative space-y-6 px-6 py-14 text-center sm:px-12 sm:py-16">
+            <div className="relative min-w-0 space-y-6 px-6 py-14 text-center sm:px-12 sm:py-16">
               <span className="inline-flex items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-purple-200">
                 Contact
               </span>
@@ -210,14 +210,14 @@ export default function Home ()
                 questions related to laboratory, academic, or institutional
                 research orders.
               </p>
-              <div className="mx-auto grid w-full max-w-3xl gap-4 md:grid-cols-2">
-                <div className="flex flex-col items-center gap-3 rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-center">
+              <div className="mx-auto grid min-w-0 w-full max-w-3xl gap-4 md:grid-cols-2">
+                <div className="flex min-w-0 max-w-full flex-col items-center gap-3 rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-center">
                   <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
                     Text
                   </span>
                   <a
                     href={SUPPORT_SMS_LINK}
-                    className="text-2xl font-semibold text-white transition hover:text-purple-200"
+                    className="max-w-full wrap-break-word text-2xl font-semibold text-white transition hover:text-purple-200"
                   >
                     Text {SUPPORT_PHONE_DISPLAY}
                   </a>
@@ -226,7 +226,7 @@ export default function Home ()
                     questions.
                   </p>
                 </div>
-                <div className="rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-left">
+                <div className="min-w-0 max-w-full rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-left">
                   <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
                     Social
                   </span>
@@ -234,20 +234,20 @@ export default function Home ()
                     Follow the lab for research updates, documentation notes, and
                     education.
                   </p>
-                  <div className="mt-4">
+                  <div className="mt-4 min-w-0">
                     <Link
                       href={siteMetadata.socialProfiles.tiktok}
                       target="_blank"
                       rel="noreferrer noopener"
                       aria-label="TikTok (@affordablepeps)"
-                      className="flex items-center gap-4 rounded-xl border border-purple-800/50 bg-purple-500/5 px-4 py-3 text-sm text-white transition hover:border-purple-400 hover:bg-purple-500/10"
+                      className="flex min-w-0 w-full items-center gap-4 rounded-xl border border-purple-800/50 bg-purple-500/5 px-4 py-3 text-sm text-white transition hover:border-purple-400 hover:bg-purple-500/10"
                     >
                       <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-500/10 text-purple-200">
                         <TikTokIcon className="h-5 w-5" />
                       </span>
-                      <span>
+                      <span className="min-w-0 text-left">
                         TikTok
-                        <span className="block text-xs font-semibold uppercase tracking-[0.35em] text-purple-200">
+                        <span className="block wrap-break-word text-xs font-semibold uppercase tracking-[0.35em] text-purple-200">
                           @affordablepeps
                         </span>
                       </span>

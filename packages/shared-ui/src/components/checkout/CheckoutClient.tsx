@@ -556,7 +556,6 @@ export function CheckoutClient ({
                   {error}
                 </div>
               )}
-
               <button
                 type="submit"
                 disabled={isPending}
