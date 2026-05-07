@@ -46,7 +46,7 @@ export default function Disclaimer ({
         </h2>
         <div className="space-y-3 text-sm text-zinc-300 leading-relaxed">
           <p>
-            All peptides and related products listed on this website are sold
+           All peptides and related products listed on this website are sold
             strictly for laboratory research use only. They are not intended
             for human or animal consumption, medical use, diagnostic use,
             therapeutic use, or as drugs, foods, cosmetics, or household items.

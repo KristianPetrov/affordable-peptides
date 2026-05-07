@@ -412,7 +412,7 @@ const productDefinitions: ProductDefinition[] = [
     isFeatured: true,
     variants: [
       createVariant("10mg", 100, { mockupLabel: "/products/label-retatrutide-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29097_AFFORD16FRWY" }),
-      createVariant("20mg", 160, { mockupLabel: "/products/label-retatrutide-20mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/14BUr6FwHo3E_Agd0dvKqBskB_o7W0eTe/view"}),
+      createVariant("20mg", 160, { mockupLabel: "/products/label-retatrutide-20mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605040511.pdf" }),
       createVariant("30mg", 200, {
         mockupLabel: "/products/label-retatrutide-30mg-3ml.png",
         testResultUrl: "https://chromate.org/verify?c=29895_AFFORD6895HN",
