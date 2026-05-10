@@ -3,11 +3,17 @@ export type Tier = {
   price: string;
 };
 
+export type TestResult = {
+  label: string;
+  url: string;
+};
+
 export type Variant = {
   label: string;
   tiers: Tier[];
   mockupLabel?: string;
   testResultUrl?: string;
+  testResults?: TestResult[];
   stockQuantity?: number | null;
 };
 
@@ -33,6 +39,7 @@ export type Product = {
   categories: ProductCategoryId[];
   isFeatured?: boolean;
   testResultUrl?: string;
+  testResults?: TestResult[];
 };
 
 export const productCategories: ProductCategory[] = [
@@ -84,6 +91,7 @@ const createFlatTiers = (singlePrice: number): Tier[] => [
 type VariantOptions = {
   mockupLabel?: string;
   testResultUrl?: string;
+  testResults?: TestResult[];
 };
 
 const createVariant = (
@@ -102,6 +110,7 @@ const createVariant = (
     tiers: createStandardTiers(singlePrice),
     mockupLabel: options.mockupLabel,
     testResultUrl: options.testResultUrl,
+    testResults: options.testResults,
   };
 };
 
@@ -462,7 +471,20 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["hormone-growth", "weight-metabolic"],
     variants: [
       createVariant("10mg", 60, { mockupLabel: "/products/label-tesamorelin-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29111_AFFORDX6932D" }),
-      createVariant("20mg", 100, { mockupLabel: "/products/label-tesamorelin-20mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29952_AFFORDBP2149" }),
+      createVariant("20mg", 100, {
+        mockupLabel: "/products/label-tesamorelin-20mg-3ml.png",
+        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2603230261.pdf",
+        testResults: [
+          {
+            label: "Current COA",
+            url: "https://coas.freedomdiagnosticstesting.com/Affo2603230261.pdf",
+          },
+          {
+            label: "Previous COA",
+            url: "https://chromate.org/verify?c=29952_AFFORDBP2149",
+          },
+        ],
+      }),
     ],
   },
   {
@@ -474,7 +496,17 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant("10mg", 80, {
         mockupLabel: "/products/label-tirzepatide-10mg-3ml.png",
-        testResultUrl: "https://chromate.org/verify?c=29099_AFFORD4CK48N",
+        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2603230260.pdf",
+        testResults: [
+          {
+            label: "Current COA",
+            url: "https://coas.freedomdiagnosticstesting.com/Affo2603230260.pdf",
+          },
+          {
+            label: "Previous COA",
+            url: "https://chromate.org/verify?c=29099_AFFORD4CK48N",
+          },
+        ],
       }),
       createVariant("20mg", 140, {
         mockupLabel: "/products/label-tirzepatide-20mg-3ml.png",

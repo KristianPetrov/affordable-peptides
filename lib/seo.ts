@@ -273,22 +273,69 @@ export const createProductJsonLd = ({
         {
             const variantProperties =
                 product.variants
-                    .filter((variant) => Boolean(variant.testResultUrl))
-                    .map((variant) => ({
-                        "@type": "PropertyValue",
-                        name: `Chromate certificate (${variant.label})`,
-                        value: variant.testResultUrl!,
-                    })) ?? [];
-
-            const baseProperties = product.testResultUrl
-                ? [
+                    .flatMap((variant) =>
                     {
+                        const seenUrls = new Set<string>();
+                        const properties: Array<{
+                            "@type": "PropertyValue";
+                            name: string;
+                            value: string;
+                        }> = [];
+                        const addProperty = (name: string, url?: string) =>
+                        {
+                            if (!url || seenUrls.has(url)) {
+                                return;
+                            }
+                            properties.push({
+                                "@type": "PropertyValue",
+                                name,
+                                value: url,
+                            });
+                            seenUrls.add(url);
+                        };
+
+                        addProperty(
+                            `Analytical certificate (${variant.label})`,
+                            variant.testResultUrl
+                        );
+                        variant.testResults?.forEach((result) =>
+                            addProperty(
+                                `${result.label} (${variant.label})`,
+                                result.url
+                            )
+                        );
+
+                        return properties;
+                    }) ?? [];
+
+            const baseProperties = (() =>
+            {
+                const seenUrls = new Set<string>();
+                const properties: Array<{
+                    "@type": "PropertyValue";
+                    name: string;
+                    value: string;
+                }> = [];
+                const addProperty = (name: string, url?: string) =>
+                {
+                    if (!url || seenUrls.has(url)) {
+                        return;
+                    }
+                    properties.push({
                         "@type": "PropertyValue",
-                        name: "Chromate certificate",
-                        value: product.testResultUrl,
-                    },
-                ]
-                : [];
+                        name,
+                        value: url,
+                    });
+                    seenUrls.add(url);
+                };
+
+                addProperty("Analytical certificate", product.testResultUrl);
+                product.testResults?.forEach((result) =>
+                    addProperty(result.label, result.url)
+                );
+
+                return properties;
+            })();
 
             const combined = [...baseProperties, ...variantProperties];
             return combined.length ? combined : undefined;

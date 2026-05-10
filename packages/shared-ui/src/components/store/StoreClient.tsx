@@ -19,6 +19,7 @@ import
   type Product,
   type ProductCategory,
   type ProductCategoryId,
+  type TestResult,
   type Variant,
 } from "@ap/shared-core";
 import
@@ -71,6 +72,16 @@ type SearchSuggestion = {
   isFeatured: boolean;
 };
 
+type TestResultLink = {
+  label: string;
+  url: string;
+};
+
+type TestResultsModal = {
+  title: string;
+  links: TestResultLink[];
+};
+
 const QUICK_FILTERS: QuickFilter[] = [
   {
     id: "featured",
@@ -80,7 +91,7 @@ const QUICK_FILTERS: QuickFilter[] = [
   {
     id: "labVerified",
     label: "Lab Verified",
-    description: "Requires a published Chromate report",
+    description: "Requires a published lab report",
   },
   {
     id: "inStock",
@@ -99,8 +110,35 @@ const productHasAvailableStock = (product: Product) =>
 const productHasTestResults = (product: Product) =>
   Boolean(
     product.testResultUrl ||
-    product.variants.some((variant) => variant.testResultUrl)
+    product.testResults?.length ||
+    product.variants.some(
+      (variant) => variant.testResultUrl || variant.testResults?.length
+    )
   );
+
+const getTestResultLinks = (
+  primaryUrl?: string,
+  testResults?: TestResult[]
+): TestResultLink[] =>
+{
+  const links: TestResultLink[] = [];
+  const seenUrls = new Set<string>();
+  const pushLink = (label: string, url?: string) =>
+  {
+    if (!url || seenUrls.has(url)) {
+      return;
+    }
+    links.push({ label, url });
+    seenUrls.add(url);
+  };
+
+  pushLink(testResults?.length ? "Current COA" : "COA", primaryUrl);
+  for (const result of testResults ?? []) {
+    pushLink(result.label, result.url);
+  }
+
+  return links;
+};
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -176,9 +214,33 @@ export function ProductCard ({
 {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [testResultsModal, setTestResultsModal] =
+    useState<TestResultsModal | null>(null);
   const expanded = typeof forceExpanded === "boolean" ? forceExpanded : isExpanded;
   const buyingOptionsId = `product-${product.slug}-buying-options`;
   const descriptionId = `product-${product.slug}-description`;
+
+  useEffect(() =>
+  {
+    if (!testResultsModal) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) =>
+    {
+      if (event.key !== "Escape") {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      setTestResultsModal(null);
+    };
+
+    window.addEventListener("keydown", handleKeyDown, { capture: true });
+    return () =>
+      window.removeEventListener("keydown", handleKeyDown, { capture: true });
+  }, [testResultsModal]);
+
   const getFirstValidTierIndex = (variant: Variant) =>
     variant.tiers.findIndex(
       (tier) => parseQuantity(tier.quantity) > 0 && parsePrice(tier.price) > 0
@@ -357,10 +419,11 @@ export function ProductCard ({
   };
 
   return (
-    <article
-      id={`product-${product.slug}`}
-      className="flex h-full flex-col overflow-hidden rounded-3xl border border-purple-900/60 bg-linear-to-b from-[#13001f] via-[#090012] to-black shadow-[0_20px_60px_rgba(45,0,95,0.45)]"
-    >
+    <>
+      <article
+        id={`product-${product.slug}`}
+        className="flex h-full flex-col overflow-hidden rounded-3xl border border-purple-900/60 bg-linear-to-b from-[#13001f] via-[#090012] to-black shadow-[0_20px_60px_rgba(45,0,95,0.45)]"
+      >
       <div className="relative h-64 w-full border-b border-purple-900/40 bg-black/40 p-4">
         <MoleculeViewer
           productName={product.name}
@@ -441,106 +504,100 @@ export function ProductCard ({
             </p>
             {(() =>
             {
-              const variantTestLinks = product.variants.filter(
-                (variant) => !!variant.testResultUrl
+              const variantTestEntries = product.variants
+                .map((variant) => ({
+                  label: variant.label,
+                  results: getTestResultLinks(
+                    variant.testResultUrl,
+                    variant.testResults
+                  ),
+                }))
+                .filter((entry) => entry.results.length > 0);
+              const variantTestUrls = new Set(
+                variantTestEntries.flatMap((entry) =>
+                  entry.results.map((result) => result.url)
+                )
               );
-              const hasVariantTests = variantTestLinks.length > 0;
-              const defaultTestUrl =
-                product.testResultUrl || variantTestLinks[0]?.testResultUrl;
+              const productTestResults = getTestResultLinks(
+                product.testResultUrl,
+                product.testResults
+              ).filter((result) => !variantTestUrls.has(result.url));
+              const productTestEntries =
+                productTestResults.length > 0
+                  ? [
+                    {
+                      label: "General",
+                      results: productTestResults,
+                    },
+                  ]
+                  : [];
+              const testEntries = [...variantTestEntries, ...productTestEntries];
+              const previousTestLinks = testEntries.flatMap((entry) =>
+                entry.results
+                  .filter((result) =>
+                    result.label.toLowerCase().includes("previous")
+                  )
+                  .map((result) => ({
+                    label: `${entry.label} - ${result.label}`,
+                    url: result.url,
+                  }))
+              );
 
-              if (hasVariantTests) {
+              if (testEntries.length > 0) {
                 return (
-                  <div className="mt-3 space-y-3">
-                    {variantTestLinks.map((variant) => (
-                      <div
-                        key={`${product.slug}-${variant.label}-test`}
-                        className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-purple-900/30 bg-black/40 px-3 py-2"
-                      >
-                        <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-zinc-400">
-                          {variant.label}
-                        </span>
-                        <a
-                          href={variant.testResultUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-sm font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
+                  <div className="mt-3">
+                    <div className="space-y-3">
+                      {testEntries.map((entry) => (
+                        <div
+                          key={`${product.slug}-${entry.label}-test`}
+                          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-purple-900/30 bg-black/40 px-3 py-2"
                         >
-                          View certificate
-                          <svg
-                            className="h-3.5 w-3.5"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            aria-hidden="true"
-                          >
-                            <path d="M7 17L17 7" />
-                            <path d="M8 7h9v9" />
-                          </svg>
-                        </a>
-                      </div>
-                    ))}
-                    {product.testResultUrl &&
-                      !variantTestLinks.some(
-                        (variant) =>
-                          variant.testResultUrl === product.testResultUrl
-                      ) && (
-                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-purple-900/30 bg-black/40 px-3 py-2">
                           <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-zinc-400">
-                            General
+                            {entry.label}
                           </span>
-                          <a
-                            href={product.testResultUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-2 text-sm font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
-                          >
-                            View certificate
-                            <svg
-                              className="h-3.5 w-3.5"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              aria-hidden="true"
+                          <div className="flex flex-wrap items-center gap-3">
+                            <a
+                              href={entry.results[0].url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 text-sm font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
                             >
-                              <path d="M7 17L17 7" />
-                              <path d="M8 7h9v9" />
-                            </svg>
-                          </a>
+                              View certificate
+                              <svg
+                                className="h-3.5 w-3.5"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M7 17L17 7" />
+                                <path d="M8 7h9v9" />
+                              </svg>
+                            </a>
+                          </div>
                         </div>
-                      )}
+                      ))}
+                    </div>
+                    {previousTestLinks.length > 0 && (
+                      <div className="mt-3 border-t border-purple-900/30 pt-3">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setTestResultsModal({
+                              title: `${product.name} previous tests`,
+                              links: previousTestLinks,
+                            })
+                          }
+                          className="text-xs font-semibold text-purple-200 underline decoration-dotted underline-offset-4 transition hover:text-white"
+                        >
+                          See previous tests
+                        </button>
+                      </div>
+                    )}
                   </div>
-                );
-              }
-
-              if (defaultTestUrl) {
-                return (
-                  <a
-                    href={defaultTestUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
-                  >
-                    View certificate of analysis
-                    <svg
-                      className="h-3.5 w-3.5"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <path d="M7 17L17 7" />
-                      <path d="M8 7h9v9" />
-                    </svg>
-                  </a>
                 );
               }
 
@@ -810,7 +867,56 @@ export function ProductCard ({
           )}
         </div>
       </div>
-    </article>
+      </article>
+      {testResultsModal && (
+        <div
+          className="fixed inset-0 z-70 flex items-center justify-center bg-black/80 px-4 py-10 backdrop-blur"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${testResultsModal.title} test results`}
+          onClick={() => setTestResultsModal(null)}
+        >
+          <div
+            className="w-full max-w-lg rounded-3xl border border-purple-900/70 bg-[#070006] p-6 shadow-[0_20px_80px_rgba(0,0,0,0.7)]"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
+                  Test Results
+                </p>
+                <h4 className="mt-2 text-lg font-semibold text-white">
+                  {testResultsModal.title}
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTestResultsModal(null)}
+                className="text-xs font-semibold uppercase tracking-[0.25em] text-purple-200 transition hover:text-white"
+              >
+                Close
+              </button>
+            </div>
+            <div className="mt-6 space-y-3">
+              {testResultsModal.links.map((link) => (
+                <a
+                  key={link.url}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between gap-4 rounded-xl border border-purple-900/40 bg-black/50 px-4 py-3 text-sm font-semibold text-purple-100 transition hover:border-purple-400 hover:text-white"
+                >
+                  <span>{link.label}</span>
+                  <span className="text-xs uppercase tracking-[0.2em]">
+                    Open
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
 

@@ -130,7 +130,12 @@ export async function generateMetadata({
     categoryLookup.get(product.categories[0]) ?? "Research Material";
   const canonicalTestUrl =
     product.testResultUrl ||
-    product.variants.find((variant) => variant.testResultUrl)?.testResultUrl;
+    product.testResults?.[0]?.url ||
+    product.variants.find(
+      (variant) => variant.testResultUrl || variant.testResults?.length
+    )?.testResultUrl ||
+    product.variants.find((variant) => variant.testResults?.length)
+      ?.testResults?.[0]?.url;
 
   return {
     title,
