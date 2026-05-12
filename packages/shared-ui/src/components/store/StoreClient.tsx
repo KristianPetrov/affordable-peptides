@@ -439,17 +439,19 @@ export function ProductCard ({
         id={`product-${product.slug}`}
         className="flex h-full flex-col overflow-hidden rounded-3xl border border-purple-900/45 bg-[#07000c] shadow-[0_18px_45px_rgba(20,0,42,0.4)]"
       >
-      <div className="relative h-48 w-full border-b border-purple-900/30 bg-black/30 p-4">
+      <div className="relative h-40 w-full border-b border-purple-900/30 bg-black/30 p-3">
         <MoleculeViewer
           productName={product.name}
           molecules={molecules}
           className="h-full rounded-2xl"
         />
       </div>
-      <div className="flex flex-1 flex-col gap-5 p-5">
-        <div className="space-y-3">
+      <div className="flex flex-1 flex-col gap-4 p-4">
+        <div className="space-y-3 md:min-h-40">
           <div className="flex items-start justify-between gap-4">
-            <h3 className="text-lg font-semibold text-white">{product.name}</h3>
+            <h3 className="min-h-12 text-base font-semibold leading-6 text-white">
+              {product.name}
+            </h3>
             <div className="shrink-0 text-right">
               <p className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-zinc-500">
                 From
@@ -459,70 +461,32 @@ export function ProductCard ({
               </p>
             </div>
           </div>
-          {product.detailedDescription ? (
-            <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => setIsDescriptionExpanded((prev) => !prev)}
-                aria-expanded={isDescriptionExpanded}
-                aria-controls={descriptionId}
-                className="group w-full text-left"
-              >
-                <div className="flex items-start gap-2">
-                  <p
-                    className={`text-sm text-purple-100 transition-colors group-hover:text-purple-50 ${isDescriptionExpanded ? "text-purple-200" : ""
-                      }`}
-                  >
-                    {isDescriptionExpanded
-                      ? product.detailedDescription
-                      : product.researchFocus}
-                  </p>
-                  <svg
-                    className={`mt-0.5 h-4 w-4 shrink-0 text-purple-300 transition-transform ${isDescriptionExpanded ? "rotate-180" : ""
-                      }`}
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M19 9l-7 7-7-7"
-                    />
-                  </svg>
-                </div>
-              </button>
-              <p className="text-xs text-zinc-500">
-                {isDescriptionExpanded
-                  ? "Click to show brief description"
-                  : "Click to expand for detailed description"}
-              </p>
-            </div>
-          ) : (
-            <p className="text-sm text-purple-100">{product.researchFocus}</p>
+          <button
+            type="button"
+            onClick={() => setIsDescriptionExpanded((prev) => !prev)}
+            aria-expanded={isDescriptionExpanded}
+            aria-controls={descriptionId}
+            className="group w-full text-left"
+          >
+            <p
+              id={descriptionId}
+              className={`min-h-10 text-sm leading-5 text-purple-100 transition-colors group-hover:text-purple-50 ${isDescriptionExpanded ? "text-purple-200" : "line-clamp-2"
+                }`}
+            >
+              {isDescriptionExpanded && product.detailedDescription
+                ? product.detailedDescription
+                : product.researchFocus}
+            </p>
+          </button>
+          {showModalLink && (
+            <Link
+              href={`/store/product/${product.slug}`}
+              scroll={false}
+              className="inline-flex text-xs font-semibold text-purple-200 underline decoration-dotted underline-offset-4 transition hover:text-white"
+            >
+              Details
+            </Link>
           )}
-          <div className="flex flex-wrap gap-2">
-            {product.categories.map((categoryId) =>
-            {
-              const category = CATEGORY_LOOKUP.get(categoryId);
-              if (!category) {
-                return null;
-              }
-              return (
-                <span
-                  key={`${product.name}-${categoryId}`}
-                  className="rounded-full border border-purple-500/40 bg-purple-500/10 px-3 py-1 text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-purple-100"
-                >
-                  {category.label}
-                </span>
-              );
-            })}
-          </div>
-          <p className="text-xs text-zinc-500">
-            Select mg strength and quantity tier directly below.
-          </p>
           {(() =>
           {
             const variantTestEntries = product.variants
@@ -645,43 +609,7 @@ export function ProductCard ({
             );
           })()}
         </div>
-        <div className="flex flex-col gap-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between gap-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
-                Strength
-              </p>
-              {showModalLink && (
-                <Link
-                  href={`/store/product/${product.slug}`}
-                  scroll={false}
-                  className="text-xs font-semibold text-purple-200 underline decoration-dotted underline-offset-4 transition hover:text-white"
-                >
-                  Product detail
-                </Link>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              {product.variants.map((variant) =>
-              {
-                const isSelected = selectedVariant?.label === variant.label;
-                return (
-                  <button
-                    type="button"
-                    key={`${product.slug}-${variant.label}-selector`}
-                    aria-pressed={isSelected}
-                    onClick={() => setSelectedVariantLabel(variant.label)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isSelected
-                      ? "border-purple-300 bg-purple-500/25 text-white"
-                      : "border-purple-900/50 bg-black/40 text-purple-100 hover:border-purple-400 hover:text-white"
-                      }`}
-                  >
-                    {variant.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+        <div className="flex flex-col gap-3">
           <div id={buyingOptionsId} className="flex flex-1 flex-col gap-4">
             {selectedVariant ? (() =>
             {
@@ -695,11 +623,6 @@ export function ProductCard ({
               const selectedTierPrice = selectedTier
                 ? parsePrice(selectedTier.price)
                 : 0;
-              const selectedTierDisplay = selectedTier
-                ? selectedTier.price.startsWith("$")
-                  ? selectedTier.price
-                  : `$${selectedTier.price}`
-                : "";
               const variantStock =
                 typeof variant.stockQuantity === "number"
                   ? variant.stockQuantity
@@ -734,13 +657,37 @@ export function ProductCard ({
                   : effectivePendingCount < Math.max(maxAddablePacks, 1);
 
               return (
-                <div className="flex flex-col gap-4 rounded-2xl border border-purple-900/35 bg-black/45 p-4">
+                <div className="flex flex-col gap-3 rounded-2xl border border-purple-900/35 bg-black/45 p-3">
                   {variant.mockupLabel ? (
-                    <div className="flex justify-center rounded-2xl border border-purple-900/25 bg-black/40 p-3">
+                    <div className="relative flex h-56 justify-center overflow-hidden rounded-2xl border border-purple-900/25 bg-black/40 p-1">
+                      <div
+                        className="absolute left-2 top-8 z-10 flex max-w-[45%] flex-col items-start gap-1.5"
+                        aria-label="Strength"
+                      >
+                        {product.variants.map((option) =>
+                        {
+                          const isSelected = selectedVariant?.label === option.label;
+                          return (
+                            <button
+                              type="button"
+                              key={`${product.slug}-${option.label}-selector`}
+                              aria-pressed={isSelected}
+                              onClick={() => setSelectedVariantLabel(option.label)}
+                              className={`rounded-full border px-2.5 py-1 text-[0.65rem] font-semibold shadow-[0_8px_20px_rgba(0,0,0,0.35)] backdrop-blur transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isSelected
+                                ? "border-purple-200 bg-purple-500/80 text-white"
+                                : "border-purple-900/60 bg-black/65 text-purple-100 hover:border-purple-300 hover:text-white"
+                                }`}
+                            >
+                              {option.label}
+                            </button>
+                          );
+                        })}
+                      </div>
                       <ProductMockup
                         labelSrc={variant.mockupLabel}
                         productName={`${product.name} ${variant.label}`}
                         size="sm"
+                        className="-my-3"
                       />
                     </div>
                   ) : null}
@@ -786,7 +733,7 @@ export function ProductCard ({
                           aria-pressed={isSelected}
                           disabled={isUnavailable}
                           onClick={() => handleSelectTier(variant.label, index)}
-                          className={`flex min-h-20 flex-col items-center justify-center rounded-2xl border px-2 py-3 text-center text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isSelected
+                          className={`flex min-h-16 flex-col items-center justify-center rounded-xl border px-2 py-2 text-center text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isSelected
                             ? "border-purple-300 bg-purple-500/20 text-white"
                             : "border-purple-900/35 bg-zinc-950/80 text-zinc-200 hover:border-purple-400 hover:text-white"
                             } ${isUnavailable
@@ -810,11 +757,6 @@ export function ProductCard ({
                     })}
                   </div>
                   <div className="flex flex-col gap-3">
-                    <div className="text-xs text-zinc-400">
-                      {selectedTier && !addDisabled
-                        ? `Selected: ${variant.label}, qty ${selectedTier.quantity} for ${selectedTierDisplay}`
-                        : "No available tier selected"}
-                    </div>
                     <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
                       <div className="inline-flex items-center justify-center gap-1 rounded-full border border-purple-500/50 bg-black/60 px-3 py-1">
                         <button
@@ -880,10 +822,6 @@ export function ProductCard ({
                 No buying options are available yet.
               </div>
             )}
-          </div>
-          <div className="pt-1 text-xs text-zinc-500">
-            Pricing shown for research use only. Contact us for bulk or
-            specialized requests.
           </div>
         </div>
       </div>
@@ -1660,7 +1598,7 @@ export default function StoreClient ({ products }: StoreClientProps)
                 </p>
               </div>
               {filteredProducts.length > 0 ? (
-                <div className="grid gap-8 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid items-stretch gap-8 sm:grid-cols-2 xl:grid-cols-3">
                   {filteredProducts.map((product) => (
                     <ProductCard
                       key={product.slug}
