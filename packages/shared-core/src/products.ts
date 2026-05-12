@@ -211,14 +211,14 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
       createVariant(
-        "No DAC + IPA (10mg)",
+        "With IPA (10mg)",
         70,
         { mockupLabel: "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29953_AFFORD4C9564" }
       ),
       createVariant("With DAC (5mg)", 50, "/products/label-cjc-1295-dac-5mg-3ml.png"),
-      createVariant("Without DAC (5mg)", 40, { mockupLabel: "/products/label-cjc-1295-wo-dac-5mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29953_AFFORD4C9564" }),
+      createVariant("No DAC (5mg)", 40, { mockupLabel: "/products/label-cjc-1295-wo-dac-5mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29953_AFFORD4C9564" }),
       createVariant(
-        "Without DAC (10mg)",
+        "No DAC (10mg)",
         70,
         { mockupLabel: "/products/label-cjc-1295-wo-dac-10mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1UvOMT6y3PILAn2980d82JeLwQ4mVk8_E/view"}
       ),
