@@ -206,7 +206,6 @@ export function ProductCard ({
   molecules,
   cartItems,
   onAddToCart,
-  showModalLink = true,
 }: ProductCardProps)
 {
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
@@ -466,27 +465,31 @@ export function ProductCard ({
             onClick={() => setIsDescriptionExpanded((prev) => !prev)}
             aria-expanded={isDescriptionExpanded}
             aria-controls={descriptionId}
-            className="group w-full text-left"
+            className="group relative w-full text-left"
           >
             <p
               id={descriptionId}
-              className={`min-h-10 text-sm leading-5 text-purple-100 transition-colors group-hover:text-purple-50 ${isDescriptionExpanded ? "text-purple-200" : "line-clamp-2"
+              className={`min-h-10 pr-6 text-sm leading-5 text-purple-100 transition-colors group-hover:text-purple-50 ${isDescriptionExpanded ? "text-purple-200" : "line-clamp-2"
                 }`}
             >
               {isDescriptionExpanded && product.detailedDescription
                 ? product.detailedDescription
                 : product.researchFocus}
             </p>
-          </button>
-          {showModalLink && (
-            <Link
-              href={`/store/product/${product.slug}`}
-              scroll={false}
-              className="inline-flex text-xs font-semibold text-purple-200 underline decoration-dotted underline-offset-4 transition hover:text-white"
+            <svg
+              className={`pointer-events-none absolute right-0 top-1 h-4 w-4 text-purple-300 transition-transform group-hover:text-purple-100 ${isDescriptionExpanded ? "rotate-180" : ""
+                }`}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
             >
-              Details
-            </Link>
-          )}
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </button>
           {(() =>
           {
             const variantTestEntries = product.variants

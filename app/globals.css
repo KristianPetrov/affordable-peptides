@@ -59,6 +59,24 @@ body {
   opacity: 0.9;
 }
 
+.bottle-aura {
+  background:
+    radial-gradient(circle at 50% 42%, rgba(245, 208, 254, 0.66), transparent 23%),
+    radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.72), transparent 50%),
+    conic-gradient(from 0deg, rgba(76, 29, 149, 0), rgba(192, 132, 252, 0.58), rgba(76, 29, 149, 0), rgba(126, 34, 206, 0.5), rgba(76, 29, 149, 0));
+  filter: blur(24px) saturate(1.25);
+  mix-blend-mode: screen;
+  opacity: 0.78;
+  transform-origin: center;
+  animation: bottleAuraPulse 5.5s ease-in-out infinite;
+}
+
+.bottle-aura-secondary {
+  filter: blur(34px) saturate(1.4);
+  opacity: 0.5;
+  animation: bottleAuraDrift 8s linear infinite;
+}
+
 @keyframes heroFirePulse {
   0% {
     opacity: 0.66;
@@ -99,5 +117,33 @@ body {
   74% {
     opacity: 0.92;
     transform: translateY(-2%) scaleY(1.03);
+  }
+}
+
+@keyframes bottleAuraPulse {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(0.94) rotate(0deg);
+  }
+  45% {
+    opacity: 0.9;
+    transform: scale(1.08) rotate(10deg);
+  }
+  70% {
+    opacity: 0.72;
+    transform: scale(1.02) rotate(-8deg);
+  }
+}
+
+@keyframes bottleAuraDrift {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.12);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
   }
 }

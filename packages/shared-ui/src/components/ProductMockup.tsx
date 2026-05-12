@@ -98,14 +98,20 @@ export default function ProductMockup ({
   return (
     <div className={containerClassName}>
       {glow ? (
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -inset-5 rounded-[40px] bg-[radial-linear(circle_at_top,_rgba(168,85,247,0.45), transparent_65%)] blur-3xl opacity-70"
-        />
+        <>
+          <div
+            aria-hidden
+            className="bottle-aura pointer-events-none absolute inset-[6%] z-0 rounded-full"
+          />
+          <div
+            aria-hidden
+            className="bottle-aura bottle-aura-secondary pointer-events-none absolute inset-[16%] z-0 rounded-full"
+          />
+        </>
       ) : null}
-      <div className="absolute inset-[6%] rounded-[36px] bg-linear-to-b from-[#12001f] via-[#06000b] to-black" />
-      <div className="absolute inset-x-6 top-[10%] h-16 rounded-full bg-linear-to-r from-transparent via-purple-500/30 to-transparent blur-3xl opacity-60" />
-      <div className="absolute inset-0">
+      <div className="absolute inset-[8%] z-0 rounded-full bg-purple-950/20 blur-2xl" />
+      <div className="absolute inset-x-6 top-[10%] z-0 h-16 rounded-full bg-linear-to-r from-transparent via-purple-500/30 to-transparent blur-3xl opacity-60" />
+      <div className="absolute inset-0 z-10">
         <Image
           src={bottleSrc}
           alt={resolvedBottleAlt}
@@ -116,7 +122,7 @@ export default function ProductMockup ({
         />
       </div>
       <div
-        className="absolute origin-center"
+        className="absolute z-20 origin-center"
         style={labelWrapperStyle}
         aria-hidden
       >
@@ -161,7 +167,7 @@ export default function ProductMockup ({
           />
         </div>
       </div>
-      <div className="absolute inset-x-[18%] bottom-[16%] h-6 rounded-full bg-black/50 blur-2xl" aria-hidden />
+      <div className="absolute inset-x-[18%] bottom-[16%] z-0 h-6 rounded-full bg-black/50 blur-2xl" aria-hidden />
     </div>
   );
 }
