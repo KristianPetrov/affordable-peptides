@@ -523,116 +523,127 @@ export function ProductCard ({
           <p className="text-xs text-zinc-500">
             Select mg strength and quantity tier directly below.
           </p>
-          <div className="rounded-2xl border border-purple-900/40 bg-black/60 p-4">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
-              Analytical Results
-            </p>
-            {(() =>
-            {
-              const variantTestEntries = product.variants
-                .map((variant) => ({
-                  label: variant.label,
-                  results: getTestResultLinks(
-                    variant.testResultUrl,
-                    variant.testResults
-                  ),
-                }))
-                .filter((entry) => entry.results.length > 0);
-              const variantTestUrls = new Set(
-                variantTestEntries.flatMap((entry) =>
-                  entry.results.map((result) => result.url)
+          {(() =>
+          {
+            const variantTestEntries = product.variants
+              .map((variant) => ({
+                label: variant.label,
+                results: getTestResultLinks(
+                  variant.testResultUrl,
+                  variant.testResults
+                ),
+              }))
+              .filter((entry) => entry.results.length > 0);
+            const variantTestUrls = new Set(
+              variantTestEntries.flatMap((entry) =>
+                entry.results.map((result) => result.url)
+              )
+            );
+            const productTestResults = getTestResultLinks(
+              product.testResultUrl,
+              product.testResults
+            ).filter((result) => !variantTestUrls.has(result.url));
+            const productTestEntries =
+              productTestResults.length > 0
+                ? [
+                  {
+                    label: "General",
+                    results: productTestResults,
+                  },
+                ]
+                : [];
+            const testEntries = [...variantTestEntries, ...productTestEntries];
+            const previousTestLinks = testEntries.flatMap((entry) =>
+              entry.results
+                .filter((result) =>
+                  result.label.toLowerCase().includes("previous")
                 )
-              );
-              const productTestResults = getTestResultLinks(
-                product.testResultUrl,
-                product.testResults
-              ).filter((result) => !variantTestUrls.has(result.url));
-              const productTestEntries =
-                productTestResults.length > 0
-                  ? [
-                    {
-                      label: "General",
-                      results: productTestResults,
-                    },
-                  ]
-                  : [];
-              const testEntries = [...variantTestEntries, ...productTestEntries];
-              const previousTestLinks = testEntries.flatMap((entry) =>
-                entry.results
-                  .filter((result) =>
-                    result.label.toLowerCase().includes("previous")
-                  )
-                  .map((result) => ({
-                    label: `${entry.label} - ${result.label}`,
-                    url: result.url,
-                  }))
-              );
+                .map((result) => ({
+                  label: `${entry.label} - ${result.label}`,
+                  url: result.url,
+                }))
+            );
 
-              if (testEntries.length > 0) {
-                return (
-                  <div className="mt-3">
-                    <div className="space-y-3">
-                      {testEntries.map((entry) => (
-                        <div
-                          key={`${product.slug}-${entry.label}-test`}
-                          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-purple-900/30 bg-black/40 px-3 py-2"
+            return (
+              <details className="group rounded-2xl border border-purple-900/40 bg-black/60 px-3 py-2">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.25em] text-purple-200 marker:hidden [&::-webkit-details-marker]:hidden">
+                  <span>Certificates</span>
+                  <span className="flex items-center gap-2 text-[0.6rem] text-zinc-500">
+                    {testEntries.length > 0
+                      ? `${testEntries.length} available`
+                      : "Pending"}
+                    <svg
+                      className="h-3.5 w-3.5 text-purple-300 transition-transform group-open:rotate-180"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden="true"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </span>
+                </summary>
+                {testEntries.length > 0 ? (
+                  <div className="mt-2 space-y-2 border-t border-purple-900/30 pt-2">
+                    {testEntries.map((entry) => (
+                      <div
+                        key={`${product.slug}-${entry.label}-test`}
+                        className="flex items-center justify-between gap-2 rounded-lg border border-purple-900/25 bg-black/35 px-2.5 py-1.5"
+                      >
+                        <span className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-zinc-400">
+                          {entry.label}
+                        </span>
+                        <a
+                          href={entry.results[0].url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
                         >
-                          <span className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-zinc-400">
-                            {entry.label}
-                          </span>
-                          <div className="flex flex-wrap items-center gap-3">
-                            <a
-                              href={entry.results[0].url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 text-sm font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
-                            >
-                              View certificate
-                              <svg
-                                className="h-3.5 w-3.5"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                aria-hidden="true"
-                              >
-                                <path d="M7 17L17 7" />
-                                <path d="M8 7h9v9" />
-                              </svg>
-                            </a>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    {previousTestLinks.length > 0 && (
-                      <div className="mt-3 border-t border-purple-900/30 pt-3">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setTestResultsModal({
-                              title: `${product.name} previous tests`,
-                              links: previousTestLinks,
-                            })
-                          }
-                          className="text-xs font-semibold text-purple-200 underline decoration-dotted underline-offset-4 transition hover:text-white"
-                        >
-                          See previous tests
-                        </button>
+                          COA
+                          <svg
+                            className="h-3 w-3"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            aria-hidden="true"
+                          >
+                            <path d="M7 17L17 7" />
+                            <path d="M8 7h9v9" />
+                          </svg>
+                        </a>
                       </div>
+                    ))}
+                    {previousTestLinks.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setTestResultsModal({
+                            title: `${product.name} previous tests`,
+                            links: previousTestLinks,
+                          })
+                        }
+                        className="text-xs font-semibold text-purple-200 underline decoration-dotted underline-offset-4 transition hover:text-white"
+                      >
+                        Previous tests
+                      </button>
                     )}
                   </div>
-                );
-              }
-
-              return (
-                <p className="mt-2 text-sm text-zinc-400">
-                  Test results coming soon.
-                </p>
-              );
-            })()}
-          </div>
+                ) : (
+                  <p className="mt-2 border-t border-purple-900/30 pt-2 text-xs text-zinc-400">
+                    Test results coming soon.
+                  </p>
+                )}
+              </details>
+            );
+          })()}
         </div>
         <div className="flex flex-col gap-4">
           <div className="space-y-2">
