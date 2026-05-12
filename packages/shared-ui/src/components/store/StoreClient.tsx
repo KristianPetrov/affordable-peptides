@@ -222,16 +222,9 @@ export function ProductCard ({
     null;
   const priceRangeDisplay = useMemo(() =>
   {
-    const prices = product.variants.flatMap((variant) =>
-      variant.tiers
-        .map((tier) =>
-        {
-          const quantity = parseQuantity(tier.quantity);
-          const price = parsePrice(tier.price);
-          return quantity > 0 && price > 0 ? price / quantity : 0;
-        })
-        .filter((price) => price > 0)
-    );
+    const prices = product.variants
+      .map((variant) => getBaseUnitPrice(variant))
+      .filter((price) => price > 0);
     if (prices.length === 0) {
       return "Price pending";
     }
@@ -534,7 +527,7 @@ export function ProductCard ({
             return (
               <details className="group rounded-2xl border border-purple-900/40 bg-black/60 px-3 py-2">
                 <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.25em] text-purple-200 marker:hidden [&::-webkit-details-marker]:hidden">
-                  <span>Certificates</span>
+                  <span className="text-xs">{"Analysis (COA)"}</span>
                   <span className="flex items-center gap-2 text-[0.6rem] text-zinc-500">
                     {testEntries.length > 0
                       ? `${testEntries.length} available`

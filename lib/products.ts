@@ -209,14 +209,14 @@ const productDefinitions: ProductDefinition[] = [
     researchFocus: "Long-acting GHRH analog that sustains GH and IGF-1 release for lean mass.",
     detailedDescription: "CJC-1295 is a long-acting GHRH analog investigated for its ability to enhance pulsatile growth hormone (GH) and IGF-1 release. It's frequently used in research on lean mass, recovery, and growth-hormone–related endocrine dynamics.",
     categories: ["hormone-growth", "recovery-performance"],
-    variants: [createVariant("5mg", 40, { mockupLabel: "/products/label-cjc-1295-wo-dac-5mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29953_AFFORD4C9564" }),
+    variants: [
       createVariant(
         "10mg",
         70,
         { mockupLabel: "/products/label-cjc-1295-wo-dac-10mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1UvOMT6y3PILAn2980d82JeLwQ4mVk8_E/view"}
       ),  createVariant("5mg + DAC", 50, "/products/label-cjc-1295-dac-5mg-3ml.png"),
       createVariant(
-        "10mg + IPA",
+        "10mg + IPA (no DAC)",
         70,
         { mockupLabel: "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29953_AFFORD4C9564" }
       ),
@@ -324,7 +324,6 @@ const productDefinitions: ProductDefinition[] = [
       "Sermorelin is a growth hormone–releasing hormone (GHRH) analog researched for promoting physiologic, pulsatile growth hormone secretion. It is commonly explored in endocrine and recovery-focused studies, including protocols that investigate sleep quality, body composition, and GH/IGF-1 axis dynamics.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("5mg", 40, { mockupLabel: "/products/label-sermorelin-5mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1xmIT5mTQ6Tyw1qIkYRaREDNzA6ikRgIx/view"}),
       createVariant("10mg", 70, { mockupLabel: "/products/label-sermorelin-10mg-3ml.png", testResultUrl:"https://drive.google.com/file/d/1dzJieOqtAX_MoTIexUpuMuClGpXbGC-b/view"}
       ),
     ],
