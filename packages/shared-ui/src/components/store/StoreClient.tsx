@@ -224,7 +224,14 @@ export function ProductCard ({
   const priceRangeDisplay = useMemo(() =>
   {
     const prices = product.variants.flatMap((variant) =>
-      variant.tiers.map((tier) => parsePrice(tier.price)).filter((price) => price > 0)
+      variant.tiers
+        .map((tier) =>
+        {
+          const quantity = parseQuantity(tier.quantity);
+          const price = parsePrice(tier.price);
+          return quantity > 0 && price > 0 ? price / quantity : 0;
+        })
+        .filter((price) => price > 0)
     );
     if (prices.length === 0) {
       return "Price pending";
