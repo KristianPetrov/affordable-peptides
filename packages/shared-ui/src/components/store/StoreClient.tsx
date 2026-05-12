@@ -206,19 +206,35 @@ export function ProductCard ({
   molecules,
   cartItems,
   onAddToCart,
-  defaultExpanded = false,
-  forceExpanded,
-  showExpandToggle = true,
   showModalLink = true,
 }: ProductCardProps)
 {
-  const [isExpanded, setIsExpanded] = useState(defaultExpanded);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [selectedVariantLabel, setSelectedVariantLabel] = useState(
+    () => product.variants[0]?.label ?? ""
+  );
   const [testResultsModal, setTestResultsModal] =
     useState<TestResultsModal | null>(null);
-  const expanded = typeof forceExpanded === "boolean" ? forceExpanded : isExpanded;
   const buyingOptionsId = `product-${product.slug}-buying-options`;
   const descriptionId = `product-${product.slug}-description`;
+  const selectedVariant =
+    product.variants.find((variant) => variant.label === selectedVariantLabel) ??
+    product.variants[0] ??
+    null;
+  const priceRangeDisplay = useMemo(() =>
+  {
+    const prices = product.variants.flatMap((variant) =>
+      variant.tiers.map((tier) => parsePrice(tier.price)).filter((price) => price > 0)
+    );
+    if (prices.length === 0) {
+      return "Price pending";
+    }
+    const minPrice = Math.min(...prices);
+    const maxPrice = Math.max(...prices);
+    return minPrice === maxPrice
+      ? formatCurrency(minPrice)
+      : `${formatCurrency(minPrice)} - ${formatCurrency(maxPrice)}`;
+  }, [product.variants]);
 
   useEffect(() =>
   {
@@ -337,14 +353,6 @@ export function ProductCard ({
     });
   };
 
-  const handleToggleExpansion = () =>
-  {
-    if (typeof forceExpanded === "boolean") {
-      return;
-    }
-    setIsExpanded((prev) => !prev);
-  };
-
   const handleAddVariantToCart = (variant: Variant) =>
   {
     const selectedIndex = resolveSelectedIndex(variant);
@@ -422,18 +430,28 @@ export function ProductCard ({
     <>
       <article
         id={`product-${product.slug}`}
-        className="flex h-full flex-col overflow-hidden rounded-3xl border border-purple-900/60 bg-linear-to-b from-[#13001f] via-[#090012] to-black shadow-[0_20px_60px_rgba(45,0,95,0.45)]"
+        className="flex h-full flex-col overflow-hidden rounded-3xl border border-purple-900/45 bg-[#07000c] shadow-[0_18px_45px_rgba(20,0,42,0.4)]"
       >
-      <div className="relative h-64 w-full border-b border-purple-900/40 bg-black/40 p-4">
+      <div className="relative h-48 w-full border-b border-purple-900/30 bg-black/30 p-4">
         <MoleculeViewer
           productName={product.name}
           molecules={molecules}
           className="h-full rounded-2xl"
         />
       </div>
-      <div className="flex flex-1 flex-col gap-6 p-6">
+      <div className="flex flex-1 flex-col gap-5 p-5">
         <div className="space-y-3">
-          <h3 className="text-lg font-semibold text-white">{product.name}</h3>
+          <div className="flex items-start justify-between gap-4">
+            <h3 className="text-lg font-semibold text-white">{product.name}</h3>
+            <div className="shrink-0 text-right">
+              <p className="text-[0.6rem] font-semibold uppercase tracking-[0.3em] text-zinc-500">
+                From
+              </p>
+              <p className="text-sm font-semibold text-white">
+                {priceRangeDisplay}
+              </p>
+            </div>
+          </div>
           {product.detailedDescription ? (
             <div className="space-y-2">
               <button
@@ -495,12 +513,12 @@ export function ProductCard ({
               );
             })}
           </div>
-          <p className="text-sm text-zinc-400">
-            Select the dosage and volume tier that fits your research needs.
+          <p className="text-xs text-zinc-500">
+            Select mg strength and quantity tier directly below.
           </p>
           <div className="rounded-2xl border border-purple-900/40 bg-black/60 p-4">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
-              Analytical Testing
+              Analytical Results
             </p>
             {(() =>
             {
@@ -610,261 +628,245 @@ export function ProductCard ({
           </div>
         </div>
         <div className="flex flex-col gap-4">
-          <div className="flex flex-wrap gap-3">
-            {showExpandToggle && (
-              <button
-                type="button"
-                onClick={handleToggleExpansion}
-                aria-expanded={expanded}
-                aria-controls={buyingOptionsId}
-                className="inline-flex flex-1 items-center justify-center rounded-full border border-purple-500/60 bg-purple-500/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-purple-100 transition hover:border-purple-400 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:flex-none"
-              >
-                {expanded ? "Hide buying options" : "View buying options"}
-              </button>
-            )}
-            {showModalLink && (
-              <Link
-                href={`/store/product/${product.slug}`}
-                scroll={false}
-                className="inline-flex flex-1 items-center justify-center rounded-full border border-purple-500/40 px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.25em] text-purple-100 transition hover:border-purple-300 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black sm:flex-none"
-              >
-                Open product detail
-              </Link>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-purple-200">
+                Strength
+              </p>
+              {showModalLink && (
+                <Link
+                  href={`/store/product/${product.slug}`}
+                  scroll={false}
+                  className="text-xs font-semibold text-purple-200 underline decoration-dotted underline-offset-4 transition hover:text-white"
+                >
+                  Product detail
+                </Link>
+              )}
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {product.variants.map((variant) =>
+              {
+                const isSelected = selectedVariant?.label === variant.label;
+                return (
+                  <button
+                    type="button"
+                    key={`${product.slug}-${variant.label}-selector`}
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedVariantLabel(variant.label)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isSelected
+                      ? "border-purple-300 bg-purple-500/25 text-white"
+                      : "border-purple-900/50 bg-black/40 text-purple-100 hover:border-purple-400 hover:text-white"
+                      }`}
+                  >
+                    {variant.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div id={buyingOptionsId} className="flex flex-1 flex-col gap-4">
+            {selectedVariant ? (() =>
+            {
+              const variant = selectedVariant;
+              const baseUnitPrice = getBaseUnitPrice(variant);
+              const selectedIndex = resolveSelectedIndex(variant);
+              const selectedTier = variant.tiers[selectedIndex];
+              const selectedTierQuantity = selectedTier
+                ? parseQuantity(selectedTier.quantity)
+                : 0;
+              const selectedTierPrice = selectedTier
+                ? parsePrice(selectedTier.price)
+                : 0;
+              const selectedTierDisplay = selectedTier
+                ? selectedTier.price.startsWith("$")
+                  ? selectedTier.price
+                  : `$${selectedTier.price}`
+                : "";
+              const variantStock =
+                typeof variant.stockQuantity === "number"
+                  ? variant.stockQuantity
+                  : null;
+              const reservedUnits = getUnitsReservedForVariant(variant.label);
+              const remainingStock =
+                variantStock === null
+                  ? null
+                  : Math.max(variantStock - reservedUnits, 0);
+              const isOutOfStock = remainingStock !== null && remainingStock <= 0;
+              const insufficientSelection =
+                remainingStock !== null && selectedTierQuantity > remainingStock;
+              const addDisabled =
+                !selectedTier ||
+                selectedTierQuantity === 0 ||
+                selectedTierPrice === 0 ||
+                isOutOfStock ||
+                insufficientSelection;
+              const pendingAddCount = getPendingAddCount(variant.label);
+              const unitsPerPack = Math.max(selectedTierQuantity, 1);
+              const maxAddablePacks =
+                remainingStock === null || unitsPerPack === 0
+                  ? Number.POSITIVE_INFINITY
+                  : Math.max(Math.floor(remainingStock / unitsPerPack), 0);
+              const effectivePendingCount =
+                maxAddablePacks === Number.POSITIVE_INFINITY
+                  ? pendingAddCount
+                  : Math.min(pendingAddCount, Math.max(maxAddablePacks, 1));
+              const canIncreasePending =
+                maxAddablePacks === Number.POSITIVE_INFINITY
+                  ? true
+                  : effectivePendingCount < Math.max(maxAddablePacks, 1);
+
+              return (
+                <div className="flex flex-col gap-4 rounded-2xl border border-purple-900/35 bg-black/45 p-4">
+                  {variant.mockupLabel ? (
+                    <div className="flex justify-center rounded-2xl border border-purple-900/25 bg-black/40 p-3">
+                      <ProductMockup
+                        labelSrc={variant.mockupLabel}
+                        productName={`${product.name} ${variant.label}`}
+                        size="sm"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
+                    <span>
+                      {variantStock === null
+                        ? "Stock not set"
+                        : `${remainingStock} of ${variantStock} units available${reservedUnits > 0
+                          ? ` (${reservedUnits} in cart)`
+                          : ""
+                        }`}
+                    </span>
+                    {isOutOfStock && (
+                      <span className="font-semibold uppercase tracking-wide text-red-300">
+                        Out of stock
+                      </span>
+                    )}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2">
+                    {variant.tiers.map((tier, index) =>
+                    {
+                      const tierQuantity = parseQuantity(tier.quantity);
+                      const tierPrice = parsePrice(tier.price);
+                      const tierPriceDisplay = tier.price.startsWith("$")
+                        ? tier.price
+                        : `$${tier.price}`;
+                      const isUnavailable = tierQuantity === 0 || tierPrice === 0;
+                      const isSelected = index === selectedIndex;
+                      const perUnitPrice =
+                        tierQuantity > 0 ? tierPrice / tierQuantity : 0;
+                      const savingsPercent =
+                        baseUnitPrice > 0 && perUnitPrice > 0
+                          ? Math.round(
+                            ((baseUnitPrice - perUnitPrice) / baseUnitPrice) *
+                            100
+                          )
+                          : 0;
+
+                      return (
+                        <button
+                          type="button"
+                          key={`${variant.label}-${tier.quantity}`}
+                          aria-pressed={isSelected}
+                          disabled={isUnavailable}
+                          onClick={() => handleSelectTier(variant.label, index)}
+                          className={`flex min-h-20 flex-col items-center justify-center rounded-2xl border px-2 py-3 text-center text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isSelected
+                            ? "border-purple-300 bg-purple-500/20 text-white"
+                            : "border-purple-900/35 bg-zinc-950/80 text-zinc-200 hover:border-purple-400 hover:text-white"
+                            } ${isUnavailable
+                              ? "cursor-not-allowed opacity-40"
+                              : ""
+                            }`}
+                        >
+                          <span className="text-[0.65rem] font-semibold uppercase tracking-wide text-zinc-500">
+                            {tier.quantity} pack
+                          </span>
+                          <span className="mt-1 text-sm font-semibold text-white">
+                            {tierPriceDisplay}
+                          </span>
+                          {savingsPercent > 0 && (
+                            <span className="mt-1 text-[0.65rem] font-semibold text-green-300">
+                              Save {savingsPercent}%
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <div className="text-xs text-zinc-400">
+                      {selectedTier && !addDisabled
+                        ? `Selected: ${variant.label}, qty ${selectedTier.quantity} for ${selectedTierDisplay}`
+                        : "No available tier selected"}
+                    </div>
+                    <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
+                      <div className="inline-flex items-center justify-center gap-1 rounded-full border border-purple-500/50 bg-black/60 px-3 py-1">
+                        <button
+                          type="button"
+                          className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-purple-900/60"
+                          onClick={() =>
+                            handleAdjustPendingAddCount(
+                              variant,
+                              -1,
+                              unitsPerPack,
+                              remainingStock
+                            )
+                          }
+                          disabled={effectivePendingCount <= 1}
+                          aria-label={`Decrease ${variant.label} add quantity`}
+                        >
+                          -
+                        </button>
+                        <span className="px-2 text-sm font-semibold text-white">
+                          {effectivePendingCount}
+                        </span>
+                        <button
+                          type="button"
+                          className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-purple-900/60"
+                          onClick={() =>
+                            handleAdjustPendingAddCount(
+                              variant,
+                              1,
+                              unitsPerPack,
+                              remainingStock
+                            )
+                          }
+                          disabled={!canIncreasePending || addDisabled}
+                          aria-label={`Increase ${variant.label} add quantity`}
+                        >
+                          +
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        className="inline-flex flex-1 items-center justify-center rounded-full bg-purple-600 px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:bg-purple-900/40"
+                        onClick={() => handleAddVariantToCart(variant)}
+                        disabled={addDisabled}
+                      >
+                        Add{" "}
+                        {effectivePendingCount > 1
+                          ? `${effectivePendingCount}× `
+                          : ""}
+                        {variant.label}
+                      </button>
+                    </div>
+                    {insufficientSelection && remainingStock !== null && (
+                      <p className="text-xs font-semibold text-amber-300">
+                        Only {remainingStock} unit
+                        {remainingStock === 1 ? "" : "s"} left for this variant.
+                      </p>
+                    )}
+                  </div>
+                </div>
+              );
+            })() : (
+              <div className="rounded-2xl border border-purple-900/35 bg-black/45 p-4 text-sm text-zinc-400">
+                No buying options are available yet.
+              </div>
             )}
           </div>
-          {expanded ? (
-            <>
-              <div
-                id={buyingOptionsId}
-                className="flex flex-1 flex-col gap-4"
-              >
-                {product.variants.map((variant) =>
-                {
-                  const baseUnitPrice = getBaseUnitPrice(variant);
-                  const selectedIndex = resolveSelectedIndex(variant);
-                  const selectedTier = variant.tiers[selectedIndex];
-                  const selectedTierQuantity = selectedTier
-                    ? parseQuantity(selectedTier.quantity)
-                    : 0;
-                  const selectedTierPrice = selectedTier
-                    ? parsePrice(selectedTier.price)
-                    : 0;
-                  const selectedTierDisplay = selectedTier
-                    ? selectedTier.price.startsWith("$")
-                      ? selectedTier.price
-                      : `$${selectedTier.price}`
-                    : "";
-                  const variantStock =
-                    typeof variant.stockQuantity === "number"
-                      ? variant.stockQuantity
-                      : null;
-                  const reservedUnits = getUnitsReservedForVariant(variant.label);
-                  const remainingStock =
-                    variantStock === null
-                      ? null
-                      : Math.max(variantStock - reservedUnits, 0);
-                  const isOutOfStock =
-                    remainingStock !== null && remainingStock <= 0;
-                  const insufficientSelection =
-                    remainingStock !== null &&
-                    selectedTierQuantity > remainingStock;
-                  const addDisabled =
-                    !selectedTier ||
-                    selectedTierQuantity === 0 ||
-                    selectedTierPrice === 0 ||
-                    isOutOfStock ||
-                    insufficientSelection;
-                  const pendingAddCount = getPendingAddCount(variant.label);
-                  const unitsPerPack = Math.max(selectedTierQuantity, 1);
-                  const maxAddablePacks =
-                    remainingStock === null || unitsPerPack === 0
-                      ? Number.POSITIVE_INFINITY
-                      : Math.max(Math.floor(remainingStock / unitsPerPack), 0);
-                  const effectivePendingCount =
-                    maxAddablePacks === Number.POSITIVE_INFINITY
-                      ? pendingAddCount
-                      : Math.min(
-                        pendingAddCount,
-                        Math.max(maxAddablePacks, 1)
-                      );
-                  const canIncreasePending =
-                    maxAddablePacks === Number.POSITIVE_INFINITY
-                      ? true
-                      : effectivePendingCount < Math.max(maxAddablePacks, 1);
-
-                  return (
-                    <div
-                      key={`${product.slug}-${variant.label}`}
-                      className="flex flex-col gap-4 rounded-2xl border border-purple-900/40 bg-black/60 p-4"
-                    >
-                      {variant.mockupLabel ? (
-                        <div className="flex justify-center rounded-2xl border border-purple-900/30 bg-linear-to-b from-[#1b0924] via-[#0b0014] to-black p-4">
-                          <ProductMockup
-                            labelSrc={variant.mockupLabel}
-                            productName={`${product.name} ${variant.label}`}
-                            size="md"
-                          />
-                        </div>
-                      ) : null}
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-purple-100">
-                        <span className="font-semibold uppercase tracking-wide text-purple-200">
-                          {variant.label}
-                        </span>
-                        <span className="rounded-full border border-purple-500/40 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-purple-200">
-                          Pricing
-                        </span>
-                      </div>
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-zinc-400">
-                        <span>
-                          {variantStock === null
-                            ? "Stock not set"
-                            : remainingStock !== null
-                              ? `${remainingStock} of ${variantStock} units available${reservedUnits > 0
-                                ? ` (${reservedUnits} in cart)`
-                                : ""
-                              }`
-                              : "Stock not set"}
-                        </span>
-                        {isOutOfStock && (
-                          <span className="font-semibold uppercase tracking-wide text-red-300">
-                            Out of stock
-                          </span>
-                        )}
-                      </div>
-                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                        {variant.tiers.map((tier, index) =>
-                        {
-                          const tierQuantity = parseQuantity(tier.quantity);
-                          const tierPrice = parsePrice(tier.price);
-                          const tierPriceDisplay = tier.price.startsWith("$")
-                            ? tier.price
-                            : `$${tier.price}`;
-                          const isUnavailable =
-                            tierQuantity === 0 || tierPrice === 0;
-                          const isSelected = index === selectedIndex;
-                          const perUnitPrice =
-                            tierQuantity > 0 ? tierPrice / tierQuantity : 0;
-                          const savingsPercent =
-                            baseUnitPrice > 0 && perUnitPrice > 0
-                              ? Math.round(
-                                ((baseUnitPrice - perUnitPrice) /
-                                  baseUnitPrice) *
-                                100
-                              )
-                              : 0;
-
-                          return (
-                            <button
-                              type="button"
-                              key={`${variant.label}-${tier.quantity}`}
-                              aria-pressed={isSelected}
-                              disabled={isUnavailable}
-                              onClick={() =>
-                                handleSelectTier(variant.label, index)
-                              }
-                              className={`flex flex-col items-center justify-center rounded-xl border px-4 py-3 text-center text-sm transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isSelected
-                                ? "border-purple-400 bg-purple-500/20 text-white shadow-[0_0_30px_rgba(120,48,255,0.35)]"
-                                : "border-purple-900/30 bg-zinc-900/70 text-zinc-200 hover:border-purple-400 hover:bg-purple-500/10 hover:text-white"
-                                } ${isUnavailable
-                                  ? "cursor-not-allowed opacity-40 hover:border-purple-900/30 hover:bg-zinc-900/70"
-                                  : ""
-                                }`}
-                            >
-                              <span className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
-                                Qty {tier.quantity}
-                              </span>
-                              <span className="mt-1 text-sm font-semibold text-white">
-                                {tierPriceDisplay}
-                              </span>
-                              {savingsPercent > 0 && (
-                                <span className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-green-300">
-                                  Save {savingsPercent}%
-                                </span>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                        <div className="text-xs text-zinc-400">
-                          {selectedTier && !addDisabled
-                            ? `Selected: Qty ${selectedTier.quantity} • ${selectedTierDisplay}`
-                            : "No available tier selected"}
-                        </div>
-                        <div className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-center">
-                          <div className="inline-flex items-center gap-1 rounded-full border border-purple-500/60 bg-black/60 px-3 py-1">
-                            <button
-                              type="button"
-                              className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-purple-900/60"
-                              onClick={() =>
-                                handleAdjustPendingAddCount(
-                                  variant,
-                                  -1,
-                                  unitsPerPack,
-                                  remainingStock
-                                )
-                              }
-                              disabled={effectivePendingCount <= 1}
-                              aria-label={`Decrease ${variant.label} add quantity`}
-                            >
-                              -
-                            </button>
-                            <span className="px-2 text-sm font-semibold text-white">
-                              {effectivePendingCount}
-                            </span>
-                            <button
-                              type="button"
-                              className="h-7 w-7 rounded-full text-lg font-semibold text-purple-200 transition hover:text-white disabled:cursor-not-allowed disabled:text-purple-900/60"
-                              onClick={() =>
-                                handleAdjustPendingAddCount(
-                                  variant,
-                                  1,
-                                  unitsPerPack,
-                                  remainingStock
-                                )
-                              }
-                              disabled={!canIncreasePending || addDisabled}
-                              aria-label={`Increase ${variant.label} add quantity`}
-                            >
-                              +
-                            </button>
-                          </div>
-                          <button
-                            type="button"
-                            className="inline-flex items-center justify-center rounded-full bg-purple-600 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black disabled:cursor-not-allowed disabled:bg-purple-900/40"
-                            onClick={() => handleAddVariantToCart(variant)}
-                            disabled={addDisabled}
-                          >
-                            Add{" "}
-                            {effectivePendingCount > 1
-                              ? `${effectivePendingCount}× `
-                              : ""}
-                            {variant.label} to Cart
-                          </button>
-                        </div>
-                        {insufficientSelection && remainingStock !== null && (
-                          <p className="text-xs font-semibold text-amber-300">
-                            Only {remainingStock} unit
-                            {remainingStock === 1 ? "" : "s"} left for this
-                            variant.
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="pt-2 text-xs text-zinc-500">
-                Pricing shown for research use only. Contact us for bulk or
-                specialized requests.
-              </div>
-            </>
-          ) : (
-            <div className="rounded-2xl border border-purple-900/40 bg-black/60 px-4 py-6 text-center text-sm text-zinc-300">
-              Buying options are hidden. Use &quot;View buying options&quot; to
-              choose a dosage and pricing tier.
-            </div>
-          )}
+          <div className="pt-1 text-xs text-zinc-500">
+            Pricing shown for research use only. Contact us for bulk or
+            specialized requests.
+          </div>
         </div>
       </div>
       </article>
