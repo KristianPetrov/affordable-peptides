@@ -697,7 +697,7 @@ export function ProductCard ({
                         }`}
                     </span>
                     {isOutOfStock && (
-                      <span className="font-semibold uppercase tracking-wide text-red-300">
+                      <span className="font-semibold uppercase tracking-wide text-red-300"> 
                         Out of stock
                       </span>
                     )}
