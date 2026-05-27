@@ -46,7 +46,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function StorePage() {
+export default async function StorePage ()
+{
   const products = await getProductsWithInventory();
 
   return (

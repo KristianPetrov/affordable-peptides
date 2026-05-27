@@ -27,14 +27,16 @@ type UnitPricing = {
 
 const FALLBACK_PRICE = 0;
 
-function deriveUnitPricing(
+function deriveUnitPricing (
   items: CartLikeItem[],
   tiers?: PricingTier[]
-): UnitPricing {
+): UnitPricing
+{
   const sanitizedTiers =
     tiers?.filter((tier) => tier.quantity > 0 && tier.price > 0) ?? [];
 
-  const getTierPrice = (quantity: number): number | undefined => {
+  const getTierPrice = (quantity: number): number | undefined =>
+  {
     const match = sanitizedTiers.find((tier) => tier.quantity === quantity);
     if (!match) {
       return undefined;
@@ -42,7 +44,8 @@ function deriveUnitPricing(
     return match.price / match.quantity;
   };
 
-  const fallbackUnit = items.reduce<number | undefined>((acc, item) => {
+  const fallbackUnit = items.reduce<number | undefined>((acc, item) =>
+  {
     const perUnit = item.tierPrice / Math.max(item.tierQuantity, 1);
     if (!acc) {
       return perUnit;
@@ -57,9 +60,10 @@ function deriveUnitPricing(
   return { single, five, ten };
 }
 
-export function calculateVolumePricing(
+export function calculateVolumePricing (
   items: CartLikeItem[]
-): VolumePricingSummary {
+): VolumePricingSummary
+{
   if (items.length === 0) {
     return { subtotal: 0, lineItemTotals: {} };
   }
@@ -78,7 +82,8 @@ export function calculateVolumePricing(
   const lineItemTotals: Record<string, number> = {};
   let subtotal = 0;
 
-  byVariant.forEach((variantItems) => {
+  byVariant.forEach((variantItems) =>
+  {
     if (variantItems.length === 0) {
       return;
     }
@@ -104,7 +109,8 @@ export function calculateVolumePricing(
       0
     );
 
-    const determineSingleUnitPrice = (): number => {
+    const determineSingleUnitPrice = (): number =>
+    {
       if (isBacteriostaticWater) {
         return unitPricing.single;
       }

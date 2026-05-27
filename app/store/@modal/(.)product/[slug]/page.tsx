@@ -13,9 +13,10 @@ type ProductModalPageProps = {
 
 export const dynamic = "force-dynamic";
 
-export default async function ProductModalPage({
+export default async function ProductModalPage ({
   params,
-}: ProductModalPageProps) {
+}: ProductModalPageProps)
+{
   const { slug } = await params;
   const product = await getProductBySlugWithInventory(slug);
   if (!product) {
@@ -27,7 +28,8 @@ export default async function ProductModalPage({
   return <ProductModal product={product} molecules={molecules} />;
 }
 
-export async function generateStaticParams() {
+export async function generateStaticParams ()
+{
   return peptideProducts.map((product) => ({
     slug: product.slug,
   }));

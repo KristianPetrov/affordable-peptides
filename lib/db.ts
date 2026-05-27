@@ -1,12 +1,12 @@
 import { eq, and, or, ilike } from "drizzle-orm";
 import { randomUUID } from "crypto";
 import
-  {
-    db as drizzleDb,
-    orders,
-    customerProfiles,
-    productInventory,
-  } from "./db/index";
+{
+  db as drizzleDb,
+  orders,
+  customerProfiles,
+  productInventory,
+} from "./db/index";
 import type { Order, OrderStatus } from "./orders";
 
 export const db = drizzleDb;

@@ -1,18 +1,20 @@
 import "server-only";
 
-import {
-  getInventoryKey,
-  getProductBySlug,
-  peptideProducts,
-  type Product,
-} from "./products";
+import
+  {
+    getInventoryKey,
+    getProductBySlug,
+    peptideProducts,
+    type Product,
+  } from "./products";
 import { getCompliantProduct } from "./compliance";
 import { getAllProductInventory } from "./db";
 
-function cloneProductWithInventory(
+function cloneProductWithInventory (
   product: Product,
   inventoryMap: Map<string, number>
-): Product {
+): Product
+{
   return getCompliantProduct({
     ...product,
     variants: product.variants.map((variant) => ({
@@ -25,7 +27,8 @@ function cloneProductWithInventory(
   });
 }
 
-export async function getProductsWithInventory(): Promise<Product[]> {
+export async function getProductsWithInventory (): Promise<Product[]>
+{
   const inventory = await getAllProductInventory();
   const inventoryMap = new Map<string, number>();
   for (const record of inventory) {
@@ -37,9 +40,10 @@ export async function getProductsWithInventory(): Promise<Product[]> {
   );
 }
 
-export async function getProductBySlugWithInventory(
+export async function getProductBySlugWithInventory (
   slug: string
-): Promise<Product | null> {
+): Promise<Product | null>
+{
   const product = getProductBySlug(slug);
   if (!product) {
     return null;

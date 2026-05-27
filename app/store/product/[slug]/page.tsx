@@ -4,26 +4,29 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { NavBar, ProductDetailStandalone } from "@ap/shared-ui";
 import { getMoleculesForProduct } from "@ap/shared-core";
-import {
-  getProductBySlug,
-  peptideProducts,
-  productCategories,
-  type Product,
-} from "@/lib/products";
-import {
-  LABORATORY_USE_ONLY_NOTICE,
-  WEBSITE_RESEARCH_DISCLAIMER,
-  getCompliantDetailedDescription,
-  getCompliantProduct,
-} from "@/lib/compliance";
+import
+  {
+    getProductBySlug,
+    peptideProducts,
+    productCategories,
+    type Product,
+  } from "@/lib/products";
+import
+  {
+    LABORATORY_USE_ONLY_NOTICE,
+    WEBSITE_RESEARCH_DISCLAIMER,
+    getCompliantDetailedDescription,
+    getCompliantProduct,
+  } from "@/lib/compliance";
 import { getProductBySlugWithInventory } from "@/lib/products.server";
-import {
-  FALLBACK_PRODUCT_IMAGE,
-  absoluteUrl,
-  createProductJsonLd,
-  serializeJsonLd,
-  siteMetadata,
-} from "@/lib/seo";
+import
+  {
+    FALLBACK_PRODUCT_IMAGE,
+    absoluteUrl,
+    createProductJsonLd,
+    serializeJsonLd,
+    siteMetadata,
+  } from "@/lib/seo";
 
 type ProductPageProps = {
   params: Promise<{
@@ -37,14 +40,16 @@ const categoryLookup = new Map(
   productCategories.map((category) => [category.id, category.label]),
 );
 
-const getProductImagePath = (product: Product): string => {
+const getProductImagePath = (product: Product): string =>
+{
   const variantWithImage = product.variants.find(
     (variant) => typeof variant.mockupLabel === "string",
   );
   return variantWithImage?.mockupLabel ?? FALLBACK_PRODUCT_IMAGE;
 };
 
-const getProductKeywords = (product: Product): string[] => {
+const getProductKeywords = (product: Product): string[] =>
+{
   const categoryNames = product.categories
     .map((categoryId) => categoryLookup.get(categoryId) ?? categoryId)
     .filter(Boolean);
@@ -67,7 +72,8 @@ const getProductKeywords = (product: Product): string[] => {
   );
 };
 
-export default async function ProductPage({ params }: ProductPageProps) {
+export default async function ProductPage ({ params }: ProductPageProps)
+{
   const { slug } = await params;
   const product = await getProductBySlugWithInventory(slug);
   if (!product) {
@@ -105,9 +111,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
   );
 }
 
-export async function generateMetadata({
+export async function generateMetadata ({
   params,
-}: ProductPageProps): Promise<Metadata> {
+}: ProductPageProps): Promise<Metadata>
+{
   const { slug } = await params;
   const product = getProductBySlug(slug);
   if (!product) {
@@ -167,16 +174,17 @@ export async function generateMetadata({
     },
     other: canonicalTestUrl
       ? {
-          "research-use-notice": `${WEBSITE_RESEARCH_DISCLAIMER} ${LABORATORY_USE_ONLY_NOTICE}`,
-          "lab-test-report": canonicalTestUrl,
-        }
+        "research-use-notice": `${WEBSITE_RESEARCH_DISCLAIMER} ${LABORATORY_USE_ONLY_NOTICE}`,
+        "lab-test-report": canonicalTestUrl,
+      }
       : {
-          "research-use-notice": `${WEBSITE_RESEARCH_DISCLAIMER} ${LABORATORY_USE_ONLY_NOTICE}`,
-        },
+        "research-use-notice": `${WEBSITE_RESEARCH_DISCLAIMER} ${LABORATORY_USE_ONLY_NOTICE}`,
+      },
   };
 }
 
-export async function generateStaticParams() {
+export async function generateStaticParams ()
+{
   return peptideProducts.map((product) => ({
     slug: product.slug,
   }));

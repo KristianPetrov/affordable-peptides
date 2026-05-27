@@ -6,21 +6,19 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 const PIXEL_ID = process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID;
 
-export function TikTokPixel ()
-{
+export function TikTokPixel() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const hasMountedRef = useRef(false);
 
   const shouldDisable = !PIXEL_ID || pathname.startsWith("/admin");
 
-  useEffect(() =>
-  {
+  useEffect(() => {
     if (shouldDisable) {
       return;
     }
 
-    // Avoid double-firing on initial mount (the base snippet calls ttq.page()).
+    // Avoid double-firing on initial mount because the base snippet calls ttq.page().
     if (!hasMountedRef.current) {
       hasMountedRef.current = true;
       return;
@@ -29,7 +27,7 @@ export function TikTokPixel ()
     try {
       window.ttq?.page?.();
     } catch {
-      // ignore
+      // Ignore third-party analytics failures.
     }
   }, [pathname, searchParams, shouldDisable]);
 
@@ -59,6 +57,3 @@ export function TikTokPixel ()
     </Script>
   );
 }
-
-
-

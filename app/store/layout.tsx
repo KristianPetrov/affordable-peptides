@@ -5,7 +5,8 @@ type StoreLayoutProps = {
   modal?: ReactNode;
 };
 
-export default function StoreLayout({ children, modal }: StoreLayoutProps) {
+export default function StoreLayout ({ children, modal }: StoreLayoutProps)
+{
   return (
     <>
       {children}

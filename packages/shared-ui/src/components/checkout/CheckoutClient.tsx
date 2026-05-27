@@ -546,8 +546,8 @@ export function CheckoutClient ({
                 </div>
                 <p className="mt-4 text-xs text-zinc-400">
                   {paymentMethod === "card_link"
-                      ? "The card payment link is sent only in your order confirmation email."
-                      : "Manual payment instructions appear after the order is placed."}
+                    ? "The card payment link is sent only in your order confirmation email."
+                    : "Manual payment instructions appear after the order is placed."}
                 </p>
               </div>
 

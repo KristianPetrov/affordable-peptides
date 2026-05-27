@@ -1,32 +1,34 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
-import {
-  DeleteOrderButton,
-  NavBar,
-  OrderStatusForm,
-  ReferralDashboard,
-} from "@ap/shared-ui";
+import
+  {
+    DeleteOrderButton,
+    NavBar,
+    OrderStatusForm,
+    ReferralDashboard,
+  } from "@ap/shared-ui";
 import { formatDateTimePacific } from "@ap/shared-core";
 import { getAllOrders } from "@/lib/db";
 import
-  {
-    type OrderStatus,
-    calculateOrderTotals,
-    formatOrderNumber,
-  } from "@/lib/orders";
+{
+  type OrderStatus,
+  calculateOrderTotals,
+  formatOrderNumber,
+} from "@/lib/orders";
+import
+{
+  updateProductStockAction,
+} from "@/app/actions/admin";
 import
   {
-    updateProductStockAction,
-  } from "@/app/actions/admin";
-import {
-  createReferralCodeAction,
-  createReferralPartnerAction,
-  deleteReferralCodeAction,
-  deleteReferralPartnerAction,
-  toggleReferralCodeStatusAction,
-  toggleReferralPartnerStatusAction,
-} from "@/app/actions/referrals";
+    createReferralCodeAction,
+    createReferralPartnerAction,
+    deleteReferralCodeAction,
+    deleteReferralPartnerAction,
+    toggleReferralCodeStatusAction,
+    toggleReferralPartnerStatusAction,
+  } from "@/app/actions/referrals";
 import { auth, signOut } from "@/lib/auth";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
 import { getProductsWithInventory } from "@/lib/products.server";
@@ -43,7 +45,8 @@ const formatCurrency = (value: number) =>
 const formatCommunicationStatusLabel = (status?: string): string =>
   status ? status.replace("email.", "").replaceAll("_", " ").toUpperCase() : "NOT SENT";
 
-const getCommunicationStatusClass = (status?: string): string => {
+const getCommunicationStatusClass = (status?: string): string =>
+{
   if (!status) {
     return "border-zinc-700 bg-zinc-800/40 text-zinc-300";
   }
@@ -500,8 +503,8 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                   aria-current={isActive ? "page" : undefined}
                   href={tab.href}
                   className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.35em] transition focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${isActive
-                      ? "border-purple-400 bg-purple-500/30 text-white shadow-[0_0_30px_rgba(120,48,255,0.35)]"
-                      : "border-purple-900/50 bg-black/60 text-purple-200 hover:border-purple-400 hover:text-white"
+                    ? "border-purple-400 bg-purple-500/30 text-white shadow-[0_0_30px_rgba(120,48,255,0.35)]"
+                    : "border-purple-900/50 bg-black/60 text-purple-200 hover:border-purple-400 hover:text-white"
                     }`}
                 >
                   {tab.label}
