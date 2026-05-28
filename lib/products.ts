@@ -312,7 +312,6 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Ipamorelin is a selective growth hormone secretagogue (GHRP) studied for its ability to stimulate pulsatile GH release with minimal impact on cortisol and prolactin. It's frequently paired with GHRH analogs in research exploring physiologic GH patterns.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("5mg", 30, { mockupLabel: "/products/label-ipamorelin-5mg-3ml.png", testResultUrl: "https://chromate.org/verify?c=29950_AFFORDW7HC2Q" }),
       createVariant("10mg", 50, { mockupLabel: "/products/label-ipamorelin-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210347.pdf" }),
     ],
   },
@@ -347,7 +346,6 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "KPV is an anti-inflammatory tripeptide derived from the α-MSH sequence and studied for its effects on gut lining support and immune modulation. Research models highlight its potential to help calm excessive inflammatory responses in barrier tissues.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("5mg", 40, { mockupLabel: "/products/label-kpv-5mg-3ml.png", testResultUrl: "https://drive.google.com/file/d/1jKfs0pnJSviK3BG1IiGF4c8GDMACEqmj/view" }),
       createVariant("10mg", 70, { mockupLabel: "/products/label-kpv-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210344.pdf" }),
     ],
   },
@@ -444,15 +442,6 @@ const productDefinitions: ProductDefinition[] = [
       "Semax traces back to melanocortin fragments that elevate BDNF and other neurotrophins in experimental models. It's widely investigated for sharpening attention, supporting post-stroke recovery, and buffering oxidative stress within brain-focused research protocols.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [createVariant("10mg", 50, { mockupLabel: "/products/label-semax-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210353.pdf" })],
-  },
-  {
-    name: "SLU-PP-332",
-    researchFocus: "PPARδ modulator explored for muscular endurance and fat oxidation.",
-    detailedDescription: "SLU-PP-332 is a PPAR/ERR-pathway modulator explored as a potential \"exercise mimetic.\" Animal studies suggest benefits for muscular endurance, fat oxidation, and cardiometabolic health, positioning it at the cutting edge of performance and longevity research.",
-    categories: ["weight-metabolic", "recovery-performance"],
-    variants: [
-      createVariant("5mg", 80, "/products/label-slupp332-5mg-3ml.png"),
-    ],
   },
   {
     name: "TB-500",
