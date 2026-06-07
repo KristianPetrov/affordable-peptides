@@ -463,11 +463,11 @@ const productDefinitions: ProductDefinition[] = [
       createVariant("10mg", 60, { mockupLabel: "/products/label-tesamorelin-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210349.pdf" }),
       createVariant("20mg", 100, {
         mockupLabel: "/products/label-tesamorelin-20mg-3ml.png",
-        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2603230261.pdf",
+        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2606010048.pdf",
         testResults: [
           {
             label: "Current COA",
-            url: "https://coas.freedomdiagnosticstesting.com/Affo2603230261.pdf",
+            url: "https://coas.freedomdiagnosticstesting.com/Affo2606010048.pdf",
           },
           {
             label: "Previous COA",
