@@ -20,6 +20,7 @@ export type ProductMockupProps = {
   labelRotation?: number;
   glow?: boolean;
   labelVisibleWidth?: number;
+  hideLabel?: boolean;
 };
 
 const DEFAULT_BOTTLE_SRC = "/products/mock-peptide-bottle.png";
@@ -59,6 +60,7 @@ export default function ProductMockup ({
   labelRotation = 0,
   glow = true,
   labelVisibleWidth = DEFAULT_LABEL_VISIBLE_WIDTH,
+  hideLabel = false,
 }: ProductMockupProps)
 {
   const containerClassName = useMemo(() =>
@@ -72,7 +74,7 @@ export default function ProductMockup ({
     labelAlt ??
     `${productName ? `${productName} ` : ""}peptide mock bottle label`;
 
-  if (!labelSrc) {
+  if (!labelSrc && !hideLabel) {
     return (
       <div className={containerClassName}>
         <div className="flex h-full w-full items-center justify-center rounded-[32px] border border-purple-900/40 bg-black/70 text-center text-xs uppercase tracking-[0.3em] text-purple-200">
@@ -121,6 +123,7 @@ export default function ProductMockup ({
           className="object-contain drop-shadow-[0_25px_60px_rgba(15,0,45,0.65)]"
         />
       </div>
+      {hideLabel ? null : (
       <div
         className="absolute z-20 origin-center"
         style={labelWrapperStyle}
@@ -167,6 +170,7 @@ export default function ProductMockup ({
           />
         </div>
       </div>
+      )}
       <div className="absolute inset-x-[18%] bottom-[16%] z-0 h-6 rounded-full bg-black/50 blur-2xl" aria-hidden />
     </div>
   );

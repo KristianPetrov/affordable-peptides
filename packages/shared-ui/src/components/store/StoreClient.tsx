@@ -74,6 +74,7 @@ type SearchSuggestion = {
 
 type TestResultLink = {
   label: string;
+  date?: string;
   url: string;
 };
 
@@ -123,18 +124,22 @@ const getTestResultLinks = (
 {
   const links: TestResultLink[] = [];
   const seenUrls = new Set<string>();
-  const pushLink = (label: string, url?: string) =>
+  const pushLink = (label: string, url?: string, date?: string) =>
   {
     if (!url || seenUrls.has(url)) {
       return;
     }
-    links.push({ label, url });
+    links.push({ label, date, url });
     seenUrls.add(url);
   };
 
-  pushLink(testResults?.length ? "Current COA" : "COA", primaryUrl);
-  for (const result of testResults ?? []) {
-    pushLink(result.label, result.url);
+  if (testResults?.length) {
+    for (const result of testResults) {
+      pushLink(result.label, result.url, result.date);
+    }
+    pushLink("Current COA", primaryUrl);
+  } else {
+    pushLink("COA", primaryUrl);
   }
 
   return links;
@@ -513,15 +518,16 @@ export function ProductCard ({
                   ]
                   : [];
               const testEntries = [...variantTestEntries, ...productTestEntries];
-              const previousTestLinks = testEntries.flatMap((entry) =>
-                entry.results
-                  .filter((result) =>
-                    result.label.toLowerCase().includes("previous")
-                  )
-                  .map((result) => ({
-                    label: `${entry.label} - ${result.label}`,
-                    url: result.url,
-                  }))
+              const testResultCount = testEntries.reduce(
+                (count, entry) => count + entry.results.length,
+                0
+              );
+              const allTestLinks = testEntries.flatMap((entry) =>
+                entry.results.map((result) => ({
+                  label: `${entry.label} - ${result.label}`,
+                  date: result.date,
+                  url: result.url,
+                }))
               );
 
               return (
@@ -530,7 +536,7 @@ export function ProductCard ({
                     <span className="text-xs">{"Analysis (COA)"}</span>
                     <span className="flex items-center gap-2 text-[0.6rem] text-zinc-500">
                       {testEntries.length > 0
-                        ? `${testEntries.length} available`
+                        ? `${testResultCount} available`
                         : "Pending"}
                       <svg
                         className="h-3.5 w-3.5 text-purple-300 transition-transform group-open:rotate-180"
@@ -553,46 +559,55 @@ export function ProductCard ({
                       {testEntries.map((entry) => (
                         <div
                           key={`${product.slug}-${entry.label}-test`}
-                          className="flex items-center justify-between gap-2 rounded-lg border border-purple-900/25 bg-black/35 px-2.5 py-1.5"
+                          className="flex items-start justify-between gap-3 rounded-lg border border-purple-900/25 bg-black/35 px-2.5 py-1.5"
                         >
                           <span className="truncate text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-zinc-400">
                             {entry.label}
                           </span>
-                          <a
-                            href={entry.results[0].url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex shrink-0 items-center gap-1.5 text-xs font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
-                          >
-                            COA
-                            <svg
-                              className="h-3 w-3"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              aria-hidden="true"
-                            >
-                              <path d="M7 17L17 7" />
-                              <path d="M8 7h9v9" />
-                            </svg>
-                          </a>
+                          <div className="flex shrink-0 flex-col items-end gap-1">
+                            {entry.results.map((result) => (
+                              <a
+                                key={result.url}
+                                href={result.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-right text-xs font-semibold text-purple-100 underline decoration-dotted underline-offset-4 hover:text-white"
+                              >
+                                <span>
+                                  {result.date
+                                    ? `${result.label} (${result.date})`
+                                    : result.label}
+                                </span>
+                                <svg
+                                  className="h-3 w-3 shrink-0"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  aria-hidden="true"
+                                >
+                                  <path d="M7 17L17 7" />
+                                  <path d="M8 7h9v9" />
+                                </svg>
+                              </a>
+                            ))}
+                          </div>
                         </div>
                       ))}
-                      {previousTestLinks.length > 0 && (
+                      {allTestLinks.length > 0 && (
                         <button
                           type="button"
                           onClick={() =>
                             setTestResultsModal({
-                              title: `${product.name} previous tests`,
-                              links: previousTestLinks,
+                              title: `${product.name} all tests`,
+                              links: allTestLinks,
                             })
                           }
                           className="text-xs font-semibold text-purple-200 underline decoration-dotted underline-offset-4 transition hover:text-white"
                         >
-                          Previous tests
+                          All Tests
                         </button>
                       )}
                     </div>
@@ -654,7 +669,7 @@ export function ProductCard ({
 
                 return (
                   <div className="flex flex-col gap-3 rounded-2xl border border-purple-900/35 bg-black/45 p-3">
-                    {variant.mockupLabel ? (
+                    {variant.mockupLabel || variant.bottleOnly ? (
                       <div className="relative flex h-56 justify-center overflow-hidden rounded-2xl border border-purple-900/25 bg-black/40 p-1">
                         <div
                           className="absolute left-2 top-8 z-10 flex max-w-[45%] flex-col items-start gap-1.5"
@@ -680,7 +695,8 @@ export function ProductCard ({
                           })}
                         </div>
                         <ProductMockup
-                          labelSrc={variant.mockupLabel}
+                          labelSrc={variant.mockupLabel ?? ""}
+                          hideLabel={!variant.mockupLabel}
                           productName={`${product.name} ${variant.label}`}
                           size="sm"
                           className="-my-3"
@@ -860,7 +876,14 @@ export function ProductCard ({
                   rel="noopener noreferrer"
                   className="flex items-center justify-between gap-4 rounded-xl border border-purple-900/40 bg-black/50 px-4 py-3 text-sm font-semibold text-purple-100 transition hover:border-purple-400 hover:text-white"
                 >
-                  <span>{link.label}</span>
+                  <span className="flex flex-col gap-1">
+                    <span>{link.label}</span>
+                    {link.date && (
+                      <span className="text-xs font-medium text-zinc-400">
+                        {link.date}
+                      </span>
+                    )}
+                  </span>
                   <span className="text-xs uppercase tracking-[0.2em]">
                     Open
                   </span>
