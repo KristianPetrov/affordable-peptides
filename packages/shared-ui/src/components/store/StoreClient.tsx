@@ -160,6 +160,15 @@ const parsePrice = (value: string) => Number(value.replace(/[^0-9.]/g, "")) || 0
 const parseQuantity = (value: string) =>
   Number(value.replace(/[^0-9.]/g, "")) || 0;
 
+const formatTierQuantityLabel = (value: string) =>
+{
+  const quantity = parseQuantity(value);
+  if (quantity === 1) {
+    return "1 Vial";
+  }
+  return `${quantity} Vials`;
+};
+
 const getBaseUnitPrice = (variant: Variant) =>
 {
   let bestUnitPrice: number | null = null;
@@ -754,7 +763,7 @@ export function ProductCard ({
                               }`}
                           >
                             <span className="text-[0.65rem] font-semibold uppercase tracking-wide text-zinc-500">
-                              {tier.quantity} pack
+                              {formatTierQuantityLabel(tier.quantity)}
                             </span>
                             <span className="mt-1 text-sm font-semibold text-white">
                               {tierPriceDisplay}

@@ -468,8 +468,11 @@ const productDefinitions: ProductDefinition[] = [
       createVariant("20mg", 160, { mockupLabel: "/products/label-retatrutide-20mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605040511.pdf", testResults: [createFreedomTestResult("2605040511", "05/06/2026")] }),
       createVariant("30mg", 200, {
         mockupLabel: "/products/label-retatrutide-30mg-3ml.png",
-        testResultUrl: createFreedomCoaUrl("2606010046"),
+        testResultUrl: createFreedomCoaUrl("2606080253"),
         testResults: [
+          createFreedomTestResult("2606080253", "06/09/2026"),
+          createFreedomTestResult("2606080254", "06/09/2026"),
+          createFreedomTestResult("2606080255", "06/09/2026"),
           createFreedomTestResult("2606010046", "06/02/2026"),
           {
             label: "COA",

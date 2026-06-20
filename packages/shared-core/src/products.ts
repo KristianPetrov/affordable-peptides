@@ -680,7 +680,12 @@ const productDefinitions: ProductDefinition[] = [
               },
             ],
           },
-          [createFreedomTestResult("2606010046", "06/02/2026")]
+          [
+            createFreedomTestResult("2606080253", "06/09/2026"),
+            createFreedomTestResult("2606080254", "06/09/2026"),
+            createFreedomTestResult("2606080255", "06/09/2026"),
+            createFreedomTestResult("2606010046", "06/02/2026"),
+          ]
         ),
       }),
     ],
