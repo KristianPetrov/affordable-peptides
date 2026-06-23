@@ -465,7 +465,14 @@ const productDefinitions: ProductDefinition[] = [
     isFeatured: true,
     variants: [
       createVariant("10mg", 100, { mockupLabel: "/products/label-retatrutide-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210333.pdf", testResults: [createFreedomTestResult("2605210333", "05/23/2026")] }),
-      createVariant("20mg", 160, { mockupLabel: "/products/label-retatrutide-20mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605040511.pdf", testResults: [createFreedomTestResult("2605040511", "05/06/2026")] }),
+      createVariant("20mg", 160, {
+        mockupLabel: "/products/label-retatrutide-20mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2606170040"),
+        testResults: [
+          createFreedomTestResult("2606170040", "06/17/2026"),
+          createFreedomTestResult("2605040511", "05/06/2026"),
+        ],
+      }),
       createVariant("30mg", 200, {
         mockupLabel: "/products/label-retatrutide-30mg-3ml.png",
         testResultUrl: createFreedomCoaUrl("2606080253"),
@@ -500,6 +507,19 @@ const productDefinitions: ProductDefinition[] = [
       "Semax traces back to melanocortin fragments that elevate BDNF and other neurotrophins in experimental models. It's widely investigated for sharpening attention, supporting post-stroke recovery, and buffering oxidative stress within brain-focused research protocols.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [createVariant("10mg", 50, { mockupLabel: "/products/label-semax-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210353.pdf", testResults: [createFreedomTestResult("2605210353", "05/23/2026")] })],
+  },
+  {
+    name: "SS-31",
+    researchFocus: "Mitochondria-targeted antioxidant studied for cardioprotection and cellular energy preservation.",
+    detailedDescription: "SS-31 (elamipretide) is a Szeto-Schiller tetrapeptide that selectively concentrates in the inner mitochondrial membrane, where it interacts with cardiolipin to support electron transport chain function and limit reactive oxygen species. Preclinical research highlights its potential in models of ischemia-reperfusion injury, heart failure, and age-related mitochondrial dysfunction.",
+    categories: ["longevity-wellness", "recovery-performance"],
+    variants: [
+      createVariant("50mg", 135, {
+        mockupLabel: "/products/label-SS-31-50mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2606170041"),
+        testResults: [createFreedomTestResult("2606170041", "06/17/2026")],
+      }),
+    ],
   },
   {
     name: "TB-500",
