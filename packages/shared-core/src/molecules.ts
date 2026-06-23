@@ -297,6 +297,14 @@ export const moleculesByProduct: MoleculeMap = {
             fallback: pubchemSource("9811102", { queryType: "cid" }),
         }),
     ],
+    "SS-31": [
+        createLocalMoleculeDefinition("ss-31", "SS-31 (Elamipretide)", {
+            fallback: pubchemSource("11764719", {
+                queryType: "cid",
+                recordType: "2d",
+            }),
+        }),
+    ],
     Sermorelin: [createLocalMoleculeDefinition("sermorelin", "Sermorelin", { fallback: pubchemSource("16132413", { queryType: "cid", recordType: "2d" }) }),
     ],
     "SLU-PP-332": [
