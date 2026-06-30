@@ -111,25 +111,6 @@ type VariantOptions = {
   testResults?: TestResult[];
 };
 
-const withTestResults = (
-  options: VariantOptions,
-  results: TestResult[]
-): VariantOptions => ({
-  ...options,
-  testResultUrl: results[0]?.url ?? options.testResultUrl,
-  testResults: [...results, ...(options.testResults ?? [])],
-});
-
-const withFreedomTestResult = (
-  options: VariantOptions,
-  accessionNumber: string,
-  date: string,
-  label?: string
-): VariantOptions =>
-  withTestResults(options, [
-    createFreedomTestResult(accessionNumber, date, label),
-  ]);
-
 const createVariant = (
   label: string,
   singlePrice: number,
@@ -171,26 +152,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription:
       "5 Amino 1 Q mirrors the small-molecule peptide 5-Amino-1MQ, which is researched for inhibiting nicotinamide N-methyltransferase (NNMT). Scientists leverage it in metabolic studies aimed at improving insulin sensitivity, mobilizing stubborn adipose tissue, and pairing with incretin or mitochondrial-boosting stacks.",
     categories: ["weight-metabolic", "longevity-wellness"],
-    variants: [
-      createVariant(
-        "10mg",
-        50,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-5amino1q-10mg-3ml.png" },
-          "2605210356",
-          "05/23/2026"
-        )
-      ),
-      createVariant(
-        "50mg",
-        100,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-5amino1q-50mg-3ml.png" },
-          "2605210357",
-          "05/23/2026"
-        )
-      ),
-    ],
+    variants: [createVariant("10mg", 40, { mockupLabel: "/products/label-5amino1q-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210356.pdf", testResults: [createFreedomTestResult("2605210356", "05/23/2026")] }), createVariant("50mg", 60, { mockupLabel: "/products/label-5amino1q-50mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210357.pdf", testResults: [createFreedomTestResult("2605210357", "05/23/2026")] })],
   },
   {
     name: "AOD 9604",
@@ -199,24 +161,8 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["weight-metabolic"],
     isFeatured: true,
     variants: [
-      createVariant(
-        "5mg",
-        50,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-aod9604-5mg-3ml.png" },
-          "2605210331",
-          "05/23/2026"
-        )
-      ),
-      createVariant(
-        "10mg",
-        80,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-aod9604-10mg-3ml.png" },
-          "2605210332",
-          "05/23/2026"
-        )
-      ),
+      createVariant("5mg", 40, { mockupLabel: "/products/label-aod9604-5mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210331.pdf", testResults: [createFreedomTestResult("2605210331", "05/23/2026")], }),
+      createVariant("10mg", 70, { mockupLabel: "/products/label-aod9604-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210332.pdf", testResults: [createFreedomTestResult("2605210332", "05/23/2026")] }),
     ],
   },
   {
@@ -245,7 +191,7 @@ const productDefinitions: ProductDefinition[] = [
       "This multidose vial delivers cyanocobalamin at 1mg/mL across a 10mL volume, giving labs a reliable source of injectable vitamin B12. It's commonly paired with metabolic, energy, liver-support, or methylation protocols where repeated sterile draws are required.",
     categories: ["support-essentials", "longevity-wellness"],
     variants: [
-      createVariant("10ml (1mg/mL)", 60, "/products/label-b12-10mg-10ml.png"),
+      createVariant("10ml (1mg/mL)", 50, "/products/label-b12-10mg-10ml.png"),
 
     ],
   },
@@ -258,11 +204,10 @@ const productDefinitions: ProductDefinition[] = [
       createVariant(
         "20mg total (10mg each)",
         80,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-bpc157-tb-500-20mg-3ml.png" },
-          "2605210348",
-          "05/23/2026"
-        )
+        {
+          mockupLabel: "/products/label-bpc157-tb-500-20mg-3ml.png",
+          testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210348.pdf", testResults: [createFreedomTestResult("2605210348", "05/23/2026")]
+        }
       ),
     ],
   },
@@ -273,15 +218,7 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["recovery-performance", "longevity-wellness"],
     isFeatured: true,
     variants: [
-      createVariant(
-        "10mg",
-        50,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-bpc157-10mg-3ml.png" },
-          "2605210355",
-          "05/23/2026"
-        )
-      ),
+      createVariant("10mg", 50, { mockupLabel: "/products/label-bpc157-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210355.pdf", testResults: [createFreedomTestResult("2605210355", "05/23/2026")] }),
     ],
   },
   {
@@ -291,43 +228,17 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
       createVariant(
-        "With IPA (10mg)",
-        70,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png" },
-          "2605210343",
-          "05/23/2026"
-        )
-      ),
+        "10mg",
+        60,
+        { mockupLabel: "/products/label-cjc-1295-wo-dac-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210345.pdf", testResults: [createFreedomTestResult("2605210345", "05/23/2026")] }
+      ), createVariant("5mg + DAC", 50, { mockupLabel: "/products/label-cjc-1295-dac-5mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210351.pdf", testResults: [createFreedomTestResult("2605210351", "05/23/2026")] }),
       createVariant(
-        "With DAC (5mg)",
-        50,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-cjc-1295-dac-5mg-3ml.png" },
-          "2605210351",
-          "05/23/2026"
-        )
-      ),
-      createVariant("No DAC (5mg)", 40, {
-        mockupLabel: "/products/label-cjc-1295-wo-dac-5mg-3ml.png",
-        testResultUrl: "https://chromate.org/verify?c=29953_AFFORD4C9564",
-        testResults: [
-          {
-            label: "COA",
-            date: "11/26/2025",
-            url: "https://chromate.org/verify?c=29953_AFFORD4C9564",
-          },
-        ],
-      }),
-      createVariant(
-        "No DAC (10mg)",
+        "10mg + IPA (no DAC)",
         70,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-cjc-1295-wo-dac-10mg-3ml.png" },
-          "2605210345",
-          "05/23/2026"
-        )
+        { mockupLabel: "/products/label-cjc1295-wo-dac-ipamorelin-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210343.pdf", testResults: [createFreedomTestResult("2605210343", "05/23/2026")] }
       ),
+
+
     ],
   },
   {
@@ -337,15 +248,7 @@ const productDefinitions: ProductDefinition[] = [
     After reconstitution, the solution may appear clear at room temperature and can crystallize or become slightly cloudy when refrigerated; a normal characteristic of this peptide. Simply place the vial in a cup of warm water to allow it to warm, and the solution will typically return to clear. If some cloudiness or light particles remain, this can be due to natural precipitation and does not automatically indicate a quality issue. Gently roll the vial to help the solution disperse evenly.`,
     categories: ["longevity-wellness"],
     variants: [
-      createVariant(
-        "50mg",
-        80,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-epithalon-50mg-3ml.png" },
-          "2605210330",
-          "05/23/2026"
-        )
-      ),
+      createVariant("50mg", 60, { mockupLabel: "/products/label-epithalon-50mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210330.pdf", testResults: [createFreedomTestResult("2605210330", "05/23/2026")] }),
     ],
   },
   {
@@ -355,24 +258,8 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["longevity-wellness", "recovery-performance"],
     isFeatured: true,
     variants: [
-      createVariant(
-        "50mg",
-        40,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-ghk-cu-50mg-3ml.png" },
-          "2605210360",
-          "05/23/2026"
-        )
-      ),
-      createVariant(
-        "100mg",
-        70,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-ghk-cu-100mg-3ml.png" },
-          "2605210361",
-          "05/23/2026"
-        )
-      ),
+      createVariant("50mg", 30, { mockupLabel: "/products/label-ghk-cu-50mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210360.pdf", testResults: [createFreedomTestResult("2605210360", "05/23/2026")] }),
+      createVariant("100mg", 50, { mockupLabel: "/products/label-ghk-cu-100mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210361.pdf", testResults: [createFreedomTestResult("2605210361", "05/23/2026")] }),
     ],
   },
   {
@@ -392,7 +279,13 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "GLOW combines BPC-157 (10mg), TB-500 (10mg), and GHK-Cu (50mg) to create a regenerative-focused blend for aesthetic and recovery research. It's designed for investigators interested in both connective tissue support and skin quality optimization within a single formula.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [
-      createVariant("70mg", 90, {
+      {
+        label: "70mg",
+        tiers: [
+          { quantity: "1", price: "$90" },
+          { quantity: "5", price: "$400" },
+          { quantity: "10", price: "$700" },
+        ],
         mockupLabel: "/products/label-glow-70mg-3ml.png",
         testResultUrl: "https://chromate.org/verify?c=29438_AFFORD4N2GYT",
         testResults: [
@@ -402,7 +295,7 @@ const productDefinitions: ProductDefinition[] = [
             url: "https://chromate.org/verify?c=29438_AFFORD4N2GYT",
           },
         ],
-      }),
+      },
     ],
   },
   {
@@ -453,15 +346,17 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "IGF-1 LR3 is a long-acting analog of insulin-like growth factor 1 designed to extend receptor interaction time. It's used in research on muscle hyperplasia, tissue repair, and cellular growth pathways. IGF-1 LR3 is a long, complex peptide, and due to its size, minor synthesis byproducts are normal. For this compound, 90–95% purity is widely accepted in research settings when the correct molecular weight and a dominant HPLC peak are present.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant(
-        "1mg",
-        70,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-igf-1-lr3-1mg-3ml.png" },
-          "2605210346",
-          "05/23/2026"
-        )
-      ),
+      {
+        label: "1mg",
+        tiers: [
+          { quantity: "1", price: "$70" },
+          { quantity: "5", price: "$210" },
+          { quantity: "10", price: "$490" },
+        ],
+        mockupLabel: "/products/label-igf-1-lr3-1mg-3ml.png",
+        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210346.pdf",
+        testResults: [createFreedomTestResult("2605210346", "05/23/2026")],
+      },
     ],
   },
   {
@@ -470,15 +365,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Ipamorelin is a selective growth hormone secretagogue (GHRP) studied for its ability to stimulate pulsatile GH release with minimal impact on cortisol and prolactin. It's frequently paired with GHRH analogs in research exploring physiologic GH patterns.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant(
-        "10mg",
-        50,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-ipamorelin-10mg-3ml.png" },
-          "2605210347",
-          "05/23/2026"
-        )
-      ),
+      createVariant("10mg", 50, { mockupLabel: "/products/label-ipamorelin-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210347.pdf", testResults: [createFreedomTestResult("2605210347", "05/23/2026")] }),
     ],
   },
   {
@@ -489,22 +376,7 @@ const productDefinitions: ProductDefinition[] = [
       "Sermorelin is a growth hormone–releasing hormone (GHRH) analog researched for promoting physiologic, pulsatile growth hormone secretion. It is commonly explored in endocrine and recovery-focused studies, including protocols that investigate sleep quality, body composition, and GH/IGF-1 axis dynamics.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("5mg", 40, {
-        mockupLabel: "/products/label-sermorelin-5mg-3ml.png",
-        testResultUrl: "https://drive.google.com/file/d/1xmIT5mTQ6Tyw1qIkYRaREDNzA6ikRgIx/view",
-        testResults: [
-          {
-            label: "COA",
-            date: "01/08/2026",
-            url: "https://drive.google.com/file/d/1xmIT5mTQ6Tyw1qIkYRaREDNzA6ikRgIx/view",
-          },
-        ],
-      }),
-      createVariant("10mg", 70, withFreedomTestResult(
-        { mockupLabel: "/products/label-sermorelin-10mg-3ml.png" },
-        "2605210342",
-        "05/23/2026"
-      )
+      createVariant("10mg", 50, { mockupLabel: "/products/label-sermorelin-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210342.pdf", testResults: [createFreedomTestResult("2605210342", "05/23/2026")] }
       ),
     ],
   },
@@ -514,15 +386,11 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "KLOW blends BPC-157 (10mg), TB-500 (10mg), GHK-Cu (50mg), and KPV (10mg) for multi-system regenerative research. It's designed for investigators seeking a single formula that touches skin quality, inflammatory balance, and joint or connective-tissue comfort.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [
-      createVariant(
-        "80mg",
-        100,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-klow-80mg-3ml.png" },
-          "2605210359",
-          "05/23/2026"
-        )
-      ),
+      createVariant("80mg", 100, {
+        mockupLabel: "/products/label-klow-80mg-3ml.png",
+        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210359.pdf",
+        testResults: [createFreedomTestResult("2605210359", "05/23/2026")]
+      }),
     ],
   },
 
@@ -532,15 +400,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "KPV is an anti-inflammatory tripeptide derived from the α-MSH sequence and studied for its effects on gut lining support and immune modulation. Research models highlight its potential to help calm excessive inflammatory responses in barrier tissues.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant(
-        "10mg",
-        70,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-kpv-10mg-3ml.png" },
-          "2605210344",
-          "05/23/2026"
-        )
-      ),
+      createVariant("10mg", 50, { mockupLabel: "/products/label-kpv-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210344.pdf", testResults: [createFreedomTestResult("2605210344", "05/23/2026")] }),
     ],
   },
   {
@@ -551,7 +411,7 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant(
         "10ml (600mg/ml)",
-        60,
+        50,
         "/products/label-l-carnatine-600mg-10ml.png"
       ),
     ],
@@ -563,10 +423,9 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["weight-metabolic"],
     variants: [
       createVariant("10ml (With B12)", 60, "/products/label-lipo-c-10ml.png"),
-      createVariant("10ml (No B12)", 60, "/products/label-lipo-c-wo-b12-10ml.png"),
+      createVariant("10ml (No B12)", 50, "/products/label-lipo-c-wo-b12-10ml.png"),
     ],
-  },
-  {
+  }, {
     name: "Melanotan II",
     researchFocus:
       "Melanocortin receptor agonist researched for pigmentation response and related signaling pathways.",
@@ -576,7 +435,7 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant("10mg", 40, {
         mockupLabel: "/products/label-melanotan-ii-10mg-3ml.png",
-        ...withFreedomTestResult({}, "2605210350", "05/23/2026"),
+        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210350.pdf", testResults: [createFreedomTestResult("2605210350", "05/23/2026")],
       }),
     ],
   },
@@ -586,24 +445,8 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "MOTS-C is a mitochondrial-derived peptide gaining attention for its role in insulin sensitivity, metabolic flexibility, and endurance in preclinical models. It's widely viewed as an \"exercise-mimetic\" candidate in longevity and performance research.",
     categories: ["weight-metabolic", "longevity-wellness"],
     variants: [
-      createVariant(
-        "10mg",
-        40,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-mots-c-10mg-3ml.png" },
-          "2605210335",
-          "05/23/2026"
-        )
-      ),
-      createVariant(
-        "40mg",
-        100,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-mots-c-40mg-3ml.png" },
-          "2605210336",
-          "05/23/2026"
-        )
-      ),
+      createVariant("10mg", 40, { mockupLabel: "/products/label-mots-c-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210335.pdf", testResults: [createFreedomTestResult("2605210335", "05/23/2026")] }),
+      createVariant("40mg", 100, { mockupLabel: "/products/label-mots-c-40mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210336.pdf", testResults: [createFreedomTestResult("2605210336", "05/23/2026")] }),
     ],
   },
   {
@@ -613,32 +456,19 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["longevity-wellness", "weight-metabolic"],
     isFeatured: true,
     variants: [
-      createVariant(
-        "500mg",
-        60,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-nad-500mg-10ml.png" },
-          "2605210328",
-          "05/23/2026"
-        )
-      ),
+      createVariant("500mg", 60, { mockupLabel: "/products/label-nad-500mg-10ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210328.pdf", testResults: [createFreedomTestResult("2605210328", "05/23/2026")] }),
       createVariant("1000mg", 100, {
         mockupLabel: "/products/label-nad-1000mg-10ml.png",
-        ...withTestResults(
+        testResultUrl: createFreedomCoaUrl("2606010044"),
+        testResults: [
+          createFreedomTestResult("2606010044", "06/02/2026"),
+          createFreedomTestResult("2606010045", "06/02/2026"),
           {
-            testResults: [
-              {
-                label: "COA",
-                date: "11/03/2025",
-                url: "https://chromate.org/verify?c=29420_AFFORDFJF486",
-              },
-            ],
+            label: "COA",
+            date: "11/03/2025",
+            url: "https://chromate.org/verify?c=29420_AFFORDFJF486",
           },
-          [
-            createFreedomTestResult("2606010044", "06/02/2026"),
-            createFreedomTestResult("2606010045", "06/02/2026")
-          ]
-        ),
+        ],
       }),
     ],
 
@@ -650,45 +480,29 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["weight-metabolic"],
     isFeatured: true,
     variants: [
-      createVariant(
-        "10mg",
-        100,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-retatrutide-10mg-3ml.png" },
-          "2605210333",
-          "05/23/2026"
-        )
-      ),
-      createVariant(
-        "20mg",
-        160,
-        withTestResults(
-          { mockupLabel: "/products/label-retatrutide-20mg-3ml.png" },
-          [
-            createFreedomTestResult("2606170040", "06/17/2026"),
-            createFreedomTestResult("2605040511", "05/06/2026"),
-          ]
-        )
-      ),
-      createVariant("30mg", 200, {
+      createVariant("10mg", 80, { mockupLabel: "/products/label-retatrutide-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210333.pdf", testResults: [createFreedomTestResult("2605210333", "05/23/2026")] }),
+      createVariant("20mg", 150, {
+        mockupLabel: "/products/label-retatrutide-20mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2606170040"),
+        testResults: [
+          createFreedomTestResult("2606170040", "06/17/2026"),
+          createFreedomTestResult("2605040511", "05/06/2026"),
+        ],
+      }),
+      createVariant("30mg", 175, {
         mockupLabel: "/products/label-retatrutide-30mg-3ml.png",
-        ...withTestResults(
+        testResultUrl: createFreedomCoaUrl("2606080253"),
+        testResults: [
+          createFreedomTestResult("2606080253", "06/09/2026"),
+          createFreedomTestResult("2606080254", "06/09/2026"),
+          createFreedomTestResult("2606080255", "06/09/2026"),
+          createFreedomTestResult("2606010046", "06/02/2026"),
           {
-            testResults: [
-              {
-                label: "COA",
-                date: "11/26/2025",
-                url: "https://chromate.org/verify?c=29895_AFFORD6895HN",
-              },
-            ],
+            label: "COA",
+            date: "11/26/2025",
+            url: "https://chromate.org/verify?c=29895_AFFORD6895HN",
           },
-          [
-            createFreedomTestResult("2606080253", "06/09/2026"),
-            createFreedomTestResult("2606080254", "06/09/2026"),
-            createFreedomTestResult("2606080255", "06/09/2026"),
-            createFreedomTestResult("2606010046", "06/02/2026"),
-          ]
-        ),
+        ],
       }),
     ],
   },
@@ -699,17 +513,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription:
       "Selank is a tuftsin-derived heptapeptide explored for its anxiolytic, nootropic, and immunomodulatory characteristics. Researchers deploy it in studies centered on focus, mood regulation, and helping the nervous and immune systems stay balanced under stress without sedative drawbacks.",
     categories: ["longevity-wellness", "recovery-performance"],
-    variants: [
-      createVariant(
-        "10mg",
-        50,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-selank-10mg-3ml.png" },
-          "2605210354",
-          "05/23/2026"
-        )
-      ),
-    ],
+    variants: [createVariant("10mg", 50, { mockupLabel: "/products/label-selank-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210354.pdf", testResults: [createFreedomTestResult("2605210354", "05/23/2026")] })],
   },
   {
     name: "Semax",
@@ -718,17 +522,7 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription:
       "Semax traces back to melanocortin fragments that elevate BDNF and other neurotrophins in experimental models. It's widely investigated for sharpening attention, supporting post-stroke recovery, and buffering oxidative stress within brain-focused research protocols.",
     categories: ["longevity-wellness", "recovery-performance"],
-    variants: [
-      createVariant(
-        "10mg",
-        50,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-semax-10mg-3ml.png" },
-          "2605210353",
-          "05/23/2026"
-        )
-      ),
-    ],
+    variants: [createVariant("10mg", 50, { mockupLabel: "/products/label-semax-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210353.pdf", testResults: [createFreedomTestResult("2605210353", "05/23/2026")] })],
   },
   {
     name: "SS-31",
@@ -736,15 +530,14 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "SS-31 (elamipretide) is a Szeto-Schiller tetrapeptide that selectively concentrates in the inner mitochondrial membrane, where it interacts with cardiolipin to support electron transport chain function and limit reactive oxygen species. Preclinical research highlights its potential in models of ischemia-reperfusion injury, heart failure, and age-related mitochondrial dysfunction.",
     categories: ["longevity-wellness", "recovery-performance"],
     variants: [
-      createVariant(
-        "50mg",
-        135,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-SS-31-50mg-3ml.png" },
-          "2606170041",
-          "06/17/2026"
-        )
-      ),
+      createVariant("10mg", 40, {
+        mockupLabel: "/products/label-SS-31-10mg-3ml.png",
+      }),
+      createVariant("50mg", 135, {
+        mockupLabel: "/products/label-SS-31-50mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2606170041"),
+        testResults: [createFreedomTestResult("2606170041", "06/17/2026")],
+      }),
     ],
   },
   {
@@ -755,18 +548,15 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant("10mg", 60, {
         mockupLabel: "/products/label-tb500-10mg-3ml.png",
-        ...withTestResults(
+        testResultUrl: createFreedomCoaUrl("2606010049"),
+        testResults: [
+          createFreedomTestResult("2606010049", "06/02/2026"),
           {
-            testResults: [
-              {
-                label: "COA",
-                date: "11/03/2025",
-                url: "https://chromate.org/verify?c=29113_AFFORD2NQWKZ",
-              },
-            ],
+            label: "COA",
+            date: "11/03/2025",
+            url: "https://chromate.org/verify?c=29113_AFFORD2NQWKZ",
           },
-          [createFreedomTestResult("2606010049", "06/02/2026")]
-        ),
+        ],
       }),
     ],
   },
@@ -776,29 +566,22 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Tesamorelin is an FDA-approved GHRH analog researched extensively for its effects on visceral adipose tissue (VAT). It's a key peptide in studies targeting central adiposity, liver fat, and cardiometabolic risk markers.",
     categories: ["hormone-growth", "weight-metabolic"],
     variants: [
-      createVariant(
-        "10mg",
-        60,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-tesamorelin-10mg-3ml.png" },
-          "2605210349",
-          "05/23/2026"
-        )
-      ),
+      createVariant("10mg", 60, { mockupLabel: "/products/label-tesamorelin-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210349.pdf", testResults: [createFreedomTestResult("2605210349", "05/23/2026")] }),
       createVariant("20mg", 100, {
         mockupLabel: "/products/label-tesamorelin-20mg-3ml.png",
-        ...withTestResults(
+        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2606010048.pdf",
+        testResults: [
           {
-            testResults: [
-              {
-                label: "COA",
-                date: "11/26/2025",
-                url: "https://chromate.org/verify?c=29952_AFFORDBP2149",
-              },
-            ],
+            label: "COA",
+            date: "06/02/2026",
+            url: "https://coas.freedomdiagnosticstesting.com/Affo2606010048.pdf",
           },
-          [createFreedomTestResult("2606010048", "06/02/2026")]
-        ),
+          {
+            label: "COA",
+            date: "11/26/2025",
+            url: "https://chromate.org/verify?c=29952_AFFORDBP2149",
+          },
+        ],
       }),
     ],
   },
@@ -809,8 +592,9 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["weight-metabolic"],
     isFeatured: true,
     variants: [
-      createVariant("10mg", 80, {
+      createVariant("10mg", 50, {
         mockupLabel: "/products/label-tirzepatide-10mg-3ml.png",
+        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2603230260.pdf",
         testResults: [
           {
             label: "COA",
@@ -824,23 +608,21 @@ const productDefinitions: ProductDefinition[] = [
           },
         ],
       }),
-      createVariant("20mg", 140, {
+      createVariant("15mg", 70, {
+        mockupLabel: "/products/label-tirzepatide-15mg-3ml.png",
+      }),
+      createVariant("20mg", 90, {
         mockupLabel: "/products/label-tirzepatide-20mg-3ml.png",
-        ...withFreedomTestResult({}, "2605210337", "05/23/2026"),
+        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210337.pdf", testResults: [createFreedomTestResult("2605210337", "05/23/2026")],
       }),
-      createVariant("30mg", 180, {
+      createVariant("30mg", 120, {
         mockupLabel: "/products/label-tirzepatide-30mg-3ml.png",
-        ...withFreedomTestResult({}, "2605210338", "05/23/2026"),
+        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210338.pdf", testResults: [createFreedomTestResult("2605210338", "05/23/2026")],
       }),
-      createVariant(
-        "40mg",
-        200,
-        withFreedomTestResult(
-          { mockupLabel: "/products/label-tirzepatide-40mg-3ml.png" },
-          "2605210340",
-          "05/23/2026"
-        )
-      )
+      createVariant("40mg", 140, { mockupLabel: "/products/label-tirzepatide-40mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210340.pdf", testResults: [createFreedomTestResult("2605210340", "05/23/2026")] }),
+      createVariant("60mg", 170, {
+        mockupLabel: "/products/label-tirzepatide-60mg-3ml.png",
+      }),
     ],
   },
 ];
