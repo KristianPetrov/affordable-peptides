@@ -622,6 +622,8 @@ const productDefinitions: ProductDefinition[] = [
       createVariant("40mg", 140, { mockupLabel: "/products/label-tirzepatide-40mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210340.pdf", testResults: [createFreedomTestResult("2605210340", "05/23/2026")] }),
       createVariant("60mg", 170, {
         mockupLabel: "/products/label-tirzepatide-60mg-3ml.png",
+        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210339.pdf",
+        testResults: [createFreedomTestResult("2605210339", "05/23/2026")],
       }),
     ],
   },
