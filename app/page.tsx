@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import type { SVGProps } from "react";
+import type { CSSProperties, SVGProps } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -134,9 +134,25 @@ export default function Home ()
               {(["Easy", "Fast", "Affordable"] as const).map((word, index) => (
                 <span key={word} className="contents">
                   {index > 0 && (
-                    <span className="brand-promise-dot" aria-hidden="true" />
+                    <span
+                      className="brand-promise-dot"
+                      style={
+                        {
+                          "--promise-index": index - 1,
+                        } as CSSProperties
+                      }
+                      aria-hidden="true"
+                    />
                   )}
-                  <span className="brand-promise-word" aria-hidden="true">
+                  <span
+                    className="brand-promise-word"
+                    style={
+                      {
+                        "--promise-index": index,
+                      } as CSSProperties
+                    }
+                    aria-hidden="true"
+                  >
                     {word}
                   </span>
                 </span>
