@@ -15,6 +15,7 @@ import {
   type PricingTier,
 } from "@/lib/core";
 import { useAppAdapters } from "@/lib/ui-adapters";
+import { resolveCurrentCatalogItems } from "@/lib/catalog-pricing";
 
 const CART_STORAGE_KEY = "affordable-peptides:cart:v1";
 
@@ -100,7 +101,11 @@ export function StorefrontProvider({ children }: { children: ReactNode }) {
         hasHydratedRef.current = true;
         return;
       }
-      const restored = parsed.filter(isValidCartItem);
+      // Cart data can outlive a catalog price change. Never restore the cached
+      // prices themselves; rebuild every valid line from the current catalog.
+      const restored = resolveCurrentCatalogItems(
+        parsed.filter(isValidCartItem)
+      );
       setCartItems(restored);
     } catch {
       // If storage is corrupted/unreadable, reset it.
@@ -350,7 +355,6 @@ export function useStorefront() {
   }
   return context;
 }
-
 
 
 

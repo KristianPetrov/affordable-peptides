@@ -20,6 +20,7 @@ import
   orderCreationRateLimiter,
 } from "@/lib/rate-limit";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
+import { resolveCurrentCatalogItems } from "@/lib/catalog-pricing";
 import { auth } from "@/lib/auth";
 import { calculateShippingCost } from "@/lib/shipping";
 import
@@ -162,8 +163,18 @@ export async function createOrderAction (
       };
     }
 
-    // Validate subtotal matches items
-    const calculatedSubtotal = calculateVolumePricing(input.items).subtotal;
+    // Client carts are persisted in localStorage and may contain stale prices.
+    // Resolve all lines against the live catalog before trusting any totals.
+    const catalogItems = resolveCurrentCatalogItems(input.items);
+    if (catalogItems.length !== input.items.length) {
+      return {
+        success: false,
+        error: "An item in your cart is no longer available. Please refresh and try again.",
+        errorCode: "VALIDATION_ERROR",
+      };
+    }
+
+    const calculatedSubtotal = calculateVolumePricing(catalogItems).subtotal;
     const submittedCartSubtotal =
       typeof input.cartSubtotal === "number"
         ? input.cartSubtotal
@@ -221,7 +232,7 @@ export async function createOrderAction (
 
     const inventoryMap = await loadInventoryMap();
     const reservation = prepareInventoryAdjustments(
-      input.items,
+      catalogItems,
       inventoryMap,
       "reserve"
     );
@@ -287,11 +298,14 @@ export async function createOrderAction (
         zipCode: input.shippingZipCode.trim(),
         country: input.shippingCountry.trim(),
       },
-      items: input.items,
+      items: catalogItems,
       subtotal: finalSubtotal,
       shippingCost,
       totalAmount,
-      totalUnits: input.totalUnits,
+      totalUnits: catalogItems.reduce(
+        (sum, item) => sum + item.tierQuantity * item.count,
+        0
+      ),
       createdAt: now,
       updatedAt: now,
       referralPartnerId: referralContext?.referralPartnerId ?? undefined,
