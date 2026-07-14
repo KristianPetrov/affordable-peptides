@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-import type { Product, MoleculeDefinition } from "@ap/shared-core";
+import type { Product, MoleculeDefinition } from "@/lib/core";
 
 import { ProductCard } from "./StoreClient";
 import Disclaimer from "../Disclaimer";

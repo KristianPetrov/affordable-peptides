@@ -4,9 +4,9 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
-  requireSharedUiAdapter,
-  useSharedUiAdapters,
-} from "@ap/shared-ui/adapters";
+  requireAppAdapter,
+  useAppAdapters,
+} from "@/lib/ui-adapters";
 
 type ResetPasswordFormProps = {
   token?: string | null;
@@ -14,7 +14,7 @@ type ResetPasswordFormProps = {
 
 export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
   const router = useRouter();
-  const { customerActions } = useSharedUiAdapters();
+  const { customerActions } = useAppAdapters();
   const [isPending, startTransition] = useTransition();
   const [formData, setFormData] = useState({
     newPassword: "",
@@ -35,7 +35,7 @@ export function ResetPasswordForm({ token }: ResetPasswordFormProps) {
     }
 
     startTransition(async () => {
-      const resetPasswordWithTokenAction = requireSharedUiAdapter(
+      const resetPasswordWithTokenAction = requireAppAdapter(
         customerActions.resetPasswordWithToken,
         "customerActions.resetPasswordWithToken"
       );

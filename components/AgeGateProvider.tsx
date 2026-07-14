@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 import { cookies } from "next/headers";
 
-import type { AgeGateAction, AgeGateStatus } from "@ap/shared-ui/adapters";
+import type { AgeGateAction, AgeGateStatus } from "@/lib/ui-adapters";
 import { AgeGate } from "./AgeGate";
 
 type AgeGateProviderProps = {

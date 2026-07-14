@@ -1,4 +1,4 @@
-import { NavBar, ResetPasswordForm } from "@ap/shared-ui";
+import { NavBar, ResetPasswordForm } from "@/components";
 
 type ResetPasswordPageProps = {
   searchParams: Promise<{ token?: string }>;

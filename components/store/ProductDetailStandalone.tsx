@@ -1,6 +1,6 @@
 "use client";
 
-import type { Product, MoleculeDefinition } from "@ap/shared-core";
+import type { Product, MoleculeDefinition } from "@/lib/core";
 
 import {
   ProductCard,

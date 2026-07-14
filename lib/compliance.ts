@@ -1,9 +1,13 @@
 import type { Product, ProductCategoryId } from "./products";
-import {
-  LABORATORY_USE_ONLY_NOTICE,
-  PRODUCT_RESEARCH_DISCLAIMER,
-  WEBSITE_RESEARCH_DISCLAIMER,
-} from "@ap/shared-core";
+
+export const PRODUCT_RESEARCH_DISCLAIMER =
+  "All products currently listed on this site are for research purposes only.";
+
+export const WEBSITE_RESEARCH_DISCLAIMER =
+  "All products sold on this website are intended for research and identification purposes only. These products are not intended for human dosing, injection, or ingestion.";
+
+export const LABORATORY_USE_ONLY_NOTICE =
+  "Peptides are offered strictly for laboratory, academic, or institutional research and are not for human or animal consumption.";
 
 const CATEGORY_CONTEXT: Record<ProductCategoryId, string> = {
   "weight-metabolic": "metabolic pathway and receptor-signaling studies",
@@ -64,9 +68,3 @@ export function getCompliantProduct(product: Product): Product {
     detailedDescription: getCompliantDetailedDescription(product),
   };
 }
-
-export {
-  LABORATORY_USE_ONLY_NOTICE,
-  PRODUCT_RESEARCH_DISCLAIMER,
-  WEBSITE_RESEARCH_DISCLAIMER,
-};

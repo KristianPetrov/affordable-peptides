@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 
-import { ProductModal } from "@ap/shared-ui";
-import { getMoleculesForProduct } from "@ap/shared-core";
+import { ProductModal } from "@/components";
+import { getMoleculesForProduct } from "@/lib/core";
 import { peptideProducts } from "@/lib/products";
 import { getProductBySlugWithInventory } from "@/lib/products.server";
 

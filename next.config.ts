@@ -21,7 +21,6 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   trailingSlash: false,
-  transpilePackages: ["@ap/shared-ui", "@ap/shared-core"],
   images: {
     qualities: [25, 50, 60, 70, 75, 80, 85, 90, 95, 100],
   },

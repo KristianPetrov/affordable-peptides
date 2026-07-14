@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { getOrdersForUser } from "@/lib/db";
-import { formatDateTimePacific } from "@ap/shared-core";
+import { formatDateTimePacific } from "@/lib/core";
 import { calculateOrderTotals, formatOrderNumber } from "@/lib/orders";
 
 const statusStyles: Record<string, string> = {

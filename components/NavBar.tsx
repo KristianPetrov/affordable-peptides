@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { useSharedUiAdapters } from "@ap/shared-ui/adapters";
+import { useAppAdapters } from "@/lib/ui-adapters";
 
 const links = [
   { href: "/store", label: "Store" },
@@ -16,7 +16,7 @@ const links = [
 
 export default function NavBar ()
 {
-  const { support } = useSharedUiAdapters();
+  const { support } = useAppAdapters();
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session } = useSession();
   const role = String(session?.user?.role ?? "").toUpperCase();

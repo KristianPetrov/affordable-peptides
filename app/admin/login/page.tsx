@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth, signIn } from "@/lib/auth";
-import { NavBar } from "@ap/shared-ui";
+import { NavBar } from "@/components";
 
 export default async function LoginPage ({
   searchParams,

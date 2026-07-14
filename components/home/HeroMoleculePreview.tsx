@@ -4,7 +4,7 @@ import type { ComponentProps } from "react";
 import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 
-import type { MoleculeDefinition } from "@ap/shared-core";
+import type { MoleculeDefinition } from "@/lib/core";
 
 const MoleculeViewer = dynamic(() => import("../MoleculeViewer"), {
   ssr: false,
@@ -39,8 +39,11 @@ export default function HeroMoleculePreview({
       return;
     }
     if (typeof IntersectionObserver === "undefined") {
-      setShouldMountViewer(true);
-      return;
+      const timeoutId = window.setTimeout(() => {
+        setShouldMountViewer(true);
+      }, 0);
+
+      return () => window.clearTimeout(timeoutId);
     }
 
     const observer = new IntersectionObserver(
@@ -85,5 +88,4 @@ export default function HeroMoleculePreview({
 
   return <MoleculeViewer {...viewerProps} />;
 }
-
 

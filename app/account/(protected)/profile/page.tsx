@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { getCustomerProfile } from "@/lib/db";
-import { PasswordChangeForm, ProfileForm } from "@ap/shared-ui";
+import { PasswordChangeForm, ProfileForm } from "@/components";
 
 export default async function AccountProfilePage ()
 {

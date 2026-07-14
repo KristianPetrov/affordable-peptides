@@ -5,8 +5,15 @@ export * from "./compliance";
 export * from "./molecules";
 export * from "./products";
 export * from "./reviews";
-export * from "./referrals";
-
 export * from "./orders";
-export * from "./customer";
 export * from "./datetime";
+
+export type {
+  AppliedReferralResult,
+  ReferralCodeSummary,
+  ReferralDashboardData,
+  ReferralDashboardTotals,
+  ReferralDiscountMode,
+  ReferralPartnerSummary,
+} from "../types/referrals";
+export type { CustomerProfile } from "./db";

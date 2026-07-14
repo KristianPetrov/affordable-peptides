@@ -4,8 +4,8 @@ import type { ReactNode } from "react";
 import { useMemo } from "react";
 import { getSession, signIn, useSession } from "next-auth/react";
 
-import { SharedUiAdapterProvider } from "@ap/shared-ui/adapters";
-import { SUPPORT_PHONE_DISPLAY, SUPPORT_SMS_LINK } from "@ap/shared-core";
+import { AppAdapterProvider } from "@/lib/ui-adapters";
+import { SUPPORT_PHONE_DISPLAY, SUPPORT_SMS_LINK } from "@/lib/core";
 
 import {
   registerCustomerAction,
@@ -18,13 +18,13 @@ import { createOrderAction, lookupOrderAction } from "@/app/actions/orders";
 import { submitOrderStatusForm, deleteOrderAction } from "@/app/actions/admin";
 import { applyReferralCodeAction } from "@/app/actions/referrals";
 
-type AppSharedUiAdapterProviderProps = {
+type AppAdaptersProviderProps = {
   children: ReactNode;
 };
 
-export function AppSharedUiAdapterProvider({
+export function AppAdaptersProvider({
   children,
-}: AppSharedUiAdapterProviderProps) {
+}: AppAdaptersProviderProps) {
   const adapters = useMemo(
     () => ({
       support: {
@@ -57,8 +57,8 @@ export function AppSharedUiAdapterProvider({
   );
 
   return (
-    <SharedUiAdapterProvider adapters={adapters}>
+    <AppAdapterProvider adapters={adapters}>
       {children}
-    </SharedUiAdapterProvider>
+    </AppAdapterProvider>
   );
 }

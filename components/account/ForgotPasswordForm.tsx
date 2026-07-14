@@ -3,12 +3,12 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import {
-  requireSharedUiAdapter,
-  useSharedUiAdapters,
-} from "@ap/shared-ui/adapters";
+  requireAppAdapter,
+  useAppAdapters,
+} from "@/lib/ui-adapters";
 
 export function ForgotPasswordForm() {
-  const { customerActions } = useSharedUiAdapters();
+  const { customerActions } = useAppAdapters();
   const [isPending, startTransition] = useTransition();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
@@ -20,7 +20,7 @@ export function ForgotPasswordForm() {
     setMessage(null);
 
     startTransition(async () => {
-      const requestPasswordResetAction = requireSharedUiAdapter(
+      const requestPasswordResetAction = requireAppAdapter(
         customerActions.requestPasswordReset,
         "customerActions.requestPasswordReset"
       );

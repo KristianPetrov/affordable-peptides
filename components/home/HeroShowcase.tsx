@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import HeroMoleculePreview from "./HeroMoleculePreview";
-import type { Product } from "@ap/shared-core";
-import { getMoleculesForProduct } from "@ap/shared-core";
+import type { Product } from "@/lib/core";
+import { getMoleculesForProduct } from "@/lib/core";
 
 const rotationIntervalMs = 5000;
 

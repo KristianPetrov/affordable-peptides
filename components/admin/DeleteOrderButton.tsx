@@ -3,9 +3,9 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
-  requireSharedUiAdapter,
-  useSharedUiAdapters,
-} from "@ap/shared-ui/adapters";
+  requireAppAdapter,
+  useAppAdapters,
+} from "@/lib/ui-adapters";
 
 type DeleteOrderButtonProps = {
   orderId: string;
@@ -17,7 +17,7 @@ export function DeleteOrderButton({
   orderNumber,
 }: DeleteOrderButtonProps) {
   const router = useRouter();
-  const { orderActions } = useSharedUiAdapters();
+  const { orderActions } = useAppAdapters();
   const [isPending, startTransition] = useTransition();
   const [showConfirm, setShowConfirm] = useState(false);
 
@@ -28,7 +28,7 @@ export function DeleteOrderButton({
     }
 
     startTransition(async () => {
-      const deleteOrderAction = requireSharedUiAdapter(
+      const deleteOrderAction = requireAppAdapter(
         orderActions.deleteOrder,
         "orderActions.deleteOrder"
       );

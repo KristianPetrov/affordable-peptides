@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { redirect } from "next/navigation";
 
-import { AccountSidebar, NavBar } from "@ap/shared-ui";
+import { AccountSidebar, NavBar } from "@/components";
 import { auth, signOut } from "@/lib/auth";
 
 async function SignOutButton ()

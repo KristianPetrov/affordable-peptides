@@ -2,12 +2,12 @@
 
 import { useState, useTransition } from "react";
 import {
-  requireSharedUiAdapter,
-  useSharedUiAdapters,
-} from "@ap/shared-ui/adapters";
+  requireAppAdapter,
+  useAppAdapters,
+} from "@/lib/ui-adapters";
 
 export function PasswordChangeForm() {
-  const { customerActions } = useSharedUiAdapters();
+  const { customerActions } = useAppAdapters();
   const [formData, setFormData] = useState({
     currentPassword: "",
     newPassword: "",
@@ -30,7 +30,7 @@ export function PasswordChangeForm() {
     setMessage(null);
 
     startTransition(async () => {
-      const changePasswordAction = requireSharedUiAdapter(
+      const changePasswordAction = requireAppAdapter(
         customerActions.changePassword,
         "customerActions.changePassword"
       );

@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 import {
-  requireSharedUiAdapter,
-  useSharedUiAdapters,
-} from "@ap/shared-ui/adapters";
+  requireAppAdapter,
+  useAppAdapters,
+} from "@/lib/ui-adapters";
 
 const initialState = {
   name: "",
@@ -24,7 +24,7 @@ const initialState = {
 
 export function AccountRegisterForm() {
   const router = useRouter();
-  const { auth, customerActions } = useSharedUiAdapters();
+  const { auth, customerActions } = useAppAdapters();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState(initialState);
@@ -43,7 +43,7 @@ export function AccountRegisterForm() {
     setError(null);
 
     startTransition(async () => {
-      const registerCustomerAction = requireSharedUiAdapter(
+      const registerCustomerAction = requireAppAdapter(
         customerActions.registerCustomer,
         "customerActions.registerCustomer"
       );

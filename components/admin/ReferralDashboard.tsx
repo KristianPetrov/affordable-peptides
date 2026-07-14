@@ -1,8 +1,8 @@
 import type {
   ReferralCodeSummary,
   ReferralDashboardData,
-} from "@ap/shared-core";
-import type { ReferralDashboardActions } from "@ap/shared-ui/adapters";
+} from "@/lib/core";
+import type { ReferralDashboardActions } from "@/lib/ui-adapters";
 
 import { CopyButton } from "./CopyButton";
 

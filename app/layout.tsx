@@ -1,9 +1,9 @@
 import { Geist, Geist_Mono } from "next/font/google";
-import { Providers } from "@ap/shared-ui";
-import { AgeGateProvider } from "@ap/shared-ui/age-gate-provider";
-import { LABORATORY_USE_ONLY_NOTICE, WEBSITE_RESEARCH_DISCLAIMER } from "@ap/shared-core";
+import { Providers } from "@/components";
+import { AgeGateProvider } from "@/components/AgeGateProvider";
+import { LABORATORY_USE_ONLY_NOTICE, WEBSITE_RESEARCH_DISCLAIMER } from "@/lib/core";
 import { AGE_VERIFICATION_COOKIE, submitAgeVerification } from "@/app/actions/age";
-import { AppSharedUiAdapterProvider } from "@/components/AppSharedUiAdapterProvider";
+import { AppAdaptersProvider } from "@/components/AppAdaptersProvider";
 
 import {
   organizationJsonLd,
@@ -11,7 +11,7 @@ import {
   websiteJsonLd,
 } from "@/lib/seo";
 
-import "@ap/shared-ui/styles.css";
+import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
 export { metadata } from "./metadata";
 export { viewport } from "./viewport";
@@ -47,7 +47,7 @@ export default function RootLayout({
           cookieName={AGE_VERIFICATION_COOKIE}
           submitAgeVerification={submitAgeVerification}
         >
-          <AppSharedUiAdapterProvider>
+          <AppAdaptersProvider>
             <Providers>
               <div className="flex min-h-screen flex-col bg-black text-zinc-100">
                 <div className="flex-1">{children}</div>
@@ -80,7 +80,7 @@ export default function RootLayout({
                 />
               ))}
             </Providers>
-          </AppSharedUiAdapterProvider>
+          </AppAdaptersProvider>
           <Analytics />
         </AgeGateProvider>
       </body>

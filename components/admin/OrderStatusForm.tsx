@@ -3,12 +3,12 @@
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
-import type { OrderStatus } from "@ap/shared-core";
+import type { OrderStatus } from "@/lib/core";
 import {
-  requireSharedUiAdapter,
+  requireAppAdapter,
   type OrderStatusFormState,
-  useSharedUiAdapters,
-} from "@ap/shared-ui/adapters";
+  useAppAdapters,
+} from "@/lib/ui-adapters";
 import { TrackingNumberInput } from "./TrackingNumberInput";
 
 type OrderStatusFormProps = {
@@ -32,8 +32,8 @@ export function OrderStatusForm({
   currentTrackingCarrier,
 }: OrderStatusFormProps) {
   const router = useRouter();
-  const { orderActions } = useSharedUiAdapters();
-  const submitOrderStatusForm = requireSharedUiAdapter(
+  const { orderActions } = useAppAdapters();
+  const submitOrderStatusForm = requireAppAdapter(
     orderActions.submitOrderStatusForm,
     "orderActions.submitOrderStatusForm"
   );

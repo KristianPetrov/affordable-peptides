@@ -13,8 +13,8 @@ import {
 import {
   calculateVolumePricing,
   type PricingTier,
-} from "@ap/shared-core";
-import { useSharedUiAdapters } from "@ap/shared-ui/adapters";
+} from "@/lib/core";
+import { useAppAdapters } from "@/lib/ui-adapters";
 
 const CART_STORAGE_KEY = "affordable-peptides:cart:v1";
 
@@ -82,7 +82,7 @@ function isValidCartItem(value: unknown): value is CartItem {
 export function StorefrontProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const hasHydratedRef = useRef(false);
-  const { analytics } = useSharedUiAdapters();
+  const { analytics } = useAppAdapters();
 
   useEffect(() => {
     if (typeof window === "undefined") {

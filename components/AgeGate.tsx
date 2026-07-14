@@ -6,7 +6,7 @@ import type {
   AgeGateAction,
   AgeGateFormState,
   AgeGateStatus,
-} from "@ap/shared-ui/adapters";
+} from "@/lib/ui-adapters";
 
 type AgeGateProps = {
   initialStatus: AgeGateStatus;

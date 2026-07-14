@@ -7,12 +7,11 @@ import
     NavBar,
     OrderStatusForm,
     ReferralDashboard,
-  } from "@ap/shared-ui";
-import { formatDateTimePacific } from "@ap/shared-core";
+  } from "@/components";
+import { formatDateTimePacific } from "@/lib/core";
 import { getAllOrders } from "@/lib/db";
 import
 {
-  type OrderStatus,
   calculateOrderTotals,
   formatOrderNumber,
 } from "@/lib/orders";
@@ -1112,4 +1111,3 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
     </div>
   );
 }
-

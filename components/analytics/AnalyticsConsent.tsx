@@ -43,11 +43,12 @@ export function AnalyticsConsentProvider({ children }: { children: ReactNode }) 
   const [consent, setConsent] = useState<ConsentState>("unknown");
 
   useEffect(() => {
-    if (shouldDisable) {
-      setConsent("denied");
-      return;
-    }
-    setConsent(readStoredConsent());
+    const nextConsent = shouldDisable ? "denied" : readStoredConsent();
+    const timeoutId = window.setTimeout(() => {
+      setConsent(nextConsent);
+    }, 0);
+
+    return () => window.clearTimeout(timeoutId);
   }, [shouldDisable]);
 
   const setGranted = useCallback(() => {

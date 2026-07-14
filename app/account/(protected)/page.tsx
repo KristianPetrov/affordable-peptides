@@ -7,7 +7,7 @@ import
     getOrdersForUser,
     type CustomerProfile,
   } from "@/lib/db";
-import { formatDateTimePacific } from "@ap/shared-core";
+import { formatDateTimePacific } from "@/lib/core";
 import { calculateOrderTotals, formatOrderNumber } from "@/lib/orders";
 
 const formatCurrency = (value: number) =>

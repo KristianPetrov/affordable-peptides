@@ -5,9 +5,7 @@ import { headers } from "next/headers";
 import
 {
   createOrder,
-  deleteOrder,
   getOrderByOrderNumber,
-  updateOrderStatus,
   upsertCustomerProfile,
 } from "@/lib/db";
 import { sendOrderEmail } from "@/lib/email";
@@ -274,7 +272,7 @@ export async function createOrderAction (
     const shippingCost = calculateShippingCost(calculatedSubtotal);
     const totalAmount = finalSubtotal + shippingCost;
 
-    let order = await createOrder({
+    const order = await createOrder({
       id: randomUUID(),
       orderNumber,
       status: "PENDING_PAYMENT",
@@ -418,5 +416,3 @@ export async function lookupOrderAction (input: {
     };
   }
 }
-
-

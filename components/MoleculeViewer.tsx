@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type {
   MoleculeDefinition,
   MoleculeStructureSource,
-} from "@ap/shared-core";
+} from "@/lib/core";
 
 type GLViewerInstance = {
   removeAllModels: () => void;

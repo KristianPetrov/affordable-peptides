@@ -9,7 +9,7 @@ import {
   NavBar,
   ResearchSection,
   VisionSection,
-} from "@ap/shared-ui";
+} from "@/components";
 import
 {
   featuredProducts,
@@ -22,7 +22,7 @@ import {
   SUPPORT_PHONE_DISPLAY,
   SUPPORT_SMS_LINK,
   WEBSITE_RESEARCH_DISCLAIMER,
-} from "@ap/shared-core";
+} from "@/lib/core";
 import { absoluteUrl, siteMetadata } from "@/lib/seo";
 
 type IconProps = SVGProps<SVGSVGElement>;
@@ -127,6 +127,21 @@ export default function Home ()
               sizes="(max-width: 640px) 320px, (max-width: 1024px) 420px, 480px"
               className="h-auto w-full max-w-[480px] drop-shadow-[0_0_35px_rgba(168,85,247,0.45)]"
             />
+            <div
+              className="brand-promise mt-7 flex max-w-full items-center justify-center gap-2 sm:gap-4"
+              aria-label="Easy, Fast, Affordable"
+            >
+              {(["Easy", "Fast", "Affordable"] as const).map((word, index) => (
+                <span key={word} className="contents">
+                  {index > 0 && (
+                    <span className="brand-promise-dot" aria-hidden="true" />
+                  )}
+                  <span className="brand-promise-word" aria-hidden="true">
+                    {word}
+                  </span>
+                </span>
+              ))}
+            </div>
             <h1 className="mt-10 max-w-3xl text-balance text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">
               Laboratory research materials with transparent documentation and
               research-use-only compliance.
@@ -322,4 +337,3 @@ export default function Home ()
     </div>
   );
 }
-

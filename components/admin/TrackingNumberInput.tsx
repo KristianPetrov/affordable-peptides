@@ -1,6 +1,6 @@
 "use client";
 
-import type { OrderStatus } from "@ap/shared-core";
+import type { OrderStatus } from "@/lib/core";
 
 type TrackingNumberInputProps = {
   orderId: string;

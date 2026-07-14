@@ -6,9 +6,9 @@ import type {
   AppliedReferralResult,
   Order,
   OrderStatus,
-} from "@ap/shared-core";
+} from "@/lib/core";
 
-export type SharedUiAuthSession = {
+export type AppAuthSession = {
   user?:
     | {
         id?: string;
@@ -19,9 +19,9 @@ export type SharedUiAuthSession = {
     | null;
 } | null;
 
-export type SharedUiSignInResult = { error?: string | null } | undefined;
+export type AppSignInResult = { error?: string | null } | undefined;
 
-export type SharedUiActionResult =
+export type AppActionResult =
   | { success: true }
   | { success: false; error: string };
 
@@ -65,7 +65,7 @@ export type ResetPasswordWithTokenInput = {
 };
 
 export type CreateOrderInput = {
-  items: SharedUiCartItem[];
+  items: AppCartItem[];
   subtotal: number;
   cartSubtotal?: number;
   totalUnits: number;
@@ -139,33 +139,33 @@ export type ReferralDashboardActions = {
   deleteReferralCodeAction: (formData: FormData) => Promise<void>;
 };
 
-export type SharedUiAdapters = {
+export type AppAdapters = {
   support: {
     phoneDisplay: string;
     smsLink: string;
   };
   auth: {
-    useSession?: () => { data: SharedUiAuthSession };
+    useSession?: () => { data: AppAuthSession };
     signIn?: (
       provider: string,
       options: Record<string, unknown>
-    ) => Promise<SharedUiSignInResult>;
-    getSession?: () => Promise<SharedUiAuthSession>;
+    ) => Promise<AppSignInResult>;
+    getSession?: () => Promise<AppAuthSession>;
   };
   customerActions: {
     registerCustomer?: (
       input: RegisterCustomerInput
-    ) => Promise<SharedUiActionResult>;
+    ) => Promise<AppActionResult>;
     updateCustomerProfile?: (
       input: UpdateCustomerProfileInput
-    ) => Promise<SharedUiActionResult>;
-    changePassword?: (input: ChangePasswordInput) => Promise<SharedUiActionResult>;
+    ) => Promise<AppActionResult>;
+    changePassword?: (input: ChangePasswordInput) => Promise<AppActionResult>;
     requestPasswordReset?: (
       input: RequestPasswordResetInput
-    ) => Promise<SharedUiActionResult>;
+    ) => Promise<AppActionResult>;
     resetPasswordWithToken?: (
       input: ResetPasswordWithTokenInput
-    ) => Promise<SharedUiActionResult>;
+    ) => Promise<AppActionResult>;
   };
   orderActions: {
     createOrder?: (input: CreateOrderInput) => Promise<CreateOrderResult>;
@@ -185,7 +185,7 @@ export type SharedUiAdapters = {
     applyReferralCode?: (input: {
       code: string;
       customerEmail: string;
-      cartItems: SharedUiCartItem[];
+      cartItems: AppCartItem[];
       cartSubtotal: number;
       customerPhone?: string;
       shippingStreet?: string;
@@ -208,12 +208,12 @@ export type SharedUiAdapters = {
   };
 };
 
-export type SharedUiPricingTier = {
+export type AppPricingTier = {
   quantity: number;
   price: number;
 };
 
-export type SharedUiCartItem = {
+export type AppCartItem = {
   key: string;
   productName: string;
   productSlug?: string;
@@ -221,23 +221,23 @@ export type SharedUiCartItem = {
   tierQuantity: number;
   tierPrice: number;
   tierPriceDisplay: string;
-  pricingTiers: SharedUiPricingTier[];
+  pricingTiers: AppPricingTier[];
   count: number;
   variantKey: string;
   maxVariantUnits?: number | null;
 };
 
-type SharedUiAdapterOverrides = Partial<{
-  support: Partial<SharedUiAdapters["support"]>;
-  auth: SharedUiAdapters["auth"];
-  customerActions: SharedUiAdapters["customerActions"];
-  orderActions: SharedUiAdapters["orderActions"];
-  referralActions: SharedUiAdapters["referralActions"];
-  analytics: SharedUiAdapters["analytics"];
-  ageGate: SharedUiAdapters["ageGate"];
+type AppAdapterOverrides = Partial<{
+  support: Partial<AppAdapters["support"]>;
+  auth: AppAdapters["auth"];
+  customerActions: AppAdapters["customerActions"];
+  orderActions: AppAdapters["orderActions"];
+  referralActions: AppAdapters["referralActions"];
+  analytics: AppAdapters["analytics"];
+  ageGate: AppAdapters["ageGate"];
 }>;
 
-const defaultAdapters: SharedUiAdapters = {
+const defaultAdapters: AppAdapters = {
   support: {
     phoneDisplay: "+1 (307) 202-5965",
     smsLink: "sms:+13072025965",
@@ -250,16 +250,16 @@ const defaultAdapters: SharedUiAdapters = {
   ageGate: {},
 };
 
-const SharedUiAdapterContext = createContext<SharedUiAdapters>(defaultAdapters);
+const AppAdapterContext = createContext<AppAdapters>(defaultAdapters);
 
-export function SharedUiAdapterProvider({
+export function AppAdapterProvider({
   adapters,
   children,
 }: {
-  adapters?: SharedUiAdapterOverrides;
+  adapters?: AppAdapterOverrides;
   children: ReactNode;
 }) {
-  const merged = useMemo<SharedUiAdapters>(
+  const merged = useMemo<AppAdapters>(
     () => ({
       support: {
         ...defaultAdapters.support,
@@ -294,27 +294,27 @@ export function SharedUiAdapterProvider({
   );
 
   return (
-    <SharedUiAdapterContext.Provider value={merged}>
+    <AppAdapterContext.Provider value={merged}>
       {children}
-    </SharedUiAdapterContext.Provider>
+    </AppAdapterContext.Provider>
   );
 }
 
-export function useSharedUiAdapters() {
-  return useContext(SharedUiAdapterContext);
+export function useAppAdapters() {
+  return useContext(AppAdapterContext);
 }
 
-export function requireSharedUiAdapter<T>(value: T | undefined, name: string): T {
+export function requireAppAdapter<T>(value: T | undefined, name: string): T {
   if (typeof value === "undefined") {
     throw new Error(
-      `Missing shared UI adapter: ${name}. Wrap your app in SharedUiAdapterProvider and provide this adapter.`
+      `Missing app adapter: ${name}. Wrap your app in AppAdapterProvider and provide this adapter.`
     );
   }
   return value;
 }
 
-export function createUnsupportedSharedUiActionResult(
+export function createUnsupportedAppActionResult(
   message: string
-): SharedUiActionResult {
+): AppActionResult {
   return { success: false, error: message };
 }

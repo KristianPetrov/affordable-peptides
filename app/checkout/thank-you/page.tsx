@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useEffect, useMemo, useRef, Suspense } from "react";
 
-import { NavBar } from "@ap/shared-ui";
+import { NavBar } from "@/components";
 import
   {
     buildCashAppLink,

@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { ForgotPasswordForm, NavBar } from "@ap/shared-ui";
+import { ForgotPasswordForm, NavBar } from "@/components";
 import { auth } from "@/lib/auth";
 
 export default async function ForgotPasswordPage() {

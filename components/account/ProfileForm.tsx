@@ -2,11 +2,11 @@
 
 import { useState, useTransition } from "react";
 
-import type { CustomerProfile } from "@ap/shared-core";
+import type { CustomerProfile } from "@/lib/core";
 import {
-  requireSharedUiAdapter,
-  useSharedUiAdapters,
-} from "@ap/shared-ui/adapters";
+  requireAppAdapter,
+  useAppAdapters,
+} from "@/lib/ui-adapters";
 
 type ProfileFormProps = {
   initialProfile: CustomerProfile | null;
@@ -24,7 +24,7 @@ const toFormState = (profile: CustomerProfile | null) => ({
 });
 
 export function ProfileForm({ initialProfile, userEmail }: ProfileFormProps) {
-  const { customerActions } = useSharedUiAdapters();
+  const { customerActions } = useAppAdapters();
   const [formData, setFormData] = useState(() => toFormState(initialProfile));
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -45,7 +45,7 @@ export function ProfileForm({ initialProfile, userEmail }: ProfileFormProps) {
     setMessage(null);
 
     startTransition(async () => {
-      const updateCustomerProfileAction = requireSharedUiAdapter(
+      const updateCustomerProfileAction = requireAppAdapter(
         customerActions.updateCustomerProfile,
         "customerActions.updateCustomerProfile"
       );

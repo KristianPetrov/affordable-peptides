@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-import { AccountLoginForm, NavBar } from "@ap/shared-ui";
+import { AccountLoginForm, NavBar } from "@/components";
 import { auth } from "@/lib/auth";
 
 type LoginPageProps = {

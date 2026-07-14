@@ -8,11 +8,11 @@ import
   formatDateTimePacific,
   formatOrderNumber,
   type Order,
-} from "@ap/shared-core";
+} from "@/lib/core";
 import {
-  requireSharedUiAdapter,
-  useSharedUiAdapters,
-} from "@ap/shared-ui/adapters";
+  requireAppAdapter,
+  useAppAdapters,
+} from "@/lib/ui-adapters";
 
 const statusStyles: Record<Order["status"], string> = {
   PENDING_PAYMENT: "text-yellow-200 bg-yellow-500/10",
@@ -52,7 +52,7 @@ export default function OrderLookupClient ({
   defaultEmail = "",
 }: OrderLookupClientProps)
 {
-  const { orderActions, support } = useSharedUiAdapters();
+  const { orderActions, support } = useAppAdapters();
   const [formData, setFormData] = useState<LookupFormState>({
     orderNumber: defaultOrderNumber,
     customerEmail: defaultEmail,
@@ -91,7 +91,7 @@ export default function OrderLookupClient ({
           return;
         }
 
-        const resolvedLookupOrderAction = requireSharedUiAdapter(
+        const resolvedLookupOrderAction = requireAppAdapter(
           lookupOrderAction,
           "orderActions.lookupOrder"
         );

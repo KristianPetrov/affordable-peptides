@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { NavBar, StoreClient } from "@ap/shared-ui";
+import { NavBar, StoreClient } from "@/components";
 import { getProductsWithInventory } from "@/lib/products.server";
 import { absoluteUrl, siteMetadata } from "@/lib/seo";
 

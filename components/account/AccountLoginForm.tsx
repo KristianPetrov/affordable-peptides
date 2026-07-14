@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { signIn, getSession } from "next-auth/react";
 import Link from "next/link";
-import { useSharedUiAdapters } from "@ap/shared-ui/adapters";
+import { useAppAdapters } from "@/lib/ui-adapters";
 
 type AccountLoginFormProps = {
   callbackUrl?: string;
@@ -13,7 +13,7 @@ type AccountLoginFormProps = {
 export function AccountLoginForm ({ callbackUrl }: AccountLoginFormProps)
 {
   const router = useRouter();
-  const { auth } = useSharedUiAdapters();
+  const { auth } = useAppAdapters();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
