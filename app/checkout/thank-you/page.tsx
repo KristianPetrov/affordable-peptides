@@ -231,19 +231,27 @@ function ThankYouContent ()
                     at {SUPPORT_PHONE_DISPLAY} with your order number.
                   </p>
                 </div>
-              ) : (
-                <>
-                  <div className="rounded-2xl border border-blue-500/40 bg-blue-500/10 p-6 text-center">
-                    <p className="text-2xl font-semibold text-blue-100 sm:text-3xl">
-                      If you need to use a credit card, you can check out using Venmo and
-                      use your credit card on there.
-                    </p>
-                  </div>
+              ) : null}
 
-                  <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 p-6">
-                    <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
-                      Instant Payment Links
-                    </h3>
+              {!isCardLinkPayment ? (
+                <div className="rounded-2xl border border-blue-500/40 bg-blue-500/10 p-6 text-center">
+                  <p className="text-2xl font-semibold text-blue-100 sm:text-3xl">
+                    If you need to use a credit card, you can check out using Venmo and
+                    use your credit card on there.
+                  </p>
+                </div>
+              ) : null}
+
+              <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 p-6">
+                <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
+                  {isCardLinkPayment ? "Other Payment Options" : "Instant Payment Links"}
+                </h3>
+                {isCardLinkPayment ? (
+                  <p className="text-sm text-zinc-300">
+                    Prefer to pay another way? You can use any of the options
+                    below instead of the card link in your email.
+                  </p>
+                ) : null}
                     <p className="mt-6 text-sm text-zinc-300">
                       Amount due for app payments:{" "}
                       <span className="font-semibold text-white">
@@ -336,9 +344,7 @@ function ThankYouContent ()
                         <span className="text-yellow-200">The order number is pre-filled in the note.</span>
                       </li>
                     </ul>
-                  </div>
-                </>
-              )}
+              </div>
 
               <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 p-6">
                 <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
@@ -444,4 +450,3 @@ export default function ThankYouPage ()
     </Suspense>
   );
 }
-

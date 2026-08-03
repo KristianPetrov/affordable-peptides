@@ -46,7 +46,7 @@ export function CheckoutClient ({
   const [error, setError] = useState<string | null>(null);
   const [saveProfile, setSaveProfile] = useState(Boolean(sessionUser));
   const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>("manual");
+    useState<PaymentMethod>("card_link");
   const [referralInput, setReferralInput] = useState("");
   const [referralResult, setReferralResult] =
     useState<AppliedReferralResult | null>(null);
@@ -498,32 +498,14 @@ export function CheckoutClient ({
                   Payment Method
                 </h2>
                 <p className="mt-2 text-sm text-zinc-400">
-                  Choose manual payment (Zelle, Cash App, or Venmo), pay with a
-                  debit or credit card using a secure link we email you after
-                  checkout
+                  Pay with a debit or credit card using a secure link we email
+                  you after checkout, or choose manual payment with Zelle,
+                  Cash App, or Venmo.
                 </p>
                 <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch">
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod("manual")}
-                    className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "manual"
-                      ? "border-purple-400/70 bg-purple-500/10 shadow-[0_10px_35px_rgba(147,51,234,0.18)]"
-                      : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
-                      }`}
-                  >
-                    <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-purple-300/90">
-                      Recommended
-                    </span>
-                    <span className="mt-2 block text-xl font-semibold text-white">
-                      Manual payment
-                    </span>
-                    <span className="mt-2 block text-sm text-zinc-300">
-                      Place the order first, then pay manually on the next
-                      screen using Zelle, Cash App, or Venmo.
-                    </span>
-                  </button>
-                  <button
-                    type="button"
+                    aria-pressed={paymentMethod === "card_link"}
                     onClick={() => setPaymentMethod("card_link")}
                     className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "card_link"
                       ? "border-indigo-400/70 bg-indigo-500/10 shadow-[0_10px_35px_rgba(99,102,241,0.22)]"
@@ -531,7 +513,7 @@ export function CheckoutClient ({
                       }`}
                   >
                     <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-indigo-200/90">
-                      Card by email
+                      Recommended
                     </span>
                     <span className="mt-2 block text-xl font-semibold text-white">
                       Debit / credit card
@@ -542,10 +524,30 @@ export function CheckoutClient ({
                       this site).
                     </span>
                   </button>
+                  <button
+                    type="button"
+                    aria-pressed={paymentMethod === "manual"}
+                    onClick={() => setPaymentMethod("manual")}
+                    className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "manual"
+                      ? "border-purple-400/70 bg-purple-500/10 shadow-[0_10px_35px_rgba(147,51,234,0.18)]"
+                      : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                      }`}
+                  >
+                    <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-purple-300/90">
+                      Pay after ordering
+                    </span>
+                    <span className="mt-2 block text-xl font-semibold text-white">
+                      Manual payment
+                    </span>
+                    <span className="mt-2 block text-sm text-zinc-300">
+                      Place the order first, then pay manually on the next
+                      screen using Zelle, Cash App, or Venmo.
+                    </span>
+                  </button>
                 </div>
                 <p className="mt-4 text-xs text-zinc-400">
                   {paymentMethod === "card_link"
-                    ? "The card payment link is sent only in your order confirmation email."
+                    ? "The card link is sent in your confirmation email. Zelle, Cash App, and Venmo will still be shown after you order."
                     : "Manual payment instructions appear after the order is placed."}
                 </p>
               </div>

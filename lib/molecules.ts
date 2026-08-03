@@ -313,6 +313,16 @@ export const moleculesByProduct: MoleculeMap = {
         }),
     ],
     "TB-500": [canonicalMolecules.tb500],
+    "Tesamorelin + IPA Combo": [
+        createLocalMoleculeDefinition("tesamorelin", "Tesamorelin", {
+            subtitle: "10mg GHRH analog",
+            fallback: pubchemSource("Tesamorelin", { recordType: "2d" }),
+        }),
+        createLocalMoleculeDefinition("ipamorelin", "Ipamorelin", {
+            subtitle: "3mg selective GHRP",
+            fallback: pubchemSource("Ipamorelin", { recordType: "2d" }),
+        }),
+    ],
     Tesamorelin: [
         createLocalMoleculeDefinition("tesamorelin", "Tesamorelin", {
             fallback: pubchemSource("Tesamorelin", { recordType: "2d" }),

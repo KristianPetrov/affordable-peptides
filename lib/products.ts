@@ -561,12 +561,32 @@ const productDefinitions: ProductDefinition[] = [
     ],
   },
   {
+    name: "Tesamorelin + IPA Combo",
+    researchFocus:
+      "Pairs Tesamorelin and Ipamorelin to support GH release and visceral fat research.",
+    detailedDescription:
+      "This combo pairs Tesamorelin (10mg), an FDA-approved GHRH analog studied for visceral adipose tissue reduction, with Ipamorelin (3mg), a selective GHRP known for pulsatile GH release with minimal cortisol impact. Researchers use the stack to explore complementary GHRH and ghrelin-receptor pathways in body-composition and endocrine models.",
+    categories: ["hormone-growth", "weight-metabolic", "recovery-performance"],
+    variants: [
+      createVariant("10mg/3mg", 80, {
+        mockupLabel: "/products/label-tesa-ipa-10mg-3mg-3ml.png",
+      }),
+    ],
+  },
+  {
     name: "Tesamorelin",
     researchFocus: "FDA-backed GHRH analog proven to reduce visceral adipose tissue.",
     detailedDescription: "Tesamorelin is an FDA-approved GHRH analog researched extensively for its effects on visceral adipose tissue (VAT). It's a key peptide in studies targeting central adiposity, liver fat, and cardiometabolic risk markers.",
     categories: ["hormone-growth", "weight-metabolic"],
     variants: [
-      createVariant("10mg", 60, { mockupLabel: "/products/label-tesamorelin-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210349.pdf", testResults: [createFreedomTestResult("2605210349", "05/23/2026")] }),
+      createVariant("10mg", 60, {
+        mockupLabel: "/products/label-tesamorelin-10mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2606080250"),
+        testResults: [
+          createFreedomTestResult("2606080250", "06/09/2026"),
+          createFreedomTestResult("2605210349", "05/23/2026"),
+        ],
+      }),
       createVariant("20mg", 100, {
         mockupLabel: "/products/label-tesamorelin-20mg-3ml.png",
         testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2606010048.pdf",
