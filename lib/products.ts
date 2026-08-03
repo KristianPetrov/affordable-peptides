@@ -561,11 +561,11 @@ const productDefinitions: ProductDefinition[] = [
     ],
   },
   {
-    name: "Tesamorelin + IPA Combo",
+    name: "Tesamorelin + Ipamorelin Blend",
     researchFocus:
       "Pairs Tesamorelin and Ipamorelin to support GH release and visceral fat research.",
     detailedDescription:
-      "This combo pairs Tesamorelin (10mg), an FDA-approved GHRH analog studied for visceral adipose tissue reduction, with Ipamorelin (3mg), a selective GHRP known for pulsatile GH release with minimal cortisol impact. Researchers use the stack to explore complementary GHRH and ghrelin-receptor pathways in body-composition and endocrine models.",
+      "This blend pairs Tesamorelin (10mg), an FDA-approved GHRH analog studied for visceral adipose tissue reduction, with Ipamorelin (3mg), a selective GHRP known for pulsatile GH release with minimal cortisol impact. Researchers use the stack to explore complementary GHRH and ghrelin-receptor pathways in body-composition and endocrine models.",
     categories: ["hormone-growth", "weight-metabolic", "recovery-performance"],
     variants: [
       createVariant("10mg/3mg", 80, {
