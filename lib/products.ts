@@ -206,7 +206,11 @@ const productDefinitions: ProductDefinition[] = [
         80,
         {
           mockupLabel: "/products/label-bpc157-tb-500-20mg-3ml.png",
-          testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210348.pdf", testResults: [createFreedomTestResult("2605210348", "05/23/2026")]
+          testResultUrl: createFreedomCoaUrl("2608030274"),
+          testResults: [
+            createFreedomTestResult("2608030274", "08/06/2026"),
+            createFreedomTestResult("2605210348", "05/23/2026"),
+          ],
         }
       ),
     ],
@@ -287,8 +291,9 @@ const productDefinitions: ProductDefinition[] = [
           { quantity: "10", price: "$700" },
         ],
         mockupLabel: "/products/label-glow-70mg-3ml.png",
-        testResultUrl: "https://chromate.org/verify?c=29438_AFFORD4N2GYT",
+        testResultUrl: createFreedomCoaUrl("2608030275"),
         testResults: [
+          createFreedomTestResult("2608030275", "08/06/2026"),
           {
             label: "COA",
             date: "11/03/2025",
@@ -365,7 +370,14 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "Ipamorelin is a selective growth hormone secretagogue (GHRP) studied for its ability to stimulate pulsatile GH release with minimal impact on cortisol and prolactin. It's frequently paired with GHRH analogs in research exploring physiologic GH patterns.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("10mg", 50, { mockupLabel: "/products/label-ipamorelin-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210347.pdf", testResults: [createFreedomTestResult("2605210347", "05/23/2026")] }),
+      createVariant("10mg", 50, {
+        mockupLabel: "/products/label-ipamorelin-10mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2608030279"),
+        testResults: [
+          createFreedomTestResult("2608030279", "08/06/2026"),
+          createFreedomTestResult("2605210347", "05/23/2026"),
+        ],
+      }),
     ],
   },
   {
@@ -388,8 +400,11 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant("80mg", 100, {
         mockupLabel: "/products/label-klow-80mg-3ml.png",
-        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210359.pdf",
-        testResults: [createFreedomTestResult("2605210359", "05/23/2026")]
+        testResultUrl: createFreedomCoaUrl("2608030276"),
+        testResults: [
+          createFreedomTestResult("2608030276", "08/06/2026"),
+          createFreedomTestResult("2605210359", "05/23/2026"),
+        ],
       }),
     ],
   },
@@ -532,6 +547,8 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant("10mg", 40, {
         mockupLabel: "/products/label-SS-31-10mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2608030271"),
+        testResults: [createFreedomTestResult("2608030271", "08/06/2026")],
       }),
       createVariant("50mg", 135, {
         mockupLabel: "/products/label-SS-31-50mg-3ml.png",
@@ -570,6 +587,8 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant("10mg/3mg", 80, {
         mockupLabel: "/products/label-tesa-ipa-10mg-3mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2608030278"),
+        testResults: [createFreedomTestResult("2608030278", "08/06/2026")],
       }),
     ],
   },
@@ -589,8 +608,9 @@ const productDefinitions: ProductDefinition[] = [
       }),
       createVariant("20mg", 100, {
         mockupLabel: "/products/label-tesamorelin-20mg-3ml.png",
-        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2606010048.pdf",
+        testResultUrl: createFreedomCoaUrl("2608030277"),
         testResults: [
+          createFreedomTestResult("2608030277", "08/06/2026"),
           {
             label: "COA",
             date: "06/02/2026",
@@ -614,8 +634,9 @@ const productDefinitions: ProductDefinition[] = [
     variants: [
       createVariant("10mg", 50, {
         mockupLabel: "/products/label-tirzepatide-10mg-3ml.png",
-        testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2603230260.pdf",
+        testResultUrl: createFreedomCoaUrl("2608030272"),
         testResults: [
+          createFreedomTestResult("2608030272", "08/06/2026"),
           {
             label: "COA",
             date: "03/24/2026",
@@ -630,6 +651,8 @@ const productDefinitions: ProductDefinition[] = [
       }),
       createVariant("15mg", 70, {
         mockupLabel: "/products/label-tirzepatide-15mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2608030273"),
+        testResults: [createFreedomTestResult("2608030273", "08/06/2026")],
       }),
       createVariant("20mg", 90, {
         mockupLabel: "/products/label-tirzepatide-20mg-3ml.png",
