@@ -164,6 +164,13 @@ export const moleculesByProduct: MoleculeMap = {
             fallback: pubchemSource("CJC-1295", { recordType: "2d" }),
         }),
     ],
+    DSIP: [
+        createLocalMoleculeDefinition("dsip", "Delta Sleep-Inducing Peptide", {
+            fallback: pubchemSource("Delta sleep-inducing peptide", {
+                recordType: "2d",
+            }),
+        }),
+    ],
     Epithalon: [
         createLocalMoleculeDefinition("epitalon", "Epitalon", {
             fallback: pubchemSource("Epitalon"),
@@ -280,6 +287,11 @@ export const moleculesByProduct: MoleculeMap = {
     "NAD+": [
         createLocalMoleculeDefinition("nad-plus", "NAD+", {
             fallback: pubchemSource("NAD+"),
+        }),
+    ],
+    "PT-141": [
+        createLocalMoleculeDefinition("pt-141", "PT-141 (Bremelanotide)", {
+            fallback: pubchemSource("Bremelanotide", { recordType: "2d" }),
         }),
     ],
     Retatrutide: [

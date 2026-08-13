@@ -246,6 +246,17 @@ const productDefinitions: ProductDefinition[] = [
     ],
   },
   {
+    name: "DSIP",
+    researchFocus:
+      "Neuropeptide studied in sleep regulation, stress-response, and neuroendocrine signaling models.",
+    detailedDescription:
+      "Delta sleep-inducing peptide (DSIP) is a nonapeptide investigated in preclinical models of sleep regulation, stress response, and neuroendocrine signaling. Researchers use it to examine peptide-mediated pathways associated with circadian activity and recovery.",
+    categories: ["hormone-growth", "recovery-performance"],
+    variants: [
+      createVariant("10mg", 50, "/products/label-dsip-10mg-3ml.png"),
+    ],
+  },
+  {
     name: "Epithalon",
     researchFocus: "Telomerase-supportive peptide studied for circadian and longevity benefits.",
     detailedDescription: `Epithalon (Epitalon) is a synthetic peptide explored in aging research for its effects on telomerase activity, circadian rhythm, and oxidative stress. Studies have positioned it as a potential tool for longevity and cellular health investigations.
@@ -487,6 +498,17 @@ const productDefinitions: ProductDefinition[] = [
       }),
     ],
 
+  },
+  {
+    name: "PT-141",
+    researchFocus:
+      "Melanocortin receptor agonist studied in arousal and neuroendocrine signaling models.",
+    detailedDescription:
+      "PT-141 (bremelanotide) is a cyclic melanocortin peptide investigated for its activity at central melanocortin receptors. It is used in research examining arousal, behavioral response, and neuroendocrine signaling pathways.",
+    categories: ["hormone-growth", "longevity-wellness"],
+    variants: [
+      createVariant("10mg", 40, "/products/label-pt-141-10mg-3ml.png"),
+    ],
   },
   {
     name: "Retatrutide",
