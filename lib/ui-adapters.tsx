@@ -7,6 +7,7 @@ import type {
   Order,
   OrderStatus,
 } from "@/lib/core";
+import type { CheckoutPaymentMethod } from "@/lib/payment-methods";
 
 export type AppAuthSession = {
   user?:
@@ -85,7 +86,7 @@ export type CreateOrderInput = {
   billingCountry?: string;
   saveProfile?: boolean;
   referralCode?: string;
-  paymentMethod?: "manual" | "card_link";
+  paymentMethod?: CheckoutPaymentMethod;
 };
 
 export type CreateOrderResult =

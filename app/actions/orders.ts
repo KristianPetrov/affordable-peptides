@@ -34,6 +34,11 @@ import
   finalizeReferralForOrder,
   resolveReferralForOrder,
 } from "@/lib/referrals";
+import
+{
+  resolveCheckoutPaymentMethod,
+  type CheckoutPaymentMethod,
+} from "@/lib/payment-methods";
 
 type CreateOrderInput = {
   items: CartItem[];
@@ -56,7 +61,7 @@ type CreateOrderInput = {
   billingCountry?: string;
   saveProfile?: boolean;
   referralCode?: string;
-  paymentMethod?: "manual" | "card_link";
+  paymentMethod?: CheckoutPaymentMethod;
 };
 
 export type CreateOrderResult =
@@ -111,7 +116,7 @@ export async function createOrderAction (
 ): Promise<CreateOrderResult>
 {
   try {
-    const paymentMethod = input.paymentMethod ?? "manual";
+    const paymentMethod = resolveCheckoutPaymentMethod(input.paymentMethod);
 
     // Validate required fields
     if (

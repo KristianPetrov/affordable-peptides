@@ -20,6 +20,7 @@ import
     SUPPORT_SMS_LINK,
   } from "@/lib/support";
 import { BUSINESS_REVIEW_URL } from "@/lib/reviews";
+import { CARD_LINK_PAYMENTS_ENABLED } from "@/lib/payment-methods";
 
 function ThankYouContent ()
 {
@@ -84,7 +85,8 @@ function ThankYouContent ()
   const venmoLabel = venmoCharge
     ? `Pay via Venmo ($${venmoCharge.toFixed(2)})`
     : "Pay via Venmo";
-  const isCardLinkPayment = paymentMethod === "card_link";
+  const isCardLinkPayment =
+    CARD_LINK_PAYMENTS_ENABLED && paymentMethod === "card_link";
 
   useEffect(() =>
   {

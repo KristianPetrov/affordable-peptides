@@ -14,6 +14,11 @@ import
 import { SUPPORT_PHONE_DISPLAY } from "./support";
 import { formatDateTimePacific } from "@/lib/datetime";
 import { buildCardCheckoutPayUrl } from "@/lib/card-checkout-pay-url";
+import
+{
+  resolveCheckoutPaymentMethod,
+  type CheckoutPaymentMethod,
+} from "@/lib/payment-methods";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -186,7 +191,7 @@ function formatPasswordResetEmail (resetUrl: string):
 export function formatOrderEmail (
   order: Order,
   options?: {
-    paymentMethod?: "manual" | "card_link";
+    paymentMethod?: CheckoutPaymentMethod;
   }
 ):
   {
@@ -195,7 +200,7 @@ export function formatOrderEmail (
     text: string;
   }
 {
-  const paymentMethod = options?.paymentMethod ?? "manual";
+  const paymentMethod = resolveCheckoutPaymentMethod(options?.paymentMethod);
   const adminActionHtml =
     paymentMethod === "card_link"
       ? `<p style="margin-top: 20px; padding: 15px; background: #e0e7ff; border-radius: 4px;">
@@ -375,7 +380,7 @@ function formatCustomerReceiptEmail (
   order: Order,
   receiptUrl: string,
   options?: {
-    paymentMethod?: "manual" | "card_link";
+    paymentMethod?: CheckoutPaymentMethod;
   }
 ):
   {
@@ -396,7 +401,7 @@ function formatCustomerReceiptEmail (
     shippingCost === 0 ? "FREE" : `$${shippingCost.toFixed(2)}`;
 
   const amountDisplay = totalWithShipping.toFixed(2);
-  const paymentMethod = options?.paymentMethod ?? "manual";
+  const paymentMethod = resolveCheckoutPaymentMethod(options?.paymentMethod);
   const cashAppTotal =
     calculateCashAppTotal(totalWithShipping) || totalWithShipping;
   const venmoTotal = calculateVenmoTotal(totalWithShipping) || totalWithShipping;
@@ -679,7 +684,7 @@ function formatOrderSms (order: Order): string
 export async function sendOrderEmail (
   order: Order,
   options?: {
-    paymentMethod?: "manual" | "card_link";
+    paymentMethod?: CheckoutPaymentMethod;
   }
 ): Promise<void>
 {

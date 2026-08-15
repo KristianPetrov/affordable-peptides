@@ -27,6 +27,7 @@ import
   getMoleculesForProduct,
   type MoleculeDefinition,
 } from "@/lib/core";
+import { CARD_LINK_PAYMENTS_ENABLED } from "@/lib/payment-methods";
 
 const CATEGORY_LOOKUP = new Map<ProductCategoryId, ProductCategory>(
   productCategories.map((category) => [category.id, category])
@@ -1091,7 +1092,9 @@ export function FloatingCartButton ({
                   }}
                   className="block w-full rounded-full bg-purple-600 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-purple-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-purple-400 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
                 >
-                  Place Order (Choose Payment Method)
+                  {CARD_LINK_PAYMENTS_ENABLED
+                    ? "Place Order (Choose Payment Method)"
+                    : "Place Order"}
                 </button>
               )}
             </div>

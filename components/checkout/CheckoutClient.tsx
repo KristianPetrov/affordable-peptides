@@ -7,6 +7,11 @@ import { useRouter } from "next/navigation";
 import { useStorefront } from "../store/StorefrontContext";
 import type { AppliedReferralResult, CustomerProfile } from "@/lib/core";
 import { calculateShippingCost } from "@/lib/core";
+import {
+  CARD_LINK_PAYMENTS_ENABLED,
+  resolveCheckoutPaymentMethod,
+  type CheckoutPaymentMethod,
+} from "@/lib/payment-methods";
 import { requireAppAdapter, useAppAdapters } from "@/lib/ui-adapters";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
@@ -26,8 +31,6 @@ type SessionUser = {
   role?: string;
 } | null;
 
-type PaymentMethod = "manual" | "card_link";
-
 type CheckoutClientProps = {
   profile: CustomerProfile | null;
   sessionUser: SessionUser;
@@ -46,7 +49,9 @@ export function CheckoutClient ({
   const [error, setError] = useState<string | null>(null);
   const [saveProfile, setSaveProfile] = useState(Boolean(sessionUser));
   const [paymentMethod, setPaymentMethod] =
-    useState<PaymentMethod>("card_link");
+    useState<CheckoutPaymentMethod>(
+      CARD_LINK_PAYMENTS_ENABLED ? "card_link" : "manual"
+    );
   const [referralInput, setReferralInput] = useState("");
   const [referralResult, setReferralResult] =
     useState<AppliedReferralResult | null>(null);
@@ -107,7 +112,7 @@ export function CheckoutClient ({
     }
   }, [subtotal, appliedReferral]);
 
-  // Green.Money checkout removed; keep payment method state limited to manual/card link.
+  const checkoutPaymentMethod = resolveCheckoutPaymentMethod(paymentMethod);
 
   if (cartItems.length === 0) {
     return (
@@ -201,7 +206,7 @@ export function CheckoutClient ({
         totalUnits,
         saveProfile: isLoggedIn && saveProfile,
         referralCode: appliedReferral?.code,
-        paymentMethod,
+        paymentMethod: checkoutPaymentMethod,
         billingSameAsShipping,
         ...formData,
       });
@@ -211,7 +216,7 @@ export function CheckoutClient ({
         router.push(
           `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${result.totalAmount.toFixed(
             2
-          )}&paymentMethod=${paymentMethod}`
+          )}&paymentMethod=${checkoutPaymentMethod}`
         );
         return;
       }
@@ -497,59 +502,85 @@ export function CheckoutClient ({
                 <h2 className="text-xl font-semibold text-white">
                   Payment Method
                 </h2>
-                <p className="mt-2 text-sm text-zinc-400">
-                  Pay with a debit or credit card using a secure link we email
-                  you after checkout, or choose manual payment with Zelle,
-                  Cash App, or Venmo.
-                </p>
-                <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch">
-                  <button
-                    type="button"
-                    aria-pressed={paymentMethod === "card_link"}
-                    onClick={() => setPaymentMethod("card_link")}
-                    className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "card_link"
-                      ? "border-indigo-400/70 bg-indigo-500/10 shadow-[0_10px_35px_rgba(99,102,241,0.22)]"
-                      : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
-                      }`}
-                  >
-                    <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-indigo-200/90">
-                      Recommended
-                    </span>
-                    <span className="mt-2 block text-xl font-semibold text-white">
-                      Debit / credit card
-                    </span>
-                    <span className="mt-2 block text-sm text-zinc-300">
-                      We email you a secure link to pay with your debit or credit
-                      card after you place the order (no card details collected on
-                      this site).
-                    </span>
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={paymentMethod === "manual"}
-                    onClick={() => setPaymentMethod("manual")}
-                    className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "manual"
-                      ? "border-purple-400/70 bg-purple-500/10 shadow-[0_10px_35px_rgba(147,51,234,0.18)]"
-                      : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
-                      }`}
-                  >
-                    <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-purple-300/90">
-                      Pay after ordering
-                    </span>
-                    <span className="mt-2 block text-xl font-semibold text-white">
-                      Manual payment
-                    </span>
-                    <span className="mt-2 block text-sm text-zinc-300">
-                      Place the order first, then pay manually on the next
-                      screen using Zelle, Cash App, or Venmo.
-                    </span>
-                  </button>
-                </div>
-                <p className="mt-4 text-xs text-zinc-400">
-                  {paymentMethod === "card_link"
-                    ? "The card link is sent in your confirmation email. Zelle, Cash App, and Venmo will still be shown after you order."
-                    : "Manual payment instructions appear after the order is placed."}
-                </p>
+                {CARD_LINK_PAYMENTS_ENABLED ? (
+                  <>
+                    <p className="mt-2 text-sm text-zinc-400">
+                      Pay with a debit or credit card using a secure link we email
+                      you after checkout, or choose manual payment with Zelle,
+                      Cash App, or Venmo.
+                    </p>
+                    <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch">
+                      <button
+                        type="button"
+                        aria-pressed={paymentMethod === "card_link"}
+                        onClick={() => setPaymentMethod("card_link")}
+                        className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "card_link"
+                          ? "border-indigo-400/70 bg-indigo-500/10 shadow-[0_10px_35px_rgba(99,102,241,0.22)]"
+                          : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                          }`}
+                      >
+                        <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-indigo-200/90">
+                          Recommended
+                        </span>
+                        <span className="mt-2 block text-xl font-semibold text-white">
+                          Debit / credit card
+                        </span>
+                        <span className="mt-2 block text-sm text-zinc-300">
+                          We email you a secure link to pay with your debit or credit
+                          card after you place the order (no card details collected on
+                          this site).
+                        </span>
+                      </button>
+                      <button
+                        type="button"
+                        aria-pressed={paymentMethod === "manual"}
+                        onClick={() => setPaymentMethod("manual")}
+                        className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "manual"
+                          ? "border-purple-400/70 bg-purple-500/10 shadow-[0_10px_35px_rgba(147,51,234,0.18)]"
+                          : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                          }`}
+                      >
+                        <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-purple-300/90">
+                          Pay after ordering
+                        </span>
+                        <span className="mt-2 block text-xl font-semibold text-white">
+                          Manual payment
+                        </span>
+                        <span className="mt-2 block text-sm text-zinc-300">
+                          Place the order first, then pay manually on the next
+                          screen using Zelle, Cash App, or Venmo.
+                        </span>
+                      </button>
+                    </div>
+                    <p className="mt-4 text-xs text-zinc-400">
+                      {checkoutPaymentMethod === "card_link"
+                        ? "The card link is sent in your confirmation email. Zelle, Cash App, and Venmo will still be shown after you order."
+                        : "Manual payment instructions appear after the order is placed."}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="mt-2 text-sm text-zinc-400">
+                      Place the order first, then pay on the next screen using
+                      Zelle, Cash App, or Venmo.
+                    </p>
+                    <div className="mt-6 rounded-2xl border border-purple-400/70 bg-purple-500/10 p-5 shadow-[0_10px_35px_rgba(147,51,234,0.18)]">
+                      <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-purple-300/90">
+                        Pay after ordering
+                      </span>
+                      <span className="mt-2 block text-xl font-semibold text-white">
+                        Manual payment
+                      </span>
+                      <span className="mt-2 block text-sm text-zinc-300">
+                        Instant payment links for Zelle, Cash App, and Venmo
+                        appear after you place the order.
+                      </span>
+                    </div>
+                    <p className="mt-4 text-xs text-zinc-400">
+                      Manual payment instructions appear after the order is placed.
+                    </p>
+                  </>
+                )}
               </div>
 
               {error && (
@@ -564,7 +595,7 @@ export function CheckoutClient ({
               >
                 {isPending
                   ? "Submitting Order..."
-                  : paymentMethod === "card_link"
+                  : checkoutPaymentMethod === "card_link"
                     ? "Place Order (card link in email)"
                     : "Place Order (Pay Manually)"}
               </button>
