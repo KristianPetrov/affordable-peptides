@@ -199,8 +199,8 @@ function ThankYouContent ()
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
                         {isCardLinkPayment
-                          ? "We&apos;ll notify you once your payment is confirmed and your order ships."
-                          : "We&apos;ll notify you once your payment is confirmed and your order is shipped."}
+                          ? "We'll notify you once your payment is confirmed and your order ships."
+                          : "We'll notify you once your payment is confirmed and your order is shipped."}
                       </p>
                     </div>
                   </li>
