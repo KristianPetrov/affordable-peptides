@@ -16,6 +16,9 @@ import { formatDateTimePacific } from "@/lib/datetime";
 import { buildCardCheckoutPayUrl } from "@/lib/card-checkout-pay-url";
 import
 {
+  CASH_APP_PAYMENTS_ENABLED,
+  listManualPaymentMethods,
+  listManualPaymentMethodsSlash,
   resolveCheckoutPaymentMethod,
   type CheckoutPaymentMethod,
 } from "@/lib/payment-methods";
@@ -402,25 +405,45 @@ function formatCustomerReceiptEmail (
 
   const amountDisplay = totalWithShipping.toFixed(2);
   const paymentMethod = resolveCheckoutPaymentMethod(options?.paymentMethod);
-  const cashAppTotal =
-    calculateCashAppTotal(totalWithShipping) || totalWithShipping;
+  const manualPaymentMethodsList = listManualPaymentMethods();
+  const manualPaymentMethodsSlash = listManualPaymentMethodsSlash();
+  const cashAppTotal = CASH_APP_PAYMENTS_ENABLED
+    ? calculateCashAppTotal(totalWithShipping) || totalWithShipping
+    : null;
   const venmoTotal = calculateVenmoTotal(totalWithShipping) || totalWithShipping;
-  const cashAppDisplay = cashAppTotal.toFixed(2);
+  const cashAppDisplay = cashAppTotal?.toFixed(2) ?? null;
   const venmoDisplay = venmoTotal.toFixed(2);
-  const cashAppExternalLink = buildCashAppLink(cashAppTotal);
+  const cashAppLink =
+    CASH_APP_PAYMENTS_ENABLED && cashAppTotal
+      ? buildBrandedRedirectUrl(buildCashAppLink(cashAppTotal))
+      : null;
   const venmoExternalLink = buildVenmoLink({
     amount: venmoTotal,
     note: `Order ${orderNumber}`,
   });
-  const cashAppLink = buildBrandedRedirectUrl(cashAppExternalLink);
   const venmoLink = buildBrandedRedirectUrl(venmoExternalLink);
   const cardCheckoutPayUrl = buildCardCheckoutPayUrl(order.id);
 
+  const cashAppPaymentHtml = cashAppLink && cashAppDisplay
+    ? `
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
+            <tr>
+              <td style="border-radius: 8px; background: #059669;">
+                <a href="${cashAppLink}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #059669; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
+                  Pay $${cashAppDisplay} via Cash App
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee. <strong style="color: #92400e;">Add ONLY the order number ${orderNumber} in the memo.</strong></p>
+        `
+    : "";
+
   const manualPaymentMemoAndOptionsHtml = `
         <div class="info-block" style="background: #fef3c7; border: 1px solid #fbbf24;">
-          <h3 style="margin-top: 0; margin-bottom: 8px; color: #92400e;">Important: Include ONLY Order Number in Cash App, Venmo, or Zelle Payment Memo</h3>
+          <h3 style="margin-top: 0; margin-bottom: 8px; color: #92400e;">Important: Include ONLY Order Number in ${manualPaymentMethodsList} Payment Memo</h3>
           <p style="margin: 0; color: #78350f; font-size: 13px;">
-            When sending payment via Cash App, Venmo, or Zelle, please include <strong>ONLY</strong> your order number <strong>${orderNumber}</strong> in the payment memo/note. This helps us quickly match your payment to your order.
+            When sending payment via ${manualPaymentMethodsList}, please include <strong>ONLY</strong> your order number <strong>${orderNumber}</strong> in the payment memo/note. This helps us quickly match your payment to your order.
           </p>
         </div>
 
@@ -436,16 +459,7 @@ function formatCustomerReceiptEmail (
               <strong style="color: #92400e;">Include ONLY the order number ${orderNumber} in the memo.</strong>
             </p>
           </div>
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
-            <tr>
-              <td style="border-radius: 8px; background: #059669;">
-                <a href="${cashAppLink}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #059669; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
-                  Pay $${cashAppDisplay} via Cash App
-                </a>
-              </td>
-            </tr>
-          </table>
-          <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee. <strong style="color: #92400e;">Add ONLY the order number ${orderNumber} in the memo.</strong></p>
+          ${cashAppPaymentHtml}
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
             <tr>
               <td style="border-radius: 8px; background: #2563eb;">
@@ -487,7 +501,7 @@ function formatCustomerReceiptEmail (
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
           <ol style="margin: 0; padding-left: 18px;">
-            <li>Use the <strong>Pay with debit or credit card</strong> section below (or pay manually with Zelle, Cash App, or Venmo).</li>
+            <li>Use the <strong>Pay with debit or credit card</strong> section below (or pay manually with ${manualPaymentMethodsList}).</li>
             <li>We’ll confirm payment and follow up with shipping details.</li>
           </ol>
         </div>
@@ -496,7 +510,7 @@ function formatCustomerReceiptEmail (
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
           <ol style="margin: 0; padding-left: 18px;">
-            <li>Send payment via Cash App, Venmo, or Zelle using the options below.</li>
+            <li>Send payment via ${manualPaymentMethodsList} using the options below.</li>
             <li>We’ll confirm manually and follow up with shipping details.</li>
           </ol>
         </div>
@@ -504,7 +518,7 @@ function formatCustomerReceiptEmail (
   const paymentDetailsHtml =
     paymentMethod === "card_link"
       ? `${cardPayBlockHtml}
-        <p style="margin: 20px 0 8px 0; font-size: 15px; font-weight: 600; color: #374151;">Prefer Zelle, Cash App, or Venmo?</p>
+        <p style="margin: 20px 0 8px 0; font-size: 15px; font-weight: 600; color: #374151;">Prefer ${manualPaymentMethodsList}?</p>
         ${manualPaymentMemoAndOptionsHtml}`
       : manualPaymentMemoAndOptionsHtml;
   const itemsHtml = order.items
@@ -601,20 +615,28 @@ function formatCustomerReceiptEmail (
           ``,
           `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
           `  → Include order number ${orderNumber} in the memo`,
-          `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
-          `  → Add order number ${orderNumber} in the memo`,
+          ...(cashAppLink && cashAppDisplay
+            ? [
+                `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
+                `  → Add order number ${orderNumber} in the memo`,
+              ]
+            : []),
           `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
           `  → Order number is pre-filled in the note`,
         ]
       : [
           `Payment options:`,
           ``,
-          `IMPORTANT: Include order number ${orderNumber} in the payment memo/note for Cash App, Venmo, and Zelle.`,
+          `IMPORTANT: Include order number ${orderNumber} in the payment memo/note for ${manualPaymentMethodsList}.`,
           ``,
           `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
           `  → Include order number ${orderNumber} in the memo`,
-          `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
-          `  → Add order number ${orderNumber} in the memo`,
+          ...(cashAppLink && cashAppDisplay
+            ? [
+                `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
+                `  → Add order number ${orderNumber} in the memo`,
+              ]
+            : []),
           `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
           `  → Order number is pre-filled in the note`,
         ]),
@@ -642,11 +664,11 @@ function formatCustomerReceiptEmail (
     `Next Steps:`,
     ...(paymentMethod === "card_link"
       ? [
-          `1. Complete payment using the debit/credit card link above, or use Zelle / Cash App / Venmo.`,
+          `1. Complete payment using the debit/credit card link above, or use ${manualPaymentMethodsSlash}.`,
           `2. We'll confirm payment and update you once your order ships.`,
         ]
       : [
-          `1. Send payment via Cash App, Venmo, or Zelle.`,
+          `1. Send payment via ${manualPaymentMethodsList}.`,
           `2. We'll confirm manually and update you once your order ships.`,
         ]),
   ].join("\n");
