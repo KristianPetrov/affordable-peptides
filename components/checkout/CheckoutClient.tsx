@@ -9,6 +9,7 @@ import type { AppliedReferralResult, CustomerProfile } from "@/lib/core";
 import { calculateShippingCost } from "@/lib/core";
 import {
   CARD_LINK_PAYMENTS_ENABLED,
+  listManualPaymentMethods,
   resolveCheckoutPaymentMethod,
   type CheckoutPaymentMethod,
 } from "@/lib/payment-methods";
@@ -506,8 +507,8 @@ export function CheckoutClient ({
                   <>
                     <p className="mt-2 text-sm text-zinc-400">
                       Pay with a debit or credit card using a secure link we email
-                      you after checkout, or choose manual payment with Zelle,
-                      Cash App, or Venmo.
+                      you after checkout, or choose manual payment with{" "}
+                      {listManualPaymentMethods()}.
                     </p>
                     <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch">
                       <button
@@ -548,21 +549,21 @@ export function CheckoutClient ({
                         </span>
                         <span className="mt-2 block text-sm text-zinc-300">
                           Place the order first, then pay manually on the next
-                          screen using Zelle, Cash App, or Venmo.
+                          screen using {listManualPaymentMethods()}.
                         </span>
                       </button>
                     </div>
                     <p className="mt-4 text-xs text-zinc-400">
                       {checkoutPaymentMethod === "card_link"
-                        ? "The card link is sent in your confirmation email. Zelle, Cash App, and Venmo will still be shown after you order."
+                        ? `The card link is sent in your confirmation email. ${listManualPaymentMethods("and")} will still be shown after you order.`
                         : "Manual payment instructions appear after the order is placed."}
                     </p>
                   </>
                 ) : (
                   <>
                     <p className="mt-2 text-sm text-zinc-400">
-                      Place the order first, then pay on the next screen using
-                      Zelle, Cash App, or Venmo.
+                      Place the order first, then pay on the next screen using{" "}
+                      {listManualPaymentMethods()}.
                     </p>
                     <div className="mt-6 rounded-2xl border border-purple-400/70 bg-purple-500/10 p-5 shadow-[0_10px_35px_rgba(147,51,234,0.18)]">
                       <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-purple-300/90">
@@ -572,7 +573,7 @@ export function CheckoutClient ({
                         Manual payment
                       </span>
                       <span className="mt-2 block text-sm text-zinc-300">
-                        Instant payment links for Zelle, Cash App, and Venmo
+                        Instant payment links for {listManualPaymentMethods("and")}{" "}
                         appear after you place the order.
                       </span>
                     </div>

@@ -20,7 +20,12 @@ import
     SUPPORT_SMS_LINK,
   } from "@/lib/support";
 import { BUSINESS_REVIEW_URL } from "@/lib/reviews";
-import { CARD_LINK_PAYMENTS_ENABLED } from "@/lib/payment-methods";
+import
+  {
+    CARD_LINK_PAYMENTS_ENABLED,
+    CASH_APP_PAYMENTS_ENABLED,
+    listManualPaymentMethods,
+  } from "@/lib/payment-methods";
 
 function ThankYouContent ()
 {
@@ -57,7 +62,10 @@ function ThankYouContent ()
   const orderReference = formattedOrderNumber || orderNumber;
   const venmoNote = `Order ${orderReference}`;
   const cashAppCharge = useMemo(
-    () => (orderAmount ? calculateCashAppTotal(orderAmount) : null),
+    () =>
+      CASH_APP_PAYMENTS_ENABLED && orderAmount
+        ? calculateCashAppTotal(orderAmount)
+        : null,
     [orderAmount]
   );
   const venmoCharge = useMemo(
@@ -65,7 +73,10 @@ function ThankYouContent ()
     [orderAmount]
   );
   const cashAppLink = useMemo(
-    () => buildCashAppLink(cashAppCharge ?? orderAmount ?? undefined),
+    () =>
+      CASH_APP_PAYMENTS_ENABLED
+        ? buildCashAppLink(cashAppCharge ?? orderAmount ?? undefined)
+        : null,
     [cashAppCharge, orderAmount]
   );
   const venmoLink = useMemo(
@@ -87,6 +98,8 @@ function ThankYouContent ()
     : "Pay via Venmo";
   const isCardLinkPayment =
     CARD_LINK_PAYMENTS_ENABLED && paymentMethod === "card_link";
+  const manualPaymentMethodsList = listManualPaymentMethods();
+  const manualPaymentMethodsAnd = listManualPaymentMethods("and");
 
   useEffect(() =>
   {
@@ -178,11 +191,11 @@ function ThankYouContent ()
                       <p className="font-medium text-white">
                         {isCardLinkPayment
                           ? "Open your order confirmation email and use the Pay with debit or credit card button or link."
-                          : "Send your payment via Cash App, Venmo, or Zelle using the quick links below."}
+                          : `Send your payment via ${manualPaymentMethodsList} using the quick links below.`}
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
                         {isCardLinkPayment
-                          ? "The secure checkout page opens on our payment partner site. Zelle, Cash App, and Venmo instructions are also in that email if you change your mind."
+                          ? `The secure checkout page opens on our payment partner site. ${manualPaymentMethodsAnd} instructions are also in that email if you change your mind.`
                           : "Include ONLY your order number in the payment note so we can match it instantly."}
                       </p>
                     </div>
@@ -304,14 +317,16 @@ function ThankYouContent ()
                       </div>
                     </div>
                     <div className="mt-4 flex flex-col gap-3 md:flex-row">
-                      <Link
-                        href={cashAppLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 rounded-full bg-emerald-500 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-400"
-                      >
-                        {cashAppLabel}
-                      </Link>
+                      {cashAppLink ? (
+                        <Link
+                          href={cashAppLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex-1 rounded-full bg-emerald-500 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-400"
+                        >
+                          {cashAppLabel}
+                        </Link>
+                      ) : null}
                       <Link
                         href={venmoLink}
                         target="_blank"
@@ -326,7 +341,7 @@ function ThankYouContent ()
                         ⚠️ Important: Include ONLY the Order Number in Payment Memo
                       </p>
                       <p className="text-xs text-yellow-100/90">
-                        When sending payment via Cash App, Venmo, or Zelle, please include ONLY your order number{" "}
+                        When sending payment via {manualPaymentMethodsList}, please include ONLY your order number{" "}
                         <span className="font-semibold">({orderReference})</span> in the payment memo/note. This helps us quickly match your payment to your order. Do not include any other information in the memo.
                       </p>
                     </div>
@@ -337,10 +352,12 @@ function ThankYouContent ()
                         <span className="font-semibold text-white">{ZELLE_EMAIL}</span> (recipient:{" "}
                         <span className="font-semibold text-white">{ZELLE_RECIPIENT_NAME}</span>) and place ONLY the order number {orderReference} in the memo.
                       </li>
-                      <li>
-                        <span className="font-semibold text-white">Cash App:</span> Includes a 2.6% + $0.15 processing fee.{" "}
-                        <span className="text-yellow-200">Add ONLY the order number {orderReference} in the memo.</span>
-                      </li>
+                      {CASH_APP_PAYMENTS_ENABLED ? (
+                        <li>
+                          <span className="font-semibold text-white">Cash App:</span> Includes a 2.6% + $0.15 processing fee.{" "}
+                          <span className="text-yellow-200">Add ONLY the order number {orderReference} in the memo.</span>
+                        </li>
+                      ) : null}
                       <li>
                         <span className="font-semibold text-white">Venmo:</span> Includes a 1.9% + $0.10 fee.{" "}
                         <span className="text-yellow-200">The order number is pre-filled in the note.</span>
