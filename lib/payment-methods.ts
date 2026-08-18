@@ -12,11 +12,11 @@ export const CARD_LINK_PAYMENTS_ENABLED = true;
  */
 export const CASH_APP_PAYMENTS_ENABLED = false;
 
-const MANUAL_PAYMENT_METHODS = [
+const MANUAL_PAYMENT_METHODS: string[] = [
   "Zelle",
-  ...(CASH_APP_PAYMENTS_ENABLED ? (["Cash App"] as const) : []),
+  ...(CASH_APP_PAYMENTS_ENABLED ? ["Cash App"] : []),
   "Venmo",
-] as const;
+];
 
 /**
  * Human-readable list of enabled manual payment methods, e.g.
