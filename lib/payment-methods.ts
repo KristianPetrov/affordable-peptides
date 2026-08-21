@@ -4,7 +4,7 @@ export type CheckoutPaymentMethod = "manual" | "card_link";
  * Stripe / partner debit-credit card checkout.
  * When false, the option is hidden and new orders are forced to manual payment.
  */
-export const CARD_LINK_PAYMENTS_ENABLED = true;
+export const CARD_LINK_PAYMENTS_ENABLED = false;
 
 /**
  * Cash App Pay links on thank-you / confirmation email / checkout copy.
