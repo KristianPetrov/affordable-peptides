@@ -253,7 +253,11 @@ const productDefinitions: ProductDefinition[] = [
       "Delta sleep-inducing peptide (DSIP) is a nonapeptide investigated in preclinical models of sleep regulation, stress response, and neuroendocrine signaling. Researchers use it to examine peptide-mediated pathways associated with circadian activity and recovery.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
-      createVariant("10mg", 50, "/products/label-dsip-10mg-3ml.png"),
+      createVariant("10mg", 50, {
+        mockupLabel: "/products/label-dsip-10mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2608171069"),
+        testResults: [createFreedomTestResult("2608171069", "08/23/2026")],
+      }),
     ],
   },
   {
@@ -507,7 +511,11 @@ const productDefinitions: ProductDefinition[] = [
       "PT-141 (bremelanotide) is a cyclic melanocortin peptide investigated for its activity at central melanocortin receptors. It is used in research examining arousal, behavioral response, and neuroendocrine signaling pathways.",
     categories: ["hormone-growth", "longevity-wellness"],
     variants: [
-      createVariant("10mg", 40, "/products/label-pt-141-10mg-3ml.png"),
+      createVariant("10mg", 40, {
+        mockupLabel: "/products/label-pt-141-10mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2608171071"),
+        testResults: [createFreedomTestResult("2608171071", "08/23/2026")],
+      }),
     ],
   },
   {
@@ -528,8 +536,9 @@ const productDefinitions: ProductDefinition[] = [
       }),
       createVariant("30mg", 175, {
         mockupLabel: "/products/label-retatrutide-30mg-3ml.png",
-        testResultUrl: createFreedomCoaUrl("2606080253"),
+        testResultUrl: createFreedomCoaUrl("2608171070"),
         testResults: [
+          createFreedomTestResult("2608171070", "08/23/2026"),
           createFreedomTestResult("2606080253", "06/09/2026"),
           createFreedomTestResult("2606080254", "06/09/2026"),
           createFreedomTestResult("2606080255", "06/09/2026"),
