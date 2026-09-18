@@ -5,6 +5,7 @@ const ALLOWED_REDIRECT_HOSTS = new Set([
   "tools.usps.com",
   "cash.app",
   "venmo.com",
+  "account.venmo.com",
 ]);
 
 export async function GET (request: NextRequest): Promise<NextResponse>

@@ -1,7 +1,7 @@
 const CASH_APP_TAG = "affordablepeptides";
-const VENMO_USER = "payaffordablepeptides";
+const VENMO_USER = "payaffordablepeptides2";
 const CASH_APP_URL = `https://cash.app/$${CASH_APP_TAG}`;
-const VENMO_URL = `https://venmo.com/u/${VENMO_USER}`;
+const VENMO_URL = `https://account.venmo.com/u/${VENMO_USER}`;
 const ZELLE_EMAIL = "payaffordablepeptides@gmail.com";
 const ZELLE_RECIPIENT_NAME = "Affordable Holdings, Inc";
 
