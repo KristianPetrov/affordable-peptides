@@ -12,15 +12,21 @@ export const CARD_LINK_PAYMENTS_ENABLED = false;
  */
 export const CASH_APP_PAYMENTS_ENABLED = false;
 
+/**
+ * Venmo pay links on thank-you / confirmation email / checkout copy.
+ * When false, Venmo is hidden from payment options and related messaging.
+ */
+export const VENMO_PAYMENTS_ENABLED = false;
+
 const MANUAL_PAYMENT_METHODS: string[] = [
   "Zelle",
   ...(CASH_APP_PAYMENTS_ENABLED ? ["Cash App"] : []),
-  "Venmo",
+  ...(VENMO_PAYMENTS_ENABLED ? ["Venmo"] : []),
 ];
 
 /**
  * Human-readable list of enabled manual payment methods, e.g.
- * "Zelle, Cash App, or Venmo" / "Zelle or Venmo".
+ * "Zelle, Cash App, or Venmo" / "Zelle".
  */
 export function listManualPaymentMethods (
   conjunction: "or" | "and" = "or"
@@ -36,7 +42,7 @@ export function listManualPaymentMethods (
   return `${methods.slice(0, -1).join(", ")}, ${conjunction} ${methods[methods.length - 1]}`;
 }
 
-/** Slash-separated list for compact copy, e.g. "Zelle / Venmo". */
+/** Slash-separated list for compact copy, e.g. "Zelle / Venmo" or "Zelle". */
 export function listManualPaymentMethodsSlash (): string
 {
   return MANUAL_PAYMENT_METHODS.join(" / ");

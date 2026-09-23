@@ -9,6 +9,8 @@ import type { AppliedReferralResult, CustomerProfile } from "@/lib/core";
 import { calculateShippingCost } from "@/lib/core";
 import {
   CARD_LINK_PAYMENTS_ENABLED,
+  CASH_APP_PAYMENTS_ENABLED,
+  VENMO_PAYMENTS_ENABLED,
   listManualPaymentMethods,
   resolveCheckoutPaymentMethod,
   type CheckoutPaymentMethod,
@@ -573,8 +575,9 @@ export function CheckoutClient ({
                         Manual payment
                       </span>
                       <span className="mt-2 block text-sm text-zinc-300">
-                        Instant payment links for {listManualPaymentMethods("and")}{" "}
-                        appear after you place the order.
+                        {CASH_APP_PAYMENTS_ENABLED || VENMO_PAYMENTS_ENABLED
+                          ? `Instant payment links for ${listManualPaymentMethods("and")} appear after you place the order.`
+                          : `${listManualPaymentMethods()} payment details appear after you place the order.`}
                       </span>
                     </div>
                     <p className="mt-4 text-xs text-zinc-400">

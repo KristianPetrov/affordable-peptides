@@ -24,6 +24,7 @@ import
   {
     CARD_LINK_PAYMENTS_ENABLED,
     CASH_APP_PAYMENTS_ENABLED,
+    VENMO_PAYMENTS_ENABLED,
     listManualPaymentMethods,
   } from "@/lib/payment-methods";
 
@@ -69,7 +70,10 @@ function ThankYouContent ()
     [orderAmount]
   );
   const venmoCharge = useMemo(
-    () => (orderAmount ? calculateVenmoTotal(orderAmount) : null),
+    () =>
+      VENMO_PAYMENTS_ENABLED && orderAmount
+        ? calculateVenmoTotal(orderAmount)
+        : null,
     [orderAmount]
   );
   const cashAppLink = useMemo(
@@ -81,10 +85,12 @@ function ThankYouContent ()
   );
   const venmoLink = useMemo(
     () =>
-      buildVenmoLink({
-        amount: venmoCharge ?? orderAmount ?? undefined,
-        note: venmoNote,
-      }),
+      VENMO_PAYMENTS_ENABLED
+        ? buildVenmoLink({
+            amount: venmoCharge ?? orderAmount ?? undefined,
+            note: venmoNote,
+          })
+        : null,
     [venmoCharge, orderAmount, venmoNote]
   );
   const paymentAmountDisplay = orderAmount
@@ -191,7 +197,7 @@ function ThankYouContent ()
                       <p className="font-medium text-white">
                         {isCardLinkPayment
                           ? "Open your order confirmation email and use the Pay with debit or credit card button or link."
-                          : `Send your payment via ${manualPaymentMethodsList} using the quick links below.`}
+                          : `Send your payment via ${manualPaymentMethodsList} using the instructions below.`}
                       </p>
                       <p className="mt-1 text-sm text-zinc-400">
                         {isCardLinkPayment
@@ -248,7 +254,7 @@ function ThankYouContent ()
                 </div>
               ) : null}
 
-              {!isCardLinkPayment ? (
+              {!isCardLinkPayment && VENMO_PAYMENTS_ENABLED ? (
                 <div className="rounded-2xl border border-blue-500/40 bg-blue-500/10 p-6 text-center">
                   <p className="text-2xl font-semibold text-blue-100 sm:text-3xl">
                     If you need to use a credit card, you can check out using Venmo and
@@ -259,7 +265,11 @@ function ThankYouContent ()
 
               <div className="rounded-2xl border border-purple-900/40 bg-purple-500/10 p-6">
                 <h3 className="mb-2 text-sm font-semibold uppercase tracking-[0.2em] text-purple-200">
-                  {isCardLinkPayment ? "Other Payment Options" : "Instant Payment Links"}
+                  {isCardLinkPayment
+                    ? "Other Payment Options"
+                    : cashAppLink || venmoLink
+                      ? "Instant Payment Links"
+                      : "Payment Instructions"}
                 </h3>
                 {isCardLinkPayment ? (
                   <p className="text-sm text-zinc-300">
@@ -268,7 +278,7 @@ function ThankYouContent ()
                   </p>
                 ) : null}
                     <p className="mt-6 text-sm text-zinc-300">
-                      Amount due for app payments:{" "}
+                      Amount due:{" "}
                       <span className="font-semibold text-white">
                         {paymentAmountDisplay ?? "use the total shown above"}
                       </span>
@@ -316,26 +326,30 @@ function ThankYouContent ()
                         </div>
                       </div>
                     </div>
-                    <div className="mt-4 flex flex-col gap-3 md:flex-row">
-                      {cashAppLink ? (
-                        <Link
-                          href={cashAppLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex-1 rounded-full bg-emerald-500 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-400"
-                        >
-                          {cashAppLabel}
-                        </Link>
-                      ) : null}
-                      <Link
-                        href={venmoLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex-1 rounded-full bg-blue-600 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-blue-500"
-                      >
-                        {venmoLabel}
-                      </Link>
-                    </div>
+                    {cashAppLink || venmoLink ? (
+                      <div className="mt-4 flex flex-col gap-3 md:flex-row">
+                        {cashAppLink ? (
+                          <Link
+                            href={cashAppLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 rounded-full bg-emerald-500 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-emerald-400"
+                          >
+                            {cashAppLabel}
+                          </Link>
+                        ) : null}
+                        {venmoLink ? (
+                          <Link
+                            href={venmoLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex-1 rounded-full bg-blue-600 px-4 py-3 text-center text-sm font-semibold uppercase tracking-[0.2em] text-white transition hover:bg-blue-500"
+                          >
+                            {venmoLabel}
+                          </Link>
+                        ) : null}
+                      </div>
+                    ) : null}
                     <div className="mt-4 rounded-lg border border-yellow-500/40 bg-yellow-500/10 p-4">
                       <p className="text-sm font-semibold text-yellow-200 mb-2">
                         ⚠️ Important: Include ONLY the Order Number in Payment Memo
@@ -358,10 +372,12 @@ function ThankYouContent ()
                           <span className="text-yellow-200">Add ONLY the order number {orderReference} in the memo.</span>
                         </li>
                       ) : null}
-                      <li>
-                        <span className="font-semibold text-white">Venmo:</span> Includes a 1.9% + $0.10 fee.{" "}
-                        <span className="text-yellow-200">The order number is pre-filled in the note.</span>
-                      </li>
+                      {VENMO_PAYMENTS_ENABLED ? (
+                        <li>
+                          <span className="font-semibold text-white">Venmo:</span> Includes a 1.9% + $0.10 fee.{" "}
+                          <span className="text-yellow-200">The order number is pre-filled in the note.</span>
+                        </li>
+                      ) : null}
                     </ul>
               </div>
 

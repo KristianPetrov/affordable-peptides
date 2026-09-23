@@ -17,6 +17,7 @@ import { buildCardCheckoutPayUrl } from "@/lib/card-checkout-pay-url";
 import
 {
   CASH_APP_PAYMENTS_ENABLED,
+  VENMO_PAYMENTS_ENABLED,
   listManualPaymentMethods,
   listManualPaymentMethodsSlash,
   resolveCheckoutPaymentMethod,
@@ -410,18 +411,24 @@ function formatCustomerReceiptEmail (
   const cashAppTotal = CASH_APP_PAYMENTS_ENABLED
     ? calculateCashAppTotal(totalWithShipping) || totalWithShipping
     : null;
-  const venmoTotal = calculateVenmoTotal(totalWithShipping) || totalWithShipping;
+  const venmoTotal = VENMO_PAYMENTS_ENABLED
+    ? calculateVenmoTotal(totalWithShipping) || totalWithShipping
+    : null;
   const cashAppDisplay = cashAppTotal?.toFixed(2) ?? null;
-  const venmoDisplay = venmoTotal.toFixed(2);
+  const venmoDisplay = venmoTotal?.toFixed(2) ?? null;
   const cashAppLink =
     CASH_APP_PAYMENTS_ENABLED && cashAppTotal
       ? buildBrandedRedirectUrl(buildCashAppLink(cashAppTotal))
       : null;
-  const venmoExternalLink = buildVenmoLink({
-    amount: venmoTotal,
-    note: `Order ${orderNumber}`,
-  });
-  const venmoLink = buildBrandedRedirectUrl(venmoExternalLink);
+  const venmoLink =
+    VENMO_PAYMENTS_ENABLED && venmoTotal
+      ? buildBrandedRedirectUrl(
+          buildVenmoLink({
+            amount: venmoTotal,
+            note: `Order ${orderNumber}`,
+          })
+        )
+      : null;
   const cardCheckoutPayUrl = buildCardCheckoutPayUrl(order.id);
 
   const cashAppPaymentHtml = cashAppLink && cashAppDisplay
@@ -436,6 +443,21 @@ function formatCustomerReceiptEmail (
             </tr>
           </table>
           <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 2.6% + $0.15 processing fee. <strong style="color: #92400e;">Add ONLY the order number ${orderNumber} in the memo.</strong></p>
+        `
+    : "";
+
+  const venmoPaymentHtml = venmoLink && venmoDisplay
+    ? `
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
+            <tr>
+              <td style="border-radius: 8px; background: #2563eb;">
+                <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #2563eb; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
+                  Pay $${venmoDisplay} via Venmo
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 1.9% + $0.10 processing fee. <strong style="color: #059669;">Order number is pre-filled in the note.</strong></p>
         `
     : "";
 
@@ -460,16 +482,7 @@ function formatCustomerReceiptEmail (
             </p>
           </div>
           ${cashAppPaymentHtml}
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
-            <tr>
-              <td style="border-radius: 8px; background: #2563eb;">
-                <a href="${venmoLink}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #2563eb; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
-                  Pay $${venmoDisplay} via Venmo
-                </a>
-              </td>
-            </tr>
-          </table>
-          <p style="margin: 8px 0 0 0; color: #4b5563; font-size: 13px; text-align: center;">Includes 1.9% + $0.10 processing fee. <strong style="color: #059669;">Order number is pre-filled in the note.</strong></p>
+          ${venmoPaymentHtml}
         </div>
       `;
 
@@ -621,8 +634,12 @@ function formatCustomerReceiptEmail (
                 `  → Add order number ${orderNumber} in the memo`,
               ]
             : []),
-          `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
-          `  → Order number is pre-filled in the note`,
+          ...(venmoLink && venmoDisplay
+            ? [
+                `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
+                `  → Order number is pre-filled in the note`,
+              ]
+            : []),
         ]
       : [
           `Payment options:`,
@@ -637,8 +654,12 @@ function formatCustomerReceiptEmail (
                 `  → Add order number ${orderNumber} in the memo`,
               ]
             : []),
-          `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
-          `  → Order number is pre-filled in the note`,
+          ...(venmoLink && venmoDisplay
+            ? [
+                `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
+                `  → Order number is pre-filled in the note`,
+              ]
+            : []),
         ]),
     ``,
     `Shipping To:`,
