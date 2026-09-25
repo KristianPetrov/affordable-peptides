@@ -430,7 +430,14 @@ const productDefinitions: ProductDefinition[] = [
     detailedDescription: "KPV is an anti-inflammatory tripeptide derived from the α-MSH sequence and studied for its effects on gut lining support and immune modulation. Research models highlight its potential to help calm excessive inflammatory responses in barrier tissues.",
     categories: ["recovery-performance", "longevity-wellness"],
     variants: [
-      createVariant("10mg", 50, { mockupLabel: "/products/label-kpv-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210344.pdf", testResults: [createFreedomTestResult("2605210344", "05/23/2026")] }),
+      createVariant("10mg", 50, {
+        mockupLabel: "/products/label-kpv-10mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2609221003"),
+        testResults: [
+          createFreedomTestResult("2609221003", "09/24/2026"),
+          createFreedomTestResult("2605210344", "05/23/2026"),
+        ],
+      }),
     ],
   },
   {
@@ -476,7 +483,14 @@ const productDefinitions: ProductDefinition[] = [
     categories: ["weight-metabolic", "longevity-wellness"],
     variants: [
       createVariant("10mg", 40, { mockupLabel: "/products/label-mots-c-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210335.pdf", testResults: [createFreedomTestResult("2605210335", "05/23/2026")] }),
-      createVariant("40mg", 100, { mockupLabel: "/products/label-mots-c-40mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210336.pdf", testResults: [createFreedomTestResult("2605210336", "05/23/2026")] }),
+      createVariant("40mg", 100, {
+        mockupLabel: "/products/label-mots-c-40mg-3ml.png",
+        testResultUrl: createFreedomCoaUrl("2609221005"),
+        testResults: [
+          createFreedomTestResult("2609221005", "09/24/2026"),
+          createFreedomTestResult("2605210336", "05/23/2026"),
+        ],
+      }),
     ],
   },
   {
@@ -528,8 +542,9 @@ const productDefinitions: ProductDefinition[] = [
       createVariant("10mg", 80, { mockupLabel: "/products/label-retatrutide-10mg-3ml.png", testResultUrl: "https://coas.freedomdiagnosticstesting.com/Affo2605210333.pdf", testResults: [createFreedomTestResult("2605210333", "05/23/2026")] }),
       createVariant("20mg", 150, {
         mockupLabel: "/products/label-retatrutide-20mg-3ml.png",
-        testResultUrl: createFreedomCoaUrl("2606170040"),
+        testResultUrl: createFreedomCoaUrl("2609221008"),
         testResults: [
+          createFreedomTestResult("2609221008", "09/24/2026"),
           createFreedomTestResult("2606170040", "06/17/2026"),
           createFreedomTestResult("2605040511", "05/06/2026"),
         ],
