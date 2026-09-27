@@ -1370,6 +1370,9 @@ export default function StoreClient ({ products }: StoreClientProps)
               Research-grade peptides available in flexible volume tiers without the industry markup.
             </h1>
             <div className="flex flex-wrap items-center justify-center gap-3 text-xs uppercase tracking-[0.35em] text-white sm:text-sm">
+              <div className="rounded-full border border-emerald-400/50 bg-emerald-500/10 px-4 py-2 font-semibold text-emerald-100 shadow-[0_10px_30px_rgba(16,185,129,0.25)]">
+                99%+ Purity Guaranteed
+              </div>
               <div className="rounded-full border border-green-400/50 bg-green-500/10 px-4 py-2 font-semibold text-green-200 shadow-[0_10px_30px_rgba(16,185,129,0.25)]">
                 5+ Bottles = 20% Off
               </div>

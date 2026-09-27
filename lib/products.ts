@@ -363,7 +363,7 @@ const productDefinitions: ProductDefinition[] = [
   {
     name: "IGF-1 LR3",
     researchFocus: "Extended IGF signaling that supports muscle hyperplasia investigations.",
-    detailedDescription: "IGF-1 LR3 is a long-acting analog of insulin-like growth factor 1 designed to extend receptor interaction time. It's used in research on muscle hyperplasia, tissue repair, and cellular growth pathways. IGF-1 LR3 is a long, complex peptide, and due to its size, minor synthesis byproducts are normal. For this compound, 90–95% purity is widely accepted in research settings when the correct molecular weight and a dominant HPLC peak are present.",
+    detailedDescription: "IGF-1 LR3 is a long-acting analog of insulin-like growth factor 1 designed to extend receptor interaction time. It's used in research on muscle hyperplasia, tissue repair, and cellular growth pathways.",
     categories: ["hormone-growth", "recovery-performance"],
     variants: [
       {
