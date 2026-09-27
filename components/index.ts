@@ -36,7 +36,6 @@ export { TikTokPixel } from "./analytics/TikTokPixel";
 export { default as HeroMoleculePreview } from "./home/HeroMoleculePreview";
 export { default as HeroShowcase } from "./home/HeroShowcase";
 export { default as MissionSection } from "./home/MissionSection";
-export { default as ResearchSection } from "./home/ResearchSection";
 export { default as ReviewsSection } from "./home/ReviewsSection";
 export { default as VisionSection } from "./home/VisionSection";
 

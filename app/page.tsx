@@ -7,7 +7,6 @@ import {
   HeroShowcase,
   MissionSection,
   NavBar,
-  ResearchSection,
   VisionSection,
 } from "@/components";
 import
@@ -158,7 +157,10 @@ export default function Home ()
                 </span>
               ))}
             </div>
-            <h1 className="mt-10 max-w-3xl text-balance text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">
+            <p className="mt-6 inline-flex items-center justify-center rounded-full border border-emerald-400/50 bg-emerald-500/10 px-5 py-2 text-sm font-semibold uppercase tracking-[0.28em] text-emerald-100 shadow-[0_10px_30px_rgba(16,185,129,0.25)]">
+              99%+ Purity Guaranteed
+            </p>
+            <h1 className="mt-8 max-w-3xl text-balance text-3xl font-semibold text-white sm:text-4xl lg:text-5xl">
               Laboratory research materials with transparent documentation and
               research-use-only compliance.
             </h1>
@@ -213,7 +215,6 @@ export default function Home ()
             <HeroShowcase products={showcaseProducts} />
           </div>
         </section>
-        <ResearchSection />
         <MissionSection />
         <VisionSection />
         <section
