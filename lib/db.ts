@@ -34,13 +34,18 @@ export type OrderContactExportRecord = {
 };
 
 // Convert database row to Order type
-function dbRowToOrder (row: typeof orders.$inferSelect): Order
+export function dbRowToOrder (row: typeof orders.$inferSelect): Order
 {
   return {
     id: row.id,
     orderNumber: row.orderNumber,
     status: row.status,
     userId: row.userId,
+    paymentMethod: row.paymentMethod as Order["paymentMethod"],
+    inventoryReservationStatus:
+      row.inventoryReservationStatus as Order["inventoryReservationStatus"],
+    inventoryReleasedAt: row.inventoryReleasedAt?.toISOString(),
+    paidAt: row.paidAt?.toISOString(),
     customerName: row.customerName,
     customerEmail: row.customerEmail,
     customerPhone: row.customerPhone,
@@ -97,6 +102,13 @@ function orderToDbRow (order: Order): typeof orders.$inferInsert
     orderNumber: order.orderNumber,
     status: order.status,
     userId: order.userId ?? null,
+    paymentMethod: order.paymentMethod ?? "manual",
+    inventoryReservationStatus:
+      order.inventoryReservationStatus ?? "RESERVED",
+    inventoryReleasedAt: order.inventoryReleasedAt
+      ? new Date(order.inventoryReleasedAt)
+      : null,
+    paidAt: order.paidAt ? new Date(order.paidAt) : null,
     customerName: order.customerName,
     customerEmail: order.customerEmail,
     customerPhone: order.customerPhone,
@@ -159,6 +171,46 @@ export async function getOrderById (id: string): Promise<Order | null>
     .limit(1);
 
   return order ? dbRowToOrder(order) : null;
+}
+
+export async function getOrderAccessRecord (id: string): Promise<{
+  order: Order;
+  guestAccessTokenHash: string | null;
+} | null>
+{
+  const [row] = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.id, id))
+    .limit(1);
+
+  return row
+    ? {
+      order: dbRowToOrder(row),
+      guestAccessTokenHash: row.guestAccessTokenHash,
+    }
+    : null;
+}
+
+export async function getOrderAccessRecordByIdempotencyKey (
+  idempotencyKey: string
+): Promise<{
+  order: Order;
+  guestAccessTokenHash: string | null;
+} | null>
+{
+  const [row] = await db
+    .select()
+    .from(orders)
+    .where(eq(orders.idempotencyKey, idempotencyKey))
+    .limit(1);
+
+  return row
+    ? {
+      order: dbRowToOrder(row),
+      guestAccessTokenHash: row.guestAccessTokenHash,
+    }
+    : null;
 }
 
 export async function getOrderByOrderNumber (

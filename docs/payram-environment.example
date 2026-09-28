@@ -1,0 +1,35 @@
+# New checkout creation is enabled only when every gate below is true.
+PAYRAM_CARD_CRYPTO_ENABLED=false
+PAYRAM_PROVIDER_QUALIFIED=false
+PAYRAM_FEE_CAP_ENFORCED=false
+PAYRAM_MAINNET_VERIFIED=false
+# Only enable on an access-protected staging deployment for admin-only live tests.
+PAYRAM_MAINNET_TEST_MODE=false
+
+# Dedicated HTTPS PayRam instance and its hosted-checkout origin.
+PAYRAM_BASE_URL=https://pay.affordablepeptides.life
+PAYRAM_CHECKOUT_ORIGIN=https://pay.affordablepeptides.life
+
+# This must be the API key for the Affordable Holdings PayRam project. The
+# operator dashboard login is not an API credential. The same project key
+# authenticates PayRam webhooks. Store only as a sensitive server secret,
+# never as NEXT_PUBLIC_*.
+PAYRAM_API_KEY=replace-in-secret-store
+
+# 800 basis points = 8%. The feature gate rejects any value above 800.
+PAYRAM_MAX_FEE_BPS=800
+PAYRAM_REQUEST_TIMEOUT_MS=10000
+
+# Public addresses supplied for the Affordable Holdings PayRam project.
+# Confirm both in PayRam before enabling payments. The master and cold-wallet
+# addresses must be merchant-controlled and distinct. These addresses are not
+# fee-collector instructions; no operator fee routing is configured here.
+# Never put private keys or seed phrases in this app.
+PAYRAM_MASTER_WALLET_ADDRESS=0x3078001d833e9bd14cd37087f497dc4fe7c86db8
+PAYRAM_TREASURY_WALLET_ADDRESS=0x1A6a6Fd81Fb266c90d1A005d25Fd837672b115A1
+
+# Native USDC on Base. Override only if PayRam and Circle publish a migration.
+PAYRAM_BASE_USDC_ADDRESS=0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913
+
+# Required by the five-minute reconciliation route.
+CRON_SECRET=replace-with-a-long-random-secret

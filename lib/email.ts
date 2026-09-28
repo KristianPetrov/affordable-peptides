@@ -89,6 +89,11 @@ function buildOrderLookupUrl (order: Order): string
   return url.toString();
 }
 
+function buildSiteUrl (pathOrUrl: string): string
+{
+  return new URL(pathOrUrl, SITE_BASE_URL).toString();
+}
+
 function buildPasswordResetUrl (token: string): string
 {
   const url = new URL("/account/reset-password", SITE_BASE_URL);
@@ -196,6 +201,7 @@ export function formatOrderEmail (
   order: Order,
   options?: {
     paymentMethod?: CheckoutPaymentMethod;
+    paymentStatusUrl?: string;
   }
 ):
   {
@@ -204,9 +210,16 @@ export function formatOrderEmail (
     text: string;
   }
 {
-  const paymentMethod = resolveCheckoutPaymentMethod(options?.paymentMethod);
+  const paymentMethod = resolveCheckoutPaymentMethod(
+    options?.paymentMethod,
+    options?.paymentMethod === "card_crypto"
+  );
   const adminActionHtml =
-    paymentMethod === "card_link"
+    paymentMethod === "card_crypto"
+      ? `<p style="margin-top: 20px; padding: 15px; background: #ecfeff; border-radius: 4px;">
+        <strong>Payment:</strong> Customer chose PayRam card-to-crypto checkout. Fulfill only after the stored PayRam attempt is verified as Base USDC and the order is marked paid.
+      </p>`
+      : paymentMethod === "card_link"
       ? `<p style="margin-top: 20px; padding: 15px; background: #e0e7ff; border-radius: 4px;">
         <strong>Payment:</strong> Customer chose debit/credit card checkout. A secure payment link was sent to their email (${order.customerEmail}). After they pay on the partner site, update this order when fulfillment is ready.
       </p>`
@@ -214,7 +227,9 @@ export function formatOrderEmail (
         <strong>Action Required:</strong> Customer will text payment confirmation. Please verify payment and update order status in the admin panel.
       </p>`;
   const adminActionText =
-    paymentMethod === "card_link"
+    paymentMethod === "card_crypto"
+      ? `Payment: Customer chose PayRam card-to-crypto checkout. Fulfill only after the stored Base USDC payment is verified and this order is marked paid.`
+      : paymentMethod === "card_link"
       ? `Payment: Customer chose debit/credit card checkout. A secure checkout link was emailed to ${order.customerEmail}. Verify payment and update order status when appropriate.`
       : `Action Required: Customer will text payment confirmation. Please verify payment and update order status in the admin panel.`;
   const orderNumber = formatOrderNumber(order.orderNumber);
@@ -385,6 +400,7 @@ function formatCustomerReceiptEmail (
   receiptUrl: string,
   options?: {
     paymentMethod?: CheckoutPaymentMethod;
+    paymentStatusUrl?: string;
   }
 ):
   {
@@ -405,7 +421,10 @@ function formatCustomerReceiptEmail (
     shippingCost === 0 ? "FREE" : `$${shippingCost.toFixed(2)}`;
 
   const amountDisplay = totalWithShipping.toFixed(2);
-  const paymentMethod = resolveCheckoutPaymentMethod(options?.paymentMethod);
+  const paymentMethod = resolveCheckoutPaymentMethod(
+    options?.paymentMethod,
+    options?.paymentMethod === "card_crypto"
+  );
   const manualPaymentMethodsList = listManualPaymentMethods();
   const manualPaymentMethodsSlash = listManualPaymentMethodsSlash();
   const cashAppTotal = CASH_APP_PAYMENTS_ENABLED
@@ -430,6 +449,9 @@ function formatCustomerReceiptEmail (
         )
       : null;
   const cardCheckoutPayUrl = buildCardCheckoutPayUrl(order.id);
+  const cardCryptoStatusUrl = options?.paymentStatusUrl
+    ? buildSiteUrl(options.paymentStatusUrl)
+    : buildOrderLookupUrl(order);
 
   const cashAppPaymentHtml = cashAppLink && cashAppDisplay
     ? `
@@ -508,8 +530,43 @@ function formatCustomerReceiptEmail (
         </div>
       `;
 
+  const cardCryptoPayBlockHtml = `
+        <div class="info-block" style="background: #ecfeff; border: 1px solid #0891b2;">
+          <h3 style="margin-top: 0; margin-bottom: 8px; color: #164e63;">Card via crypto checkout</h3>
+          <p style="margin: 0; color: #155e75; font-size: 14px;">
+            Continue to the secure payment page for <strong>$${amountDisplay}</strong>. You may need identity verification, then your card funds a self-custody wallet before you confirm the payment to us.
+          </p>
+          <p style="margin: 10px 0 0 0; color: #155e75; font-size: 13px;">
+            The provider shows its fees before authorization. Refunds, when approved, are sent manually in USDC on Base to a recipient address you verify with support.
+          </p>
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-top: 16px; border-collapse: separate; border-spacing: 0;">
+            <tr>
+              <td style="border-radius: 8px; background: #0e7490;">
+                <a href="${cardCryptoStatusUrl}" target="_blank" rel="noopener noreferrer" style="display: block; width: 100%; box-sizing: border-box; border-radius: 8px; background: #0e7490; color: #ffffff !important; text-align: center; text-decoration: none; padding: 14px 24px; font-weight: bold; line-height: 1.4;">
+                  Continue payment / view status
+                </a>
+              </td>
+            </tr>
+          </table>
+          <p style="margin: 12px 0 0 0; color: #155e75; font-size: 12px; word-break: break-all;">
+            ${cardCryptoStatusUrl}
+          </p>
+        </div>
+      `;
+
   const nextStepsHtml =
-    paymentMethod === "card_link"
+    paymentMethod === "card_crypto"
+      ? `
+        <div class="info-block">
+          <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
+          <ol style="margin: 0; padding-left: 18px;">
+            <li>Open the secure status link below and continue to PayRam.</li>
+            <li>Complete identity verification if requested, fund your wallet, then confirm payment to the merchant.</li>
+            <li>We ship only after the Base USDC deposit is confirmed.</li>
+          </ol>
+        </div>
+      `
+      : paymentMethod === "card_link"
       ? `
         <div class="info-block">
           <h3 style="margin-top: 0; margin-bottom: 8px;">Next steps</h3>
@@ -529,7 +586,11 @@ function formatCustomerReceiptEmail (
         </div>
       `;
   const paymentDetailsHtml =
-    paymentMethod === "card_link"
+    paymentMethod === "card_crypto"
+      ? `${cardCryptoPayBlockHtml}
+        <p style="margin: 20px 0 8px 0; font-size: 15px; font-weight: 600; color: #374151;">Prefer ${manualPaymentMethodsList}?</p>
+        ${manualPaymentMemoAndOptionsHtml}`
+      : paymentMethod === "card_link"
       ? `${cardPayBlockHtml}
         <p style="margin: 20px 0 8px 0; font-size: 15px; font-weight: 600; color: #374151;">Prefer ${manualPaymentMethodsList}?</p>
         ${manualPaymentMemoAndOptionsHtml}`
@@ -619,7 +680,28 @@ function formatCustomerReceiptEmail (
     ``,
     `View your order: ${receiptUrl}`,
     ``,
-    ...(paymentMethod === "card_link"
+    ...(paymentMethod === "card_crypto"
+      ? [
+          `Continue card via crypto checkout / view payment status:`,
+          cardCryptoStatusUrl,
+          ``,
+          `You may need identity verification. Your card first funds a self-custody wallet; you must then confirm the payment to us.`,
+          `Provider fees are shown before authorization. Approved refunds are sent manually as USDC on Base to a recipient address you verify with support.`,
+          ``,
+          `Or pay manually (include order number ${orderNumber} in memos where noted):`,
+          ``,
+          `- Zelle (preferred, no fee): Send $${amountDisplay} to ${ZELLE_EMAIL} (recipient: ${ZELLE_RECIPIENT_NAME})`,
+          `  → Include order number ${orderNumber} in the memo`,
+          ...(cashAppLink && cashAppDisplay
+            ? [
+                `- Cash App ($${cashAppDisplay}, includes 2.6% + $0.15): ${cashAppLink}`,
+                `  → Add order number ${orderNumber} in the memo`,
+              ]
+            : []),
+          `- Venmo ($${venmoDisplay}, includes 1.9% + $0.10): ${venmoLink}`,
+          `  → Order number is pre-filled in the note`,
+        ]
+      : paymentMethod === "card_link"
       ? [
           `Pay with debit/credit card:`,
           cardCheckoutPayUrl,
@@ -683,7 +765,13 @@ function formatCustomerReceiptEmail (
     `Total: $${totalWithShipping.toFixed(2)} • ${order.totalUnits} units`,
     ``,
     `Next Steps:`,
-    ...(paymentMethod === "card_link"
+    ...(paymentMethod === "card_crypto"
+      ? [
+          `1. Use the secure payment-status link above to continue to PayRam.`,
+          `2. Fund your wallet and confirm payment to the merchant.`,
+          `3. We'll update you after the Base USDC deposit is confirmed.`,
+        ]
+      : paymentMethod === "card_link"
       ? [
           `1. Complete payment using the debit/credit card link above, or use ${manualPaymentMethodsSlash}.`,
           `2. We'll confirm payment and update you once your order ships.`,
@@ -728,6 +816,7 @@ export async function sendOrderEmail (
   order: Order,
   options?: {
     paymentMethod?: CheckoutPaymentMethod;
+    paymentStatusUrl?: string;
   }
 ): Promise<void>
 {
@@ -1010,7 +1099,10 @@ function formatOrderShippedEmail (order: Order):
   };
 }
 
-export async function sendOrderPaidEmail (order: Order): Promise<void>
+export async function sendOrderPaidEmail (
+  order: Order,
+  options?: { idempotencyKey?: string }
+): Promise<void>
 {
   const emailContent = formatOrderPaidEmail(order);
 
@@ -1021,19 +1113,27 @@ export async function sendOrderPaidEmail (order: Order): Promise<void>
   }
 
   try {
-    const result = await resend.emails.send({
-      from: getFromAddress(),
-      to: order.customerEmail,
-      subject: emailContent.subject,
-      html: emailContent.html,
-      text: emailContent.text,
-      replyTo: REPLY_TO_EMAIL,
-      headers: {
-        "Reply-To": REPLY_TO_EMAIL,
-        "X-Auto-Response-Suppress": "All",
-        "Auto-Submitted": "auto-generated",
+    const result = await resend.emails.send(
+      {
+        from: getFromAddress(),
+        to: order.customerEmail,
+        subject: emailContent.subject,
+        html: emailContent.html,
+        text: emailContent.text,
+        replyTo: REPLY_TO_EMAIL,
+        headers: {
+          "Reply-To": REPLY_TO_EMAIL,
+          "X-Auto-Response-Suppress": "All",
+          "Auto-Submitted": "auto-generated",
+        },
       },
-    });
+      options?.idempotencyKey
+        ? { idempotencyKey: options.idempotencyKey }
+        : undefined
+    );
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
     const paidEmailId = extractResendEmailId(result);
     if (paidEmailId) {
       await setOrderCommunicationSent(order.id, "paid", paidEmailId);
@@ -1132,7 +1232,8 @@ export async function sendAdminPaymentReceivedEmail (
     paymentId?: string;
     amountPaid?: number;
     currency?: string;
-  }
+  },
+  options?: { idempotencyKey?: string }
 ): Promise<void>
 {
   const emailContent = formatAdminPaymentReceivedEmail(order, details);
@@ -1144,19 +1245,27 @@ export async function sendAdminPaymentReceivedEmail (
   }
 
   try {
-    await resend.emails.send({
-      from: getFromAddress(),
-      to: ADMIN_EMAIL,
-      subject: emailContent.subject,
-      html: emailContent.html,
-      text: emailContent.text,
-      replyTo: REPLY_TO_EMAIL,
-      headers: {
-        "Reply-To": REPLY_TO_EMAIL,
-        "X-Auto-Response-Suppress": "All",
-        "Auto-Submitted": "auto-generated",
+    const result = await resend.emails.send(
+      {
+        from: getFromAddress(),
+        to: ADMIN_EMAIL,
+        subject: emailContent.subject,
+        html: emailContent.html,
+        text: emailContent.text,
+        replyTo: REPLY_TO_EMAIL,
+        headers: {
+          "Reply-To": REPLY_TO_EMAIL,
+          "X-Auto-Response-Suppress": "All",
+          "Auto-Submitted": "auto-generated",
+        },
       },
-    });
+      options?.idempotencyKey
+        ? { idempotencyKey: options.idempotencyKey }
+        : undefined
+    );
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
     console.log("ADMIN payment email sent successfully to", ADMIN_EMAIL);
   } catch (error) {
     console.error("Failed to send ADMIN payment email via Resend:", error);

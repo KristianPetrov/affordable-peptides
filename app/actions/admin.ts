@@ -1,18 +1,26 @@
 "use server";
 
-import { getOrderById, setProductStock, updateOrderStatus, deleteOrder } from "@/lib/db";
+import { randomUUID } from "node:crypto";
+import { deleteOrder, getOrderById, setProductStock } from "@/lib/db";
 import type { Order, OrderStatus } from "@/lib/orders";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { getProductBySlug } from "@/lib/products";
-import
-{
-  applyInventoryAdjustments,
-  loadInventoryMap,
-  prepareInventoryAdjustments,
-  type StockAdjustment,
-} from "@/lib/inventory";
-import { sendOrderPaidEmail, sendOrderShippedEmail } from "@/lib/email";
+import { sendOrderShippedEmail } from "@/lib/email";
+import { processEmailOutbox } from "@/lib/email-outbox";
+import {
+  getPaymentAttemptById,
+  getLatestPaymentAttemptForOrder,
+  recordManualUsdcRefund,
+  recordPayRamTreasurySweep,
+  resolveUnreferencedAttemptAsFailed,
+  transitionOrderStatusAtomically,
+} from "@/lib/payram/repository";
+import {
+  isBaseAddress,
+  isBaseTransactionHash,
+} from "@/lib/payram/constants";
+import { getPayRamOperationalConfig } from "@/lib/payram/config";
 
 const ORDER_STATUSES: OrderStatus[] = [
   "PENDING_PAYMENT",
@@ -63,54 +71,37 @@ export async function updateOrderStatusAction (
     }
 
     const previousStatus = existingOrder.status;
-    let stockAdjustments: StockAdjustment[] = [];
-
-    if (status === "CANCELLED" && previousStatus !== "CANCELLED") {
-      const inventoryMap = await loadInventoryMap();
-      const restockResult = prepareInventoryAdjustments(
-        existingOrder.items,
-        inventoryMap,
-        "restock"
-      );
-
-      if (!restockResult.success) {
-        return { success: false, error: restockResult.error };
-      }
-
-      stockAdjustments = restockResult.adjustments;
-    } else if (previousStatus === "CANCELLED" && status !== "CANCELLED") {
-      const inventoryMap = await loadInventoryMap();
-      const reserveResult = prepareInventoryAdjustments(
-        existingOrder.items,
-        inventoryMap,
-        "reserve"
-      );
-
-      if (!reserveResult.success) {
-        return { success: false, error: reserveResult.error };
-      }
-
-      stockAdjustments = reserveResult.adjustments;
+    const transition = await transitionOrderStatusAtomically({
+      orderId,
+      status,
+      notes,
+      trackingNumber,
+      trackingCarrier,
+    });
+    const transitionErrors: Record<string, string> = {
+      ORDER_NOT_FOUND: "Order not found",
+      SHIPPED_ORDER_IMMUTABLE: "Shipped orders cannot be downgraded.",
+      PAID_ORDER_REQUIRES_REFUND_WORKFLOW:
+        "Paid orders cannot be cancelled or downgraded here. Record and complete the manual refund workflow first.",
+      PAYMENT_REQUIRED_BEFORE_SHIPPING:
+        "Payment must be confirmed before an order can be shipped.",
+    };
+    if (transition !== "UPDATED") {
+      return {
+        success: false,
+        error: transitionErrors[transition] ?? "Order transition was rejected.",
+      };
     }
 
-    const updated = await updateOrderStatus(orderId, status, notes, trackingNumber, trackingCarrier);
-
+    const updated = await getOrderById(orderId);
     if (!updated) {
       return { success: false, error: "Order not found" };
     }
 
-    if (stockAdjustments.length > 0) {
-      await applyInventoryAdjustments(stockAdjustments);
-    }
-
-    // Send email notifications for status changes
     if (status === "PAID" && previousStatus !== "PAID") {
-      try {
-        await sendOrderPaidEmail(updated);
-      } catch (emailError) {
-        console.error("Failed to send PAID email:", emailError);
-        // Don't fail the status update if email fails
-      }
+      processEmailOutbox(5).catch((emailError) => {
+        console.error("Failed to process PAID email outbox:", emailError);
+      });
     }
 
     if (status === "SHIPPED" && previousStatus !== "SHIPPED") {
@@ -134,6 +125,229 @@ export async function updateOrderStatusAction (
         error instanceof Error ? error.message : "Failed to update order",
     };
   }
+}
+
+export type PaymentRecordFormState = {
+  success: boolean;
+  message?: string;
+  error?: string;
+  updatedAt?: number;
+};
+
+export async function recordManualRefundForm (
+  _previousState: PaymentRecordFormState | undefined,
+  formData: FormData
+): Promise<PaymentRecordFormState>
+{
+  const session = await auth();
+  if (!session || session.user.role !== "ADMIN" || !session.user.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const orderId = sanitizeInput(formData.get("orderId"));
+  const attemptId = sanitizeInput(formData.get("attemptId"));
+  const recipientAddress = sanitizeInput(formData.get("recipientAddress"));
+  const amount = sanitizeInput(formData.get("amount"));
+  const transactionHash = sanitizeInput(formData.get("transactionHash"));
+  const notes = sanitizeInput(formData.get("notes"));
+  const recipientVerified = formData.get("recipientVerified") === "on";
+
+  if (
+    !orderId ||
+    !attemptId ||
+    !recipientAddress ||
+    !amount ||
+    !transactionHash
+  ) {
+    return { success: false, error: "Missing required refund fields." };
+  }
+  if (!recipientVerified) {
+    return {
+      success: false,
+      error: "Confirm that the recipient address was verified out-of-band.",
+    };
+  }
+  if (!isBaseAddress(recipientAddress)) {
+    return { success: false, error: "Enter a valid Base recipient address." };
+  }
+  if (!isBaseTransactionHash(transactionHash)) {
+    return {
+      success: false,
+      error: "Enter the valid Base transaction hash from the manual refund.",
+    };
+  }
+  if (!/^\d+(?:\.\d{1,6})?$/.test(amount) || Number(amount) <= 0) {
+    return {
+      success: false,
+      error: "Refund amount must be a positive USDC amount with up to 6 decimals.",
+    };
+  }
+
+  const attempt = await getPaymentAttemptById(attemptId);
+  if (!attempt || attempt.orderId !== orderId) {
+    return { success: false, error: "Payment attempt does not match this order." };
+  }
+
+  try {
+    const result = await recordManualUsdcRefund({
+      id: randomUUID(),
+      orderId,
+      attemptId,
+      approvedByUserId: session.user.id,
+      recipientAddress,
+      amount,
+      transactionHash,
+      notes,
+    });
+    const errors: Record<string, string> = {
+      ORDER_NOT_REFUNDABLE:
+        "Only paid, shipped, or late-paid cancelled orders can be refunded.",
+      PAYMENT_ATTEMPT_NOT_REFUNDABLE:
+        "This PayRam payment is not a verified filled attempt.",
+      REFUND_AMOUNT_EXCEEDS_PAYMENT:
+        "This refund would exceed the order's confirmed payment.",
+    };
+    if (result !== "RECORDED") {
+      return {
+        success: false,
+        error: errors[result] ?? "Refund record was rejected.",
+      };
+    }
+    revalidatePath("/admin");
+    return {
+      success: true,
+      message: "Sent USDC refund recorded.",
+      updatedAt: Date.now(),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to record refund.",
+    };
+  }
+}
+
+export async function recordTreasurySweepForm (
+  _previousState: PaymentRecordFormState | undefined,
+  formData: FormData
+): Promise<PaymentRecordFormState>
+{
+  const session = await auth();
+  if (!session || session.user.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const attemptId = sanitizeInput(formData.get("attemptId"));
+  const depositTransactionHash = sanitizeInput(
+    formData.get("depositTransactionHash")
+  );
+  const sweepTransactionHash = sanitizeInput(
+    formData.get("sweepTransactionHash")
+  );
+  const amount = sanitizeInput(formData.get("amount"));
+
+  if (
+    !attemptId ||
+    !depositTransactionHash ||
+    !sweepTransactionHash ||
+    !amount
+  ) {
+    return { success: false, error: "Missing required SmartSweep fields." };
+  }
+  if (
+    !isBaseTransactionHash(depositTransactionHash) ||
+    !isBaseTransactionHash(sweepTransactionHash)
+  ) {
+    return {
+      success: false,
+      error: "Deposit and sweep hashes must be valid Base transaction hashes.",
+    };
+  }
+  if (!/^\d+(?:\.\d{1,6})?$/.test(amount) || Number(amount) <= 0) {
+    return {
+      success: false,
+      error: "Sweep amount must be a positive USDC amount with up to 6 decimals.",
+    };
+  }
+
+  try {
+    const config = getPayRamOperationalConfig();
+    if (!isBaseAddress(config.treasuryWalletAddress)) {
+      return {
+        success: false,
+        error: "The configured treasury wallet address is invalid.",
+      };
+    }
+    const result = await recordPayRamTreasurySweep({
+      id: randomUUID(),
+      attemptId,
+      depositTransactionHash,
+      sweepTransactionHash,
+      destinationAddress: config.treasuryWalletAddress,
+      amount,
+    });
+    if (result !== "RECORDED") {
+      return {
+        success: false,
+        error:
+          result === "DEPOSIT_NOT_CONFIRMED"
+            ? "The deposit hash is not attached to a confirmed PayRam attempt."
+            : "SmartSweep record was rejected.",
+      };
+    }
+    revalidatePath("/admin");
+    return {
+      success: true,
+      message: "Confirmed SmartSweep treasury transfer recorded.",
+      updatedAt: Date.now(),
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to record SmartSweep transfer.",
+    };
+  }
+}
+
+export async function resolvePayRamTimeoutForm (
+  _previousState: PaymentRecordFormState | undefined,
+  formData: FormData
+): Promise<PaymentRecordFormState>
+{
+  const session = await auth();
+  if (!session || session.user.role !== "ADMIN") {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const attemptId = sanitizeInput(formData.get("attemptId"));
+  const providerChecked = formData.get("providerChecked") === "on";
+  if (!attemptId || !providerChecked) {
+    return {
+      success: false,
+      error:
+        "Confirm that the PayRam dashboard was checked for this exact invoice.",
+    };
+  }
+
+  const updated = await resolveUnreferencedAttemptAsFailed(attemptId);
+  if (!updated) {
+    return {
+      success: false,
+      error:
+        "Only an unreferenced reconciliation-required attempt can be cleared.",
+    };
+  }
+
+  revalidatePath("/admin");
+  return {
+    success: true,
+    message: "Attempt marked failed; the customer can safely resume the order.",
+    updatedAt: Date.now(),
+  };
 }
 
 
@@ -272,20 +486,19 @@ export async function deleteOrderAction (
       return { success: false, error: "Order not found" };
     }
 
-    // If order is not cancelled, restock inventory before deleting
     if (existingOrder.status !== "CANCELLED") {
-      const inventoryMap = await loadInventoryMap();
-      const restockResult = prepareInventoryAdjustments(
-        existingOrder.items,
-        inventoryMap,
-        "restock"
-      );
-
-      if (!restockResult.success) {
-        return { success: false, error: restockResult.error };
-      }
-
-      await applyInventoryAdjustments(restockResult.adjustments);
+      return {
+        success: false,
+        error:
+          "Cancel the unpaid order first so inventory is released atomically before deletion.",
+      };
+    }
+    if (await getLatestPaymentAttemptForOrder(orderId)) {
+      return {
+        success: false,
+        error:
+          "Orders with payment attempts are retained as immutable payment audit records.",
+      };
     }
 
     const deleted = await deleteOrder(orderId);

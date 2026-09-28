@@ -4,3 +4,10 @@ Affordable Peptides exists to make high-quality, research-grade peptides accessi
 ## TikTok Ads / Analytics
 
 See `TIKTOK_SETUP.md`.
+
+## PayRam card-to-crypto checkout
+
+The Base USDC integration is feature-gated and disabled until provider
+qualification and controlled mainnet verification are complete. Deployment,
+wallet, environment, test, launch, monitoring, refund, and rollback procedures
+are in `PAYRAM_RUNBOOK.md`.

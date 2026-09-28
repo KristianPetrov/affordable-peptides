@@ -6,6 +6,7 @@ import
     DeleteOrderButton,
     NavBar,
     OrderStatusForm,
+    PaymentOperationsPanel,
     ReferralDashboard,
   } from "@/components";
 import { formatDateTimePacific } from "@/lib/core";
@@ -32,6 +33,14 @@ import { auth, signOut } from "@/lib/auth";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
 import { getProductsWithInventory } from "@/lib/products.server";
 import { getReferralDashboardData } from "@/lib/referrals";
+import {
+  getPaymentAttemptsForOrders,
+  getRefundsForOrders,
+  getSweepsForAttempts,
+  type PaymentAttemptRecord,
+  type RefundRecord,
+  type TreasurySweepRecord,
+} from "@/lib/payram/repository";
 
 const formatCurrency = (value: number) =>
   new Intl.NumberFormat("en-US", {
@@ -284,6 +293,22 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
 
   const orders =
     activeView === "orders" ? await getAllOrders(searchQuery) : [];
+  const orderIds = orders.map((order) => order.id);
+  let paymentAttemptsByOrder = new Map<string, PaymentAttemptRecord[]>();
+  let refundsByOrder = new Map<string, RefundRecord[]>();
+  if (activeView === "orders") {
+    [paymentAttemptsByOrder, refundsByOrder] = await Promise.all([
+      getPaymentAttemptsForOrders(orderIds),
+      getRefundsForOrders(orderIds),
+    ]);
+  }
+  const allPaymentAttemptIds = Array.from(
+    paymentAttemptsByOrder.values()
+  ).flatMap((attempts) => attempts.map((attempt) => attempt.id));
+  const sweepsByAttempt: Map<string, TreasurySweepRecord[]> =
+    activeView === "orders"
+      ? await getSweepsForAttempts(allPaymentAttemptIds)
+      : new Map<string, TreasurySweepRecord[]>();
   const productsWithInventory =
     activeView === "inventory" ? await getProductsWithInventory() : [];
   const referralYearParam = params?.year;
@@ -932,6 +957,12 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                         updatedAt: order.orderShippedEmailUpdatedAt,
                       },
                     ];
+                    const paymentAttempts =
+                      paymentAttemptsByOrder.get(order.id) ?? [];
+                    const refunds = refundsByOrder.get(order.id) ?? [];
+                    const sweeps = paymentAttempts.flatMap(
+                      (attempt) => sweepsByAttempt.get(attempt.id) ?? []
+                    );
 
                     const statusColors = {
                       PENDING_PAYMENT: "bg-yellow-500/20 text-yellow-400",
@@ -1075,6 +1106,48 @@ export default async function AdminPage ({ searchParams }: AdminPageProps)
                                   </span>
                                 </div>
                               </div>
+
+                              <PaymentOperationsPanel
+                                orderId={order.id}
+                                attempts={paymentAttempts.map((attempt) => ({
+                                  id: attempt.id,
+                                  status: attempt.status,
+                                  providerStatus: attempt.providerStatus,
+                                  providerReference:
+                                    attempt.providerReference,
+                                  invoiceAmount: attempt.invoiceAmount,
+                                  settlementAsset: attempt.settlementAsset,
+                                  settlementNetwork: attempt.settlementNetwork,
+                                  filledAmount: attempt.filledAmount,
+                                  receivingAddress: attempt.receivingAddress,
+                                  depositTransactionHashes:
+                                    attempt.depositTransactionHashes,
+                                  reviewReason: attempt.reviewReason,
+                                  reconciliationError:
+                                    attempt.reconciliationError,
+                                  updatedAt: attempt.updatedAt.toISOString(),
+                                }))}
+                                refunds={refunds.map((refund) => ({
+                                  id: refund.id,
+                                  attemptId: refund.paymentAttemptId,
+                                  recipientAddress: refund.recipientAddress,
+                                  amount: refund.amount,
+                                  status: refund.status,
+                                  transactionHash: refund.transactionHash,
+                                  createdAt: refund.createdAt.toISOString(),
+                                }))}
+                                sweeps={sweeps.map((sweep) => ({
+                                  id: sweep.id,
+                                  attemptId: sweep.paymentAttemptId,
+                                  depositTransactionHash:
+                                    sweep.depositTransactionHash,
+                                  sweepTransactionHash:
+                                    sweep.sweepTransactionHash,
+                                  amount: sweep.amount,
+                                  status: sweep.status,
+                                  createdAt: sweep.createdAt.toISOString(),
+                                }))}
+                              />
 
                               <div className="border-t border-purple-900/40 pt-4 space-y-4">
                                 <div>

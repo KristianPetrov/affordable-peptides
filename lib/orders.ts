@@ -1,5 +1,6 @@
 import type { CartItem } from "@/components/store/StorefrontContext";
 import { calculateVolumePricing } from "@/lib/cart-pricing";
+import type { CheckoutPaymentMethod } from "@/lib/payment-methods";
 import { calculateShippingCost } from "@/lib/shipping";
 
 export type OrderStatus = "PENDING_PAYMENT" | "PAID" | "SHIPPED" | "CANCELLED";
@@ -9,6 +10,10 @@ export type Order = {
   orderNumber: string;
   status: OrderStatus;
   userId?: string | null;
+  paymentMethod?: CheckoutPaymentMethod;
+  inventoryReservationStatus?: "RESERVED" | "RELEASED";
+  inventoryReleasedAt?: string;
+  paidAt?: string;
   customerName: string;
   customerEmail: string;
   customerPhone: string;
