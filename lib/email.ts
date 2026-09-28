@@ -65,6 +65,21 @@ export function resolveSiteBaseUrl(environment: Record<string, string | undefine
 
 const SITE_BASE_URL = resolveSiteBaseUrl(process.env);
 
+export function shouldSuppressEmailDelivery(environment: Record<string, string | undefined>): boolean
+{
+  return environment.VERCEL_ENV === "preview";
+}
+
+function skipPreviewEmailDelivery(): boolean
+{
+  if (!shouldSuppressEmailDelivery(process.env)) {
+    return false;
+  }
+
+  console.info("Outbound email suppressed for Vercel Preview deployment.");
+  return true;
+}
+
 function extractResendEmailId (result: unknown): string | null
 {
   if (!result || typeof result !== "object") {
@@ -828,6 +843,10 @@ export async function sendOrderEmail (
   }
 ): Promise<void>
 {
+  if (skipPreviewEmailDelivery()) {
+    return;
+  }
+
   const adminEmailContent = formatOrderEmail(order, options);
   const customerEmailContent = formatCustomerReceiptEmail(
     order,
@@ -1112,6 +1131,10 @@ export async function sendOrderPaidEmail (
   options?: { idempotencyKey?: string }
 ): Promise<void>
 {
+  if (skipPreviewEmailDelivery()) {
+    return;
+  }
+
   const emailContent = formatOrderPaidEmail(order);
 
   if (!process.env.RESEND_API_KEY) {
@@ -1244,6 +1267,10 @@ export async function sendAdminPaymentReceivedEmail (
   options?: { idempotencyKey?: string }
 ): Promise<void>
 {
+  if (skipPreviewEmailDelivery()) {
+    return;
+  }
+
   const emailContent = formatAdminPaymentReceivedEmail(order, details);
 
   if (!process.env.RESEND_API_KEY) {
@@ -1283,6 +1310,10 @@ export async function sendAdminPaymentReceivedEmail (
 
 export async function sendOrderShippedEmail (order: Order): Promise<void>
 {
+  if (skipPreviewEmailDelivery()) {
+    return;
+  }
+
   const emailContent = formatOrderShippedEmail(order);
 
   if (!process.env.RESEND_API_KEY) {
@@ -1321,6 +1352,10 @@ export async function sendPasswordResetEmail (
   token: string
 ): Promise<void>
 {
+  if (skipPreviewEmailDelivery()) {
+    return;
+  }
+
   const resetUrl = buildPasswordResetUrl(token);
   const emailContent = formatPasswordResetEmail(resetUrl);
 
