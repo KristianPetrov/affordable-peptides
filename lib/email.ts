@@ -45,17 +45,25 @@ function normalizeBaseUrl (input: string): string
   return withProtocol.replace(/\/$/, "");
 }
 
-const SITE_BASE_URL = (() =>
+export function resolveSiteBaseUrl(environment: Record<string, string | undefined>): string
 {
+  // Preview receipts must return to the deployment that created the order,
+  // especially when Preview uses a database separate from Production.
+  if (environment.VERCEL_ENV === "preview" && environment.VERCEL_URL?.trim()) {
+    return normalizeBaseUrl(environment.VERCEL_URL);
+  }
+
   const candidates = [
-    process.env.NEXT_PUBLIC_APP_URL,
-    process.env.APP_URL,
-    process.env.APP_BASE_URL,
-    process.env.VERCEL_URL,
+    environment.NEXT_PUBLIC_APP_URL,
+    environment.APP_URL,
+    environment.APP_BASE_URL,
+    environment.VERCEL_URL,
   ].filter(val=>!!val?.includes("affordablepeptides.life")) as string[];
 
   return normalizeBaseUrl(candidates[0] ?? FALLBACK_SITE_URL);
-})();
+}
+
+const SITE_BASE_URL = resolveSiteBaseUrl(process.env);
 
 function extractResendEmailId (result: unknown): string | null
 {
