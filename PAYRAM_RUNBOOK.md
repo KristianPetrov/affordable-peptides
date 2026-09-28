@@ -202,10 +202,9 @@ References:
 3. Set a long random `CRON_SECRET`; the five-minute Vercel cron calls
    `/api/cron/payram-reconcile`.
    Vercel runs cron jobs only on production deployments, so this Preview branch
-   will not exercise scheduled reconciliation. Vercel Hobby permits only one
-   cron run per day; this five-minute schedule requires Pro/Enterprise or an
-   external scheduler before production rollout. The current team plan still
-   needs to be confirmed.
+   will not exercise scheduled reconciliation. The owner confirmed the Vercel
+   team is on Pro (2026-09-28), which supports this five-minute schedule after
+   production deployment. See [Vercel Cron plan limits](https://vercel.com/docs/cron-jobs/usage-and-pricing).
 4. Keep every launch flag `false` on the preview deployment by default.
    `PAYRAM_MAINNET_TEST_MODE=true` is only for an access-protected deployment
    with an isolated staging database and a separate PayRam project/key; it
