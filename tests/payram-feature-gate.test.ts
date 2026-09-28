@@ -45,6 +45,31 @@ test("fails closed when qualification, fee enforcement, or mainnet verification 
   }
 });
 
+test("does not let mainnet test mode enable checkout in Production", () => {
+  const preview = evaluatePayRamFeatureGate(
+    qualifiedEnvironment({
+      PAYRAM_MAINNET_VERIFIED: "false",
+      PAYRAM_MAINNET_TEST_MODE: "true",
+      VERCEL_ENV: "preview",
+    })
+  );
+  assert.equal(preview.enabled, true);
+
+  const production = evaluatePayRamFeatureGate(
+    qualifiedEnvironment({
+      PAYRAM_MAINNET_VERIFIED: "false",
+      PAYRAM_MAINNET_TEST_MODE: "true",
+      VERCEL_ENV: "production",
+    })
+  );
+  assert.equal(production.enabled, false);
+  assert.ok(
+    production.missingRequirements.includes(
+      "PAYRAM_MAINNET_TEST_MODE_PREVIEW_ONLY"
+    )
+  );
+});
+
 test("rejects an over-cap fee policy, HTTP, and wallet reuse", () => {
   const overCap = evaluatePayRamFeatureGate(
     qualifiedEnvironment({ PAYRAM_MAX_FEE_BPS: "801" })

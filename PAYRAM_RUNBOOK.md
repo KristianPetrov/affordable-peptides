@@ -205,12 +205,13 @@ References:
    will not exercise scheduled reconciliation. The owner confirmed the Vercel
    team is on Pro (2026-09-28), which supports this five-minute schedule after
    production deployment. See [Vercel Cron plan limits](https://vercel.com/docs/cron-jobs/usage-and-pricing).
-4. Keep every launch flag `false` on the preview deployment by default.
-   `PAYRAM_MAINNET_TEST_MODE=true` is only for an access-protected deployment
-   with an isolated staging database and a separate PayRam project/key; it
-   allows only signed-in administrators of the storefront to create/test
-   card-crypto orders. The PayRam operator role does not grant storefront admin
-   access.
+4. Keep every launch flag `false` on Preview by default. PayRam has no
+   simulated card settlement: `PAYRAM_MAINNET_TEST_MODE=true` allows real
+   mainnet card and crypto transactions. The app now permits that flag only on
+   Vercel Preview, with an isolated staging database and a separate PayRam
+   project/key; it restricts checkout and payment-status access to signed-in
+   storefront administrators. The PayRam operator role does not grant
+   storefront admin access. A user must authorize any real card test.
 5. Confirm the PayRam checkout URL returned by the API uses exactly
    `PAYRAM_CHECKOUT_ORIGIN`.
 6. Confirm the PayRam webhook's `API-Key` header is checked before its payload
@@ -240,13 +241,16 @@ References:
 - Test guest token denial, signed-in ownership, manual checkout, mobile status
   polling, manual refund records, and SmartSweep records.
 
-PayRam card/stablecoin purchases cannot complete on testnet. Testnet validates
-the integration behavior, not the real card purchase.
+PayRam testnet can validate Sepolia stablecoin deposits, but card purchases
+require mainnet. This integration requires native USDC on Base, so its full
+settlement path is not compatible with PayRam's documented Sepolia testnet
+flow. Testnet does not validate the real card purchase.
 
 ### Controlled mainnet
 
-1. Use an access-protected staging deployment with an isolated staging
-   database and a separate PayRam project/API key. Set
+1. After card-onramp approval and owner authorization, use an access-protected
+   Preview deployment with an isolated staging database and a separate PayRam
+   project/API key. These are real mainnet transactions. Set
    `PAYRAM_MAINNET_TEST_MODE=true`, `PAYRAM_CARD_CRYPTO_ENABLED=true`, and the
    provider qualification and fee-cap gates to `true`; leave
    `PAYRAM_MAINNET_VERIFIED=false`. In this mode, the checkout option and

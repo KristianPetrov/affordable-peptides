@@ -63,6 +63,11 @@ export function evaluatePayRamFeatureGate(
     missingRequirements.push("PAYRAM_FEE_CAP_ENFORCED");
   }
   const mainnetTestMode = isTrue(environment.PAYRAM_MAINNET_TEST_MODE);
+  // This is a controlled real-mainnet transaction mode, not a payment
+  // simulator. Keep it confined to Vercel Preview even if misconfigured.
+  if (mainnetTestMode && environment.VERCEL_ENV !== "preview") {
+    missingRequirements.push("PAYRAM_MAINNET_TEST_MODE_PREVIEW_ONLY");
+  }
   if (
     !isTrue(environment.PAYRAM_MAINNET_VERIFIED) &&
     !mainnetTestMode

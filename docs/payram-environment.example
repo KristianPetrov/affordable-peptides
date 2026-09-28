@@ -3,7 +3,7 @@ PAYRAM_CARD_CRYPTO_ENABLED=false
 PAYRAM_PROVIDER_QUALIFIED=false
 PAYRAM_FEE_CAP_ENFORCED=false
 PAYRAM_MAINNET_VERIFIED=false
-# Only enable on an access-protected staging deployment for admin-only live tests.
+# This performs real mainnet payments; it is not a sandbox. Preview only.
 PAYRAM_MAINNET_TEST_MODE=false
 
 # Dedicated HTTPS PayRam instance and its hosted-checkout origin.
