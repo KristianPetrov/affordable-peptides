@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import type { CSSProperties, SVGProps } from "react";
+import type { CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -23,17 +23,6 @@ import {
   WEBSITE_RESEARCH_DISCLAIMER,
 } from "@/lib/core";
 import { absoluteUrl, siteMetadata } from "@/lib/seo";
-
-type IconProps = SVGProps<SVGSVGElement>;
-
-function TikTokIcon (props: IconProps)
-{
-  return (
-    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M21 7.5c-1.9-.1-3.7-.9-5.1-2.2v8.9c0 3.6-2.9 6.5-6.5 6.5S3 17.8 3 14.2c0-3.1 2.2-5.8 5.2-6.4v3.4c-1.1.5-1.8 1.6-1.8 3 0 1.8 1.4 3.2 3.2 3.2s3.2-1.4 3.2-3.2V2h3.6c.4 1.9 1.9 3.4 3.8 3.8V7.5z" />
-    </svg>
-  );
-}
 
 const homeUrl = absoluteUrl("/");
 const socialPreviewUrl = absoluteUrl(siteMetadata.socialImagePath);
@@ -242,7 +231,7 @@ export default function Home ()
                 questions related to laboratory, academic, or institutional
                 research orders.
               </p>
-              <div className="mx-auto grid min-w-0 w-full max-w-3xl gap-4 md:grid-cols-2">
+              <div className="mx-auto grid min-w-0 w-full max-w-3xl gap-4">
                 <div className="flex min-w-0 max-w-full flex-col items-center gap-3 rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-center">
                   <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
                     Text
@@ -257,34 +246,6 @@ export default function Home ()
                     Available daily 6am-9pm PST for catalog and documentation
                     questions.
                   </p>
-                </div>
-                <div className="min-w-0 max-w-full rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-left">
-                  <span className="text-sm uppercase tracking-[0.35em] text-purple-200">
-                    Social
-                  </span>
-                  <p className="mt-2 text-sm text-zinc-400">
-                    Follow the lab for research updates, documentation notes, and
-                    education.
-                  </p>
-                  <div className="mt-4 min-w-0">
-                    <Link
-                      href={siteMetadata.socialProfiles.tiktok}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      aria-label="TikTok (@affordablepeps)"
-                      className="flex min-w-0 w-full items-center gap-4 rounded-xl border border-purple-800/50 bg-purple-500/5 px-4 py-3 text-sm text-white transition hover:border-purple-400 hover:bg-purple-500/10"
-                    >
-                      <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-purple-500/10 text-purple-200">
-                        <TikTokIcon className="h-5 w-5" />
-                      </span>
-                      <span className="min-w-0 text-left">
-                        TikTok
-                        <span className="block wrap-break-word text-xs font-semibold uppercase tracking-[0.35em] text-purple-200">
-                          @affordablepeps
-                        </span>
-                      </span>
-                    </Link>
-                  </div>
                 </div>
               </div>
               <div className="mx-auto mt-4 w-full max-w-3xl rounded-2xl border border-purple-900/60 bg-black/60 p-6 text-left">
