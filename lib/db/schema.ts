@@ -172,73 +172,273 @@ export const referralCodes = pgTable(
   })
 );
 
-export const orders = pgTable("orders", {
-  id: text("id").primaryKey(),
-  orderNumber: varchar("order_number", { length: 50 }).notNull().unique(),
-  status: varchar("status", { length: 20 }).notNull().$type<OrderStatus>(),
-  userId: text("user_id").references(() => users.id, {
-    onDelete: "set null",
-  }),
-  customerName: text("customer_name").notNull(),
-  customerEmail: text("customer_email").notNull(),
-  customerPhone: text("customer_phone").notNull(),
-  shippingAddress: jsonb("shipping_address").notNull().$type<{
-    street: string;
-    city: string;
-    state: string;
-    zipCode: string;
-    country: string;
-  }>(),
-  items: jsonb("items").notNull().$type<CartItem[]>(),
-  subtotal: numeric("subtotal", { precision: 10, scale: 2 }).notNull(),
-  shippingCost: numeric("shipping_cost", { precision: 10, scale: 2 }),
-  totalAmount: numeric("total_amount", { precision: 10, scale: 2 }),
-  totalUnits: integer("total_units").notNull(),
-  notes: text("notes"),
-  trackingNumber: text("tracking_number"),
-  trackingCarrier: varchar("tracking_carrier", { length: 10 }),
-  referralPartnerId: text("referral_partner_id").references(
-    () => referralPartners.id,
-    {
+export const orders = pgTable(
+  "orders",
+  {
+    id: text("id").primaryKey(),
+    orderNumber: varchar("order_number", { length: 50 }).notNull().unique(),
+    status: varchar("status", { length: 20 }).notNull().$type<OrderStatus>(),
+    userId: text("user_id").references(() => users.id, {
       onDelete: "set null",
-    }
-  ),
-  referralPartnerName: text("referral_partner_name"),
-  referralCodeId: text("referral_code_id").references(() => referralCodes.id, {
-    onDelete: "set null",
-  }),
-  referralCodeValue: text("referral_code_value"),
-  referralAttributionId: text("referral_attribution_id"),
-  referralDiscount: numeric("referral_discount", {
-    precision: 10,
-    scale: 2,
+    }),
+    paymentMethod: varchar("payment_method", { length: 32 })
+      .notNull()
+      .default("manual"),
+    idempotencyKey: text("idempotency_key"),
+    guestAccessTokenHash: text("guest_access_token_hash"),
+    inventoryReservationStatus: varchar("inventory_reservation_status", {
+      length: 20,
+    })
+      .notNull()
+      .default("RESERVED"),
+    inventoryReleasedAt: timestamp("inventory_released_at"),
+    paidAt: timestamp("paid_at"),
+    customerName: text("customer_name").notNull(),
+    customerEmail: text("customer_email").notNull(),
+    customerPhone: text("customer_phone").notNull(),
+    shippingAddress: jsonb("shipping_address").notNull().$type<{
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    }>(),
+    items: jsonb("items").notNull().$type<CartItem[]>(),
+    subtotal: numeric("subtotal", { precision: 10, scale: 2 }).notNull(),
+    shippingCost: numeric("shipping_cost", { precision: 10, scale: 2 }),
+    totalAmount: numeric("total_amount", { precision: 10, scale: 2 }),
+    totalUnits: integer("total_units").notNull(),
+    notes: text("notes"),
+    trackingNumber: text("tracking_number"),
+    trackingCarrier: varchar("tracking_carrier", { length: 10 }),
+    referralPartnerId: text("referral_partner_id").references(
+      () => referralPartners.id,
+      {
+        onDelete: "set null",
+      }
+    ),
+    referralPartnerName: text("referral_partner_name"),
+    referralCodeId: text("referral_code_id").references(() => referralCodes.id, {
+      onDelete: "set null",
+    }),
+    referralCodeValue: text("referral_code_value"),
+    referralAttributionId: text("referral_attribution_id"),
+    referralDiscount: numeric("referral_discount", {
+      precision: 10,
+      scale: 2,
+    })
+      .notNull()
+      .default("0"),
+    referralCommissionPercent: numeric("referral_commission_percent", {
+      precision: 5,
+      scale: 2,
+    })
+      .notNull()
+      .default("0"),
+    referralCommissionAmount: numeric("referral_commission_amount", {
+      precision: 10,
+      scale: 2,
+    })
+      .notNull()
+      .default("0"),
+    orderReceiptEmailId: text("order_receipt_email_id"),
+    orderReceiptEmailStatus: text("order_receipt_email_status"),
+    orderReceiptEmailUpdatedAt: timestamp("order_receipt_email_updated_at"),
+    orderPaidEmailId: text("order_paid_email_id"),
+    orderPaidEmailStatus: text("order_paid_email_status"),
+    orderPaidEmailUpdatedAt: timestamp("order_paid_email_updated_at"),
+    orderShippedEmailId: text("order_shipped_email_id"),
+    orderShippedEmailStatus: text("order_shipped_email_status"),
+    orderShippedEmailUpdatedAt: timestamp("order_shipped_email_updated_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    idempotencyKeyUnique: uniqueIndex("orders_idempotency_key_unique").on(
+      table.idempotencyKey
+    ),
+    guestAccessTokenHashIdx: index("orders_guest_access_token_hash_idx").on(
+      table.guestAccessTokenHash
+    ),
   })
-    .notNull()
-    .default("0"),
-  referralCommissionPercent: numeric("referral_commission_percent", {
-    precision: 5,
-    scale: 2,
+);
+
+export const paymentAttempts = pgTable(
+  "payment_attempts",
+  {
+    id: text("id").primaryKey(),
+    orderId: text("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "restrict" }),
+    provider: varchar("provider", { length: 32 }).notNull(),
+    providerReference: text("provider_reference"),
+    invoiceId: text("invoice_id").notNull(),
+    invoiceAmount: numeric("invoice_amount", {
+      precision: 12,
+      scale: 2,
+    }).notNull(),
+    settlementAsset: varchar("settlement_asset", { length: 16 }).notNull(),
+    settlementNetwork: varchar("settlement_network", { length: 32 }).notNull(),
+    tokenAddress: text("token_address"),
+    status: varchar("status", { length: 40 }).notNull(),
+    providerStatus: varchar("provider_status", { length: 40 }),
+    paymentUrl: text("payment_url"),
+    receivingAddress: text("receiving_address"),
+    filledAmount: numeric("filled_amount", { precision: 36, scale: 18 }),
+    filledAmountUsd: numeric("filled_amount_usd", {
+      precision: 12,
+      scale: 2,
+    }),
+    depositTransactionHashes: jsonb("deposit_transaction_hashes")
+      .notNull()
+      .$type<string[]>()
+      .default([]),
+    confirmationCurrent: integer("confirmation_current").notNull().default(0),
+    confirmationRequired: integer("confirmation_required").notNull().default(0),
+    reviewReason: text("review_reason"),
+    reconciliationError: text("reconciliation_error"),
+    expiresAt: timestamp("expires_at"),
+    lastProviderEventAt: timestamp("last_provider_event_at"),
+    lastReconciledAt: timestamp("last_reconciled_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    providerReferenceUnique: uniqueIndex(
+      "payment_attempts_provider_reference_unique"
+    ).on(table.provider, table.providerReference),
+    invoiceIdUnique: uniqueIndex("payment_attempts_invoice_id_unique").on(
+      table.invoiceId
+    ),
+    orderIdx: index("payment_attempts_order_idx").on(table.orderId),
+    statusUpdatedIdx: index("payment_attempts_status_updated_idx").on(
+      table.status,
+      table.updatedAt
+    ),
   })
-    .notNull()
-    .default("0"),
-  referralCommissionAmount: numeric("referral_commission_amount", {
-    precision: 10,
-    scale: 2,
+);
+
+export const paymentEvents = pgTable(
+  "payment_events",
+  {
+    id: text("id").primaryKey(),
+    provider: varchar("provider", { length: 32 }).notNull(),
+    paymentAttemptId: text("payment_attempt_id").references(
+      () => paymentAttempts.id,
+      { onDelete: "set null" }
+    ),
+    providerReference: text("provider_reference"),
+    invoiceId: text("invoice_id"),
+    providerStatus: varchar("provider_status", { length: 40 }),
+    rawBodyHash: text("raw_body_hash").notNull(),
+    payload: jsonb("payload").notNull().$type<Record<string, unknown>>(),
+    processingStatus: varchar("processing_status", { length: 24 })
+      .notNull()
+      .default("RECEIVED"),
+    processingResult: text("processing_result"),
+    processingError: text("processing_error"),
+    providerTimestamp: timestamp("provider_timestamp"),
+    receivedAt: timestamp("received_at").notNull().defaultNow(),
+    processedAt: timestamp("processed_at"),
+  },
+  (table) => ({
+    rawBodyHashUnique: uniqueIndex("payment_events_raw_body_hash_unique").on(
+      table.provider,
+      table.rawBodyHash
+    ),
+    attemptIdx: index("payment_events_attempt_idx").on(table.paymentAttemptId),
   })
-    .notNull()
-    .default("0"),
-  orderReceiptEmailId: text("order_receipt_email_id"),
-  orderReceiptEmailStatus: text("order_receipt_email_status"),
-  orderReceiptEmailUpdatedAt: timestamp("order_receipt_email_updated_at"),
-  orderPaidEmailId: text("order_paid_email_id"),
-  orderPaidEmailStatus: text("order_paid_email_status"),
-  orderPaidEmailUpdatedAt: timestamp("order_paid_email_updated_at"),
-  orderShippedEmailId: text("order_shipped_email_id"),
-  orderShippedEmailStatus: text("order_shipped_email_status"),
-  orderShippedEmailUpdatedAt: timestamp("order_shipped_email_updated_at"),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-  updatedAt: timestamp("updated_at").notNull().defaultNow(),
-});
+);
+
+export const paymentRefunds = pgTable(
+  "payment_refunds",
+  {
+    id: text("id").primaryKey(),
+    orderId: text("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "restrict" }),
+    paymentAttemptId: text("payment_attempt_id").references(
+      () => paymentAttempts.id,
+      { onDelete: "restrict" }
+    ),
+    approvedByUserId: text("approved_by_user_id").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    recipientAddress: text("recipient_address").notNull(),
+    recipientVerifiedAt: timestamp("recipient_verified_at").notNull(),
+    amount: numeric("amount", { precision: 36, scale: 18 }).notNull(),
+    asset: varchar("asset", { length: 16 }).notNull(),
+    network: varchar("network", { length: 32 }).notNull(),
+    status: varchar("status", { length: 24 }).notNull(),
+    transactionHash: text("transaction_hash"),
+    notes: text("notes"),
+    sentAt: timestamp("sent_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    transactionHashUnique: uniqueIndex(
+      "payment_refunds_transaction_hash_unique"
+    ).on(table.transactionHash),
+    orderIdx: index("payment_refunds_order_idx").on(table.orderId),
+  })
+);
+
+export const treasurySweeps = pgTable(
+  "treasury_sweeps",
+  {
+    id: text("id").primaryKey(),
+    paymentAttemptId: text("payment_attempt_id")
+      .notNull()
+      .references(() => paymentAttempts.id, { onDelete: "restrict" }),
+    depositTransactionHash: text("deposit_transaction_hash").notNull(),
+    sweepTransactionHash: text("sweep_transaction_hash").notNull(),
+    destinationAddress: text("destination_address").notNull(),
+    amount: numeric("amount", { precision: 36, scale: 18 }).notNull(),
+    asset: varchar("asset", { length: 16 }).notNull(),
+    network: varchar("network", { length: 32 }).notNull(),
+    status: varchar("status", { length: 24 }).notNull(),
+    confirmedAt: timestamp("confirmed_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    sweepTransactionHashUnique: uniqueIndex(
+      "treasury_sweeps_transaction_hash_unique"
+    ).on(table.sweepTransactionHash),
+    attemptIdx: index("treasury_sweeps_attempt_idx").on(table.paymentAttemptId),
+  })
+);
+
+export const emailOutbox = pgTable(
+  "email_outbox",
+  {
+    id: text("id").primaryKey(),
+    orderId: text("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "restrict" }),
+    eventType: varchar("event_type", { length: 40 }).notNull(),
+    payload: jsonb("payload").notNull().$type<Record<string, unknown>>(),
+    status: varchar("status", { length: 24 }).notNull().default("PENDING"),
+    attempts: integer("attempts").notNull().default(0),
+    nextAttemptAt: timestamp("next_attempt_at").notNull().defaultNow(),
+    lockedUntil: timestamp("locked_until"),
+    lastError: text("last_error"),
+    sentAt: timestamp("sent_at"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => ({
+    orderEventUnique: uniqueIndex("email_outbox_order_event_unique").on(
+      table.orderId,
+      table.eventType
+    ),
+    pendingIdx: index("email_outbox_pending_idx").on(
+      table.status,
+      table.nextAttemptAt
+    ),
+  })
+);
 
 export const referralAttributions = pgTable(
   "referral_attributions",

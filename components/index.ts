@@ -69,5 +69,6 @@ export { ResetPasswordForm } from "./account/ResetPasswordForm";
 export { CopyButton } from "./admin/CopyButton";
 export { DeleteOrderButton } from "./admin/DeleteOrderButton";
 export { OrderStatusForm } from "./admin/OrderStatusForm";
+export { PaymentOperationsPanel } from "./admin/PaymentOperationsPanel";
 export { default as ReferralDashboard } from "./admin/ReferralDashboard";
 export { TrackingNumberInput } from "./admin/TrackingNumberInput";

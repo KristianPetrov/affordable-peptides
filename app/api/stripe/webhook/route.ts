@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 
-import { getOrderById, updateOrderStatus } from "@/lib/db";
-import { sendAdminPaymentReceivedEmail, sendOrderPaidEmail } from "@/lib/email";
-import { calculateOrderTotals } from "@/lib/orders";
+import { processEmailOutbox } from "@/lib/email-outbox";
+import { confirmLegacyOrderPayment } from "@/lib/payram/repository";
 import { getStripe } from "@/lib/stripe";
 
 function asUpperCurrency (input: unknown): string
 {
   return typeof input === "string" && input.trim()
     ? input.trim().toUpperCase()
-    : "USD";
+    : "";
 }
 
 async function handleCheckoutSessionCompleted (session: Stripe.Checkout.Session)
@@ -20,57 +19,36 @@ async function handleCheckoutSessionCompleted (session: Stripe.Checkout.Session)
   if (!orderId) {
     return { ok: false as const, error: "Missing metadata.orderId" };
   }
-
-  const order = await getOrderById(orderId);
-  if (!order) {
-    return { ok: false as const, error: "Order not found" };
+  if (typeof session.amount_total !== "number") {
+    return { ok: false as const, error: "Missing authoritative amount_total" };
   }
-
-  if (order.status === "PAID") {
-    return { ok: true as const, status: "already_paid" as const, orderId };
-  }
-
-  const totals = calculateOrderTotals(order);
-  const amountPaid =
-    typeof session.amount_total === "number"
-      ? session.amount_total / 100
-      : totals.total;
+  const amountPaid = session.amount_total / 100;
   const currency = asUpperCurrency(session.currency);
-
-  const notesLine = [
-    `Card payment confirmed (Stripe).`,
-    `Session: ${session.id}`,
-    session.payment_intent ? `PaymentIntent: ${String(session.payment_intent)}` : null,
-    `Amount: $${amountPaid.toFixed(2)} ${currency}`,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const mergedNotes = [order.notes?.trim(), notesLine].filter(Boolean).join("\n");
-
-  const updated = await updateOrderStatus(
-    order.id,
-    "PAID",
-    mergedNotes,
-    order.trackingNumber,
-    order.trackingCarrier
-  );
-
-  if (!updated) {
-    return { ok: false as const, error: "Failed to update order" };
-  }
-
-  await Promise.all([
-    sendAdminPaymentReceivedEmail(updated, {
+  const paymentId = session.payment_intent
+    ? String(session.payment_intent)
+    : session.id;
+  const transition = await confirmLegacyOrderPayment({
+    orderId,
+    amount: amountPaid,
+    currency,
+    payload: {
       provider: "Debit/credit card",
-      paymentId: session.payment_intent ? String(session.payment_intent) : session.id,
+      paymentId,
       amountPaid,
       currency,
-    }),
-    sendOrderPaidEmail(updated),
-  ]);
+    },
+  });
 
-  return { ok: true as const, status: "paid" as const, orderId };
+  if (transition === "PAID") {
+    processEmailOutbox(5).catch((error) => {
+      console.error("Stripe payment email outbox failed:", error);
+    });
+  }
+  return {
+    ok: transition === "PAID" || transition.startsWith("ALREADY_"),
+    status: transition.toLowerCase(),
+    orderId,
+  };
 }
 
 async function handlePaymentIntentSucceeded (intent: Stripe.PaymentIntent)
@@ -80,58 +58,36 @@ async function handlePaymentIntentSucceeded (intent: Stripe.PaymentIntent)
   if (!orderId) {
     return { ok: false as const, error: "Missing metadata.orderId" };
   }
-
-  const order = await getOrderById(orderId);
-  if (!order) {
-    return { ok: false as const, error: "Order not found" };
+  if (typeof intent.amount_received !== "number" || intent.amount_received <= 0) {
+    return {
+      ok: false as const,
+      error: "Missing authoritative amount_received",
+    };
   }
-
-  if (order.status === "PAID") {
-    return { ok: true as const, status: "already_paid" as const, orderId };
-  }
-
-  const totals = calculateOrderTotals(order);
-  const amountPaid =
-    typeof intent.amount_received === "number"
-      ? intent.amount_received / 100
-      : typeof intent.amount === "number"
-        ? intent.amount / 100
-        : totals.total;
+  const amountPaid = intent.amount_received / 100;
   const currency = asUpperCurrency(intent.currency);
-
-  const notesLine = [
-    `Card payment confirmed (Stripe).`,
-    `PaymentIntent: ${intent.id}`,
-    `Amount: $${amountPaid.toFixed(2)} ${currency}`,
-  ]
-    .filter(Boolean)
-    .join(" ");
-
-  const mergedNotes = [order.notes?.trim(), notesLine].filter(Boolean).join("\n");
-
-  const updated = await updateOrderStatus(
-    order.id,
-    "PAID",
-    mergedNotes,
-    order.trackingNumber,
-    order.trackingCarrier
-  );
-
-  if (!updated) {
-    return { ok: false as const, error: "Failed to update order" };
-  }
-
-  await Promise.all([
-    sendAdminPaymentReceivedEmail(updated, {
+  const transition = await confirmLegacyOrderPayment({
+    orderId,
+    amount: amountPaid,
+    currency,
+    payload: {
       provider: "Debit/credit card",
       paymentId: intent.id,
       amountPaid,
       currency,
-    }),
-    sendOrderPaidEmail(updated),
-  ]);
+    },
+  });
 
-  return { ok: true as const, status: "paid" as const, orderId };
+  if (transition === "PAID") {
+    processEmailOutbox(5).catch((error) => {
+      console.error("Stripe payment email outbox failed:", error);
+    });
+  }
+  return {
+    ok: transition === "PAID" || transition.startsWith("ALREADY_"),
+    status: transition.toLowerCase(),
+    orderId,
+  };
 }
 
 export async function POST (request: NextRequest)

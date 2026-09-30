@@ -16,6 +16,13 @@ export async function POST (request: NextRequest)
             return NextResponse.json({
                 orderId: result.orderId,
                 orderNumber: result.orderNumber,
+                totalAmount: result.totalAmount,
+                paymentMethod: result.paymentMethod,
+                paymentUrl: result.paymentUrl,
+                paymentStatusUrl: result.paymentStatusUrl,
+                guestAccessToken: result.guestAccessToken,
+                paymentRequiresReconciliation:
+                    result.paymentRequiresReconciliation,
             });
         }
 

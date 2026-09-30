@@ -8,6 +8,7 @@
     "start": "next start",
     "audit:seo": "npx vercel-seo-audit https://www.affordablepeptides.life",
     "lint": "eslint",
+    "test": "node --import tsx --test tests/*.test.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",

@@ -1,4 +1,4 @@
-export type CheckoutPaymentMethod = "manual" | "card_link";
+export type CheckoutPaymentMethod = "manual" | "card_link" | "card_crypto";
 
 /**
  * Stripe / partner debit-credit card checkout.
@@ -49,9 +49,14 @@ export function listManualPaymentMethodsSlash (): string
 }
 
 export function resolveCheckoutPaymentMethod (
-  paymentMethod?: CheckoutPaymentMethod | string | null
+  paymentMethod?: CheckoutPaymentMethod | string | null,
+  cardCryptoEnabled = false
 ): CheckoutPaymentMethod
 {
+  if (cardCryptoEnabled && paymentMethod === "card_crypto") {
+    return "card_crypto";
+  }
+
   if (CARD_LINK_PAYMENTS_ENABLED && paymentMethod === "card_link") {
     return "card_link";
   }

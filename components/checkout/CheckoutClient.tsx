@@ -27,6 +27,42 @@ const currencyFormatter = new Intl.NumberFormat("en-US", {
 const formatCurrency = (value: number) =>
   currencyFormatter.format(value);
 
+const CHECKOUT_IDEMPOTENCY_KEY = "checkout:idempotency-key";
+const CHECKOUT_GUEST_TOKEN_KEY = "checkout:guest-access-token";
+
+function randomBase64UrlToken(): string {
+  const bytes = new Uint8Array(32);
+  window.crypto.getRandomValues(bytes);
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return window
+    .btoa(binary)
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/g, "");
+}
+
+function getCheckoutSecurityCredentials(): {
+  idempotencyKey: string;
+  guestAccessToken: string;
+} {
+  const storedIdempotencyKey = window.sessionStorage.getItem(
+    CHECKOUT_IDEMPOTENCY_KEY
+  );
+  const storedGuestToken = window.sessionStorage.getItem(
+    CHECKOUT_GUEST_TOKEN_KEY
+  );
+  const idempotencyKey =
+    storedIdempotencyKey ?? window.crypto.randomUUID();
+  const guestAccessToken = storedGuestToken ?? randomBase64UrlToken();
+
+  window.sessionStorage.setItem(CHECKOUT_IDEMPOTENCY_KEY, idempotencyKey);
+  window.sessionStorage.setItem(CHECKOUT_GUEST_TOKEN_KEY, guestAccessToken);
+  return { idempotencyKey, guestAccessToken };
+}
+
 type SessionUser = {
   id: string;
   email: string;
@@ -37,11 +73,13 @@ type SessionUser = {
 type CheckoutClientProps = {
   profile: CustomerProfile | null;
   sessionUser: SessionUser;
+  cardCryptoEnabled: boolean;
 };
 
 export function CheckoutClient ({
   profile,
   sessionUser,
+  cardCryptoEnabled,
 }: CheckoutClientProps)
 {
   const router = useRouter();
@@ -53,8 +91,16 @@ export function CheckoutClient ({
   const [saveProfile, setSaveProfile] = useState(Boolean(sessionUser));
   const [paymentMethod, setPaymentMethod] =
     useState<CheckoutPaymentMethod>(
-      CARD_LINK_PAYMENTS_ENABLED ? "card_link" : "manual"
+      cardCryptoEnabled
+        ? "card_crypto"
+        : CARD_LINK_PAYMENTS_ENABLED
+          ? "card_link"
+          : "manual"
     );
+  const [acceptedCardCryptoDisclosure, setAcceptedCardCryptoDisclosure] =
+    useState(false);
+  const [lastPaymentStatusUrl, setLastPaymentStatusUrl] =
+    useState<string | null>(null);
   const [referralInput, setReferralInput] = useState("");
   const [referralResult, setReferralResult] =
     useState<AppliedReferralResult | null>(null);
@@ -115,7 +161,19 @@ export function CheckoutClient ({
     }
   }, [subtotal, appliedReferral]);
 
-  const checkoutPaymentMethod = resolveCheckoutPaymentMethod(paymentMethod);
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setLastPaymentStatusUrl(
+        window.sessionStorage.getItem("payram:last-payment-status-url")
+      );
+    }, 0);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  const checkoutPaymentMethod = resolveCheckoutPaymentMethod(
+    paymentMethod,
+    cardCryptoEnabled
+  );
 
   if (cartItems.length === 0) {
     return (
@@ -124,12 +182,22 @@ export function CheckoutClient ({
           <h1 className="text-2xl font-semibold text-white mb-4">
             Your cart is empty
           </h1>
-          <Link
-            href="/store"
-            className="inline-flex items-center justify-center rounded-full bg-purple-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-purple-500"
-          >
-            Continue Shopping
-          </Link>
+          <div className="flex flex-col items-center gap-3">
+            {lastPaymentStatusUrl ? (
+              <Link
+                href={lastPaymentStatusUrl}
+                className="inline-flex items-center justify-center rounded-full bg-cyan-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-cyan-500"
+              >
+                Resume Last Card Checkout
+              </Link>
+            ) : null}
+            <Link
+              href="/store"
+              className="inline-flex items-center justify-center rounded-full bg-purple-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-purple-500"
+            >
+              Continue Shopping
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -196,8 +264,19 @@ export function CheckoutClient ({
     e.preventDefault();
     setError(null);
 
+    if (
+      checkoutPaymentMethod === "card_crypto" &&
+      !acceptedCardCryptoDisclosure
+    ) {
+      setError(
+        "Confirm that you understand the ID check, partner fee, and refund terms."
+      );
+      return;
+    }
+
     startTransition(async () =>
     {
+      const securityCredentials = getCheckoutSecurityCredentials();
       const createOrderAction = requireAppAdapter(
         orderActions.createOrder,
         "orderActions.createOrder"
@@ -211,11 +290,28 @@ export function CheckoutClient ({
         referralCode: appliedReferral?.code,
         paymentMethod: checkoutPaymentMethod,
         billingSameAsShipping,
+        ...securityCredentials,
         ...formData,
       });
 
       if (result.success) {
         clearCart();
+        window.sessionStorage.removeItem(CHECKOUT_IDEMPOTENCY_KEY);
+        window.sessionStorage.removeItem(CHECKOUT_GUEST_TOKEN_KEY);
+
+        if (result.paymentMethod === "card_crypto") {
+          window.sessionStorage.setItem(
+            "payram:last-payment-status-url",
+            result.paymentStatusUrl
+          );
+          if (result.paymentUrl) {
+            window.location.assign(result.paymentUrl);
+          } else {
+            router.push(result.paymentStatusUrl);
+          }
+          return;
+        }
+
         router.push(
           `/checkout/thank-you?orderId=${result.orderId}&orderNumber=${result.orderNumber}&orderAmount=${result.totalAmount.toFixed(
             2
@@ -505,35 +601,58 @@ export function CheckoutClient ({
                 <h2 className="text-xl font-semibold text-white">
                   Payment Method
                 </h2>
-                {CARD_LINK_PAYMENTS_ENABLED ? (
+                {cardCryptoEnabled || CARD_LINK_PAYMENTS_ENABLED ? (
                   <>
                     <p className="mt-2 text-sm text-zinc-400">
-                      Pay with a debit or credit card using a secure link we email
-                      you after checkout, or choose manual payment with{" "}
-                      {listManualPaymentMethods()}.
+                      Pay by card on our secure payment page or pay manually with{" "}
+                      {listManualPaymentMethods()}. We never collect card details
+                      on this site.
                     </p>
                     <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 lg:items-stretch">
-                      <button
-                        type="button"
-                        aria-pressed={paymentMethod === "card_link"}
-                        onClick={() => setPaymentMethod("card_link")}
-                        className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "card_link"
-                          ? "border-indigo-400/70 bg-indigo-500/10 shadow-[0_10px_35px_rgba(99,102,241,0.22)]"
-                          : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
-                          }`}
-                      >
-                        <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-indigo-200/90">
-                          Recommended
-                        </span>
-                        <span className="mt-2 block text-xl font-semibold text-white">
-                          Debit / credit card
-                        </span>
-                        <span className="mt-2 block text-sm text-zinc-300">
-                          We email you a secure link to pay with your debit or credit
-                          card after you place the order (no card details collected on
-                          this site).
-                        </span>
-                      </button>
+                      {cardCryptoEnabled ? (
+                        <button
+                          type="button"
+                          aria-pressed={paymentMethod === "card_crypto"}
+                          onClick={() => setPaymentMethod("card_crypto")}
+                          className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "card_crypto"
+                            ? "border-cyan-400/70 bg-cyan-500/10 shadow-[0_10px_35px_rgba(6,182,212,0.22)]"
+                            : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                            }`}
+                        >
+                          <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200/90">
+                            Card checkout
+                          </span>
+                          <span className="mt-2 block text-xl font-semibold text-white">
+                            Debit / credit card
+                          </span>
+                          <span className="mt-2 block text-sm text-zinc-300">
+                            Card, Apple Pay, or Google Pay on our secure payment
+                            page. You can also pay directly with USDC on Base.
+                          </span>
+                        </button>
+                      ) : null}
+                      {CARD_LINK_PAYMENTS_ENABLED ? (
+                        <button
+                          type="button"
+                          aria-pressed={paymentMethod === "card_link"}
+                          onClick={() => setPaymentMethod("card_link")}
+                          className={`rounded-2xl border p-5 text-left transition ${paymentMethod === "card_link"
+                            ? "border-indigo-400/70 bg-indigo-500/10 shadow-[0_10px_35px_rgba(99,102,241,0.22)]"
+                            : "border-purple-900/40 bg-black/40 hover:border-purple-500/60"
+                            }`}
+                        >
+                          <span className="block text-xs font-semibold uppercase tracking-[0.2em] text-indigo-200/90">
+                            Card link
+                          </span>
+                          <span className="mt-2 block text-xl font-semibold text-white">
+                            Debit / credit card
+                          </span>
+                          <span className="mt-2 block text-sm text-zinc-300">
+                            We email a secure partner checkout link after you
+                            place the order.
+                          </span>
+                        </button>
+                      ) : null}
                       <button
                         type="button"
                         aria-pressed={paymentMethod === "manual"}
@@ -555,11 +674,54 @@ export function CheckoutClient ({
                         </span>
                       </button>
                     </div>
-                    <p className="mt-4 text-xs text-zinc-400">
-                      {checkoutPaymentMethod === "card_link"
-                        ? `The card link is sent in your confirmation email. ${listManualPaymentMethods("and")} will still be shown after you order.`
-                        : "Manual payment instructions appear after the order is placed."}
-                    </p>
+                    {checkoutPaymentMethod === "card_crypto" ? (
+                      <div className="mt-4 rounded-xl border border-cyan-500/30 bg-cyan-500/10 p-4 text-sm text-cyan-50">
+                        <ul className="space-y-2">
+                          <li>
+                            Card payments are processed by a third-party payment
+                            partner. First-time payers complete a one-time ID
+                            check, and partner limits may apply.
+                          </li>
+                          <li>
+                            The partner shows its processing fee before you pay.
+                            That fee is charged by the partner, on top of your
+                            order total.
+                          </li>
+                          <li>
+                            Your card first funds a wallet created for you, then
+                            you confirm the payment to us. Finish every step on
+                            the payment page until it shows the order as paid.
+                          </li>
+                          <li>
+                            Approved refunds are sent manually as USDC on Base
+                            to an address you verify with support, never
+                            automatically to the transaction sender.
+                          </li>
+                        </ul>
+                        <label className="mt-4 flex items-start gap-3 text-sm text-white">
+                          <input
+                            type="checkbox"
+                            checked={acceptedCardCryptoDisclosure}
+                            onChange={(event) =>
+                              setAcceptedCardCryptoDisclosure(
+                                event.target.checked
+                              )
+                            }
+                            className="mt-0.5 h-5 w-5 rounded border-cyan-700 bg-black/60 text-cyan-500 focus:ring-cyan-400"
+                          />
+                          <span>
+                            I understand the ID check, partner fee, and refund
+                            terms.
+                          </span>
+                        </label>
+                      </div>
+                    ) : (
+                      <p className="mt-4 text-xs text-zinc-400">
+                        {checkoutPaymentMethod === "card_link"
+                          ? `The card link is sent in your confirmation email. ${listManualPaymentMethods("and")} will still be shown after you order.`
+                          : "Manual payment instructions appear after the order is placed."}
+                      </p>
+                    )}
                   </>
                 ) : (
                   <>
@@ -599,7 +761,9 @@ export function CheckoutClient ({
               >
                 {isPending
                   ? "Submitting Order..."
-                  : checkoutPaymentMethod === "card_link"
+                  : checkoutPaymentMethod === "card_crypto"
+                    ? "Continue to secure card checkout"
+                    : checkoutPaymentMethod === "card_link"
                     ? "Place Order (card link in email)"
                     : "Place Order (Pay Manually)"}
               </button>
