@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 
 import
 {
-  createOrder,
+  getOrderAccessRecordByIdempotencyKey,
   getOrderByOrderNumber,
   upsertCustomerProfile,
 } from "@/lib/db";
@@ -25,12 +25,6 @@ import { auth } from "@/lib/auth";
 import { calculateShippingCost } from "@/lib/shipping";
 import
 {
-  applyInventoryAdjustments,
-  loadInventoryMap,
-  prepareInventoryAdjustments,
-} from "@/lib/inventory";
-import
-{
   finalizeReferralForOrder,
   resolveReferralForOrder,
 } from "@/lib/referrals";
@@ -39,6 +33,22 @@ import
   resolveCheckoutPaymentMethod,
   type CheckoutPaymentMethod,
 } from "@/lib/payment-methods";
+import {
+  getPayRamConfig,
+  isPayRamCheckoutEnabled,
+  canUsePayRamCheckout,
+} from "@/lib/payram/config";
+import {
+  createOrderWithInventoryReservation,
+  getLatestPaymentAttemptForOrder,
+  type InventoryReservationInput,
+} from "@/lib/payram/repository";
+import { initializePayRamAttempt } from "@/lib/payram/service";
+import {
+  hashGuestAccessToken,
+  isValidGuestAccessToken,
+  verifyGuestAccessToken,
+} from "@/lib/payram/security";
 
 type CreateOrderInput = {
   items: CartItem[];
@@ -62,6 +72,8 @@ type CreateOrderInput = {
   saveProfile?: boolean;
   referralCode?: string;
   paymentMethod?: CheckoutPaymentMethod;
+  idempotencyKey: string;
+  guestAccessToken: string;
 };
 
 export type CreateOrderResult =
@@ -71,6 +83,11 @@ export type CreateOrderResult =
     orderNumber: string;
     shippingCost: number;
     totalAmount: number;
+    paymentMethod: CheckoutPaymentMethod;
+    paymentUrl: string | null;
+    paymentStatusUrl: string;
+    guestAccessToken: string;
+    paymentRequiresReconciliation: boolean;
   }
   | {
     success: false;
@@ -111,12 +128,170 @@ function formatRetryAfter (ms: number):
   };
 }
 
+const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9_-]{16,128}$/;
+
+function buildPaymentStatusUrl(orderId: string, guestAccessToken: string): string
+{
+  const params = new URLSearchParams({
+    orderId,
+    token: guestAccessToken,
+  });
+  return `/checkout/payment-status?${params.toString()}`;
+}
+
+function buildInventoryReservationItems (
+  items: CartItem[]
+): InventoryReservationInput[]
+{
+  const quantities = new Map<string, InventoryReservationInput>();
+
+  for (const item of items) {
+    if (!item.productSlug) {
+      throw new Error(`Missing inventory identifier for ${item.productName}.`);
+    }
+    const key = `${item.productSlug}\u0000${item.variantLabel}`;
+    const quantity = item.tierQuantity * Math.max(item.count ?? 1, 1);
+    const existing = quantities.get(key);
+    quantities.set(key, {
+      productSlug: item.productSlug,
+      variantLabel: item.variantLabel,
+      quantity: (existing?.quantity ?? 0) + quantity,
+    });
+  }
+
+  return [...quantities.values()];
+}
+
+async function buildExistingOrderResult (
+  order: Order,
+  guestAccessToken: string
+): Promise<CreateOrderResult>
+{
+  const paymentMethod = order.paymentMethod ?? "manual";
+  const attempt =
+    paymentMethod === "card_crypto"
+      ? await getLatestPaymentAttemptForOrder(order.id)
+      : null;
+
+  return {
+    success: true,
+    orderId: order.id,
+    orderNumber: order.orderNumber,
+    shippingCost: order.shippingCost ?? 0,
+    totalAmount: order.totalAmount ?? order.subtotal,
+    paymentMethod,
+    paymentUrl: attempt?.paymentUrl ?? null,
+    paymentStatusUrl: buildPaymentStatusUrl(order.id, guestAccessToken),
+    guestAccessToken,
+    paymentRequiresReconciliation:
+      attempt?.status === "CREATING" ||
+      attempt?.status === "RECONCILIATION_REQUIRED",
+  };
+}
+
+function userFacingOrderCreationError (error: unknown): string
+{
+  const message = error instanceof Error ? error.message : "";
+  if (message.includes("INSUFFICIENT_INVENTORY")) {
+    return "An item just sold out or no longer has enough stock. Refresh your cart and try again.";
+  }
+  if (message.includes("unique") || message.includes("order_number")) {
+    return "We couldn't reserve this order number. Please try again.";
+  }
+  return "Failed to create order. Please try again.";
+}
+
 export async function createOrderAction (
   input: CreateOrderInput
 ): Promise<CreateOrderResult>
 {
   try {
-    const paymentMethod = resolveCheckoutPaymentMethod(input.paymentMethod);
+    if (
+      !input.idempotencyKey ||
+      !IDEMPOTENCY_KEY_PATTERN.test(input.idempotencyKey)
+    ) {
+      return {
+        success: false,
+        error: "Your checkout session is invalid. Refresh the page and try again.",
+        errorCode: "VALIDATION_ERROR",
+      };
+    }
+    if (
+      !input.guestAccessToken ||
+      !isValidGuestAccessToken(input.guestAccessToken)
+    ) {
+      return {
+        success: false,
+        error: "Your secure order access token is invalid. Refresh and try again.",
+        errorCode: "VALIDATION_ERROR",
+      };
+    }
+
+    let session = null;
+    try {
+      session = await auth();
+    } catch {
+      session = null;
+    }
+
+    if (
+      input.paymentMethod === "card_crypto" &&
+      !canUsePayRamCheckout(session?.user)
+    ) {
+      return {
+        success: false,
+        error:
+          "Card checkout is not available right now. Choose a manual payment method.",
+        errorCode: "VALIDATION_ERROR",
+      };
+    }
+
+    const existingAccess = await getOrderAccessRecordByIdempotencyKey(
+      input.idempotencyKey
+    );
+    if (existingAccess) {
+      if (
+        existingAccess.order.paymentMethod === "card_crypto" &&
+        !canUsePayRamCheckout(session?.user)
+      ) {
+        return {
+          success: false,
+          error:
+            "Card checkout is not available right now. Choose a manual payment method.",
+          errorCode: "VALIDATION_ERROR",
+        };
+      }
+      if (
+        !verifyGuestAccessToken(
+          input.guestAccessToken,
+          existingAccess.guestAccessTokenHash
+        )
+      ) {
+        return {
+          success: false,
+          error: "This checkout request is already associated with another order.",
+          errorCode: "VALIDATION_ERROR",
+        };
+      }
+      return buildExistingOrderResult(
+        existingAccess.order,
+        input.guestAccessToken
+      );
+    }
+
+    const cardCryptoEnabled = isPayRamCheckoutEnabled();
+    if (input.paymentMethod === "card_crypto" && !cardCryptoEnabled) {
+      return {
+        success: false,
+        error:
+          "Card checkout is not available right now. Choose a manual payment method.",
+        errorCode: "VALIDATION_ERROR",
+      };
+    }
+    const paymentMethod = resolveCheckoutPaymentMethod(
+      input.paymentMethod,
+      cardCryptoEnabled
+    );
 
     // Validate required fields
     if (
@@ -223,32 +398,10 @@ export async function createOrderAction (
       };
     }
 
-    let session = null;
-
-    try {
-      session = await auth();
-    } catch {
-      session = null;
-    }
-
     const userId = session?.user?.id ?? null;
     const orderNumber = generateOrderNumber();
     const now = new Date().toISOString();
-
-    const inventoryMap = await loadInventoryMap();
-    const reservation = prepareInventoryAdjustments(
-      catalogItems,
-      inventoryMap,
-      "reserve"
-    );
-
-    if (!reservation.success) {
-      return {
-        success: false,
-        error: reservation.error,
-        errorCode: "VALIDATION_ERROR",
-      };
-    }
+    const inventoryItems = buildInventoryReservationItems(catalogItems);
 
     let referralContext: Awaited<ReturnType<typeof resolveReferralForOrder>> =
       null;
@@ -287,12 +440,13 @@ export async function createOrderAction (
 
     const shippingCost = calculateShippingCost(calculatedSubtotal);
     const totalAmount = finalSubtotal + shippingCost;
-
-    const order = await createOrder({
+    const orderDraft: Order = {
       id: randomUUID(),
       orderNumber,
       status: "PENDING_PAYMENT",
       userId,
+      paymentMethod,
+      inventoryReservationStatus: "RESERVED",
       customerName: input.customerName.trim(),
       customerEmail: input.customerEmail.trim(),
       customerPhone: input.customerPhone.trim(),
@@ -321,32 +475,66 @@ export async function createOrderAction (
       referralDiscount,
       referralCommissionPercent: referralContext?.referralCommissionPercent ?? 0,
       referralCommissionAmount: referralContext?.referralCommissionAmount ?? 0,
-    });
-
-    await applyInventoryAdjustments(reservation.adjustments);
-
-    // Send email notification (non-blocking, don't fail order if email fails)
-    sendOrderEmail(order, {
+    };
+    const attemptId =
+      paymentMethod === "card_crypto" ? randomUUID() : null;
+    const payRamConfig =
+      paymentMethod === "card_crypto" ? getPayRamConfig() : null;
+    const atomicResult = await createOrderWithInventoryReservation({
+      order: orderDraft,
       paymentMethod,
-    }).catch((error) =>
-    {
-      console.error("Failed to send order email:", error);
-      // Log but don't throw - order is still created
+      idempotencyKey: input.idempotencyKey,
+      guestAccessTokenHash: hashGuestAccessToken(input.guestAccessToken),
+      inventoryItems,
+      attempt:
+        attemptId && payRamConfig
+          ? {
+            id: attemptId,
+            invoiceId: attemptId,
+            invoiceAmount: totalAmount.toFixed(2),
+            tokenAddress: payRamConfig.tokenAddress,
+            expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
+          }
+          : undefined,
     });
+    const order = atomicResult.order;
+
+    if (!atomicResult.created) {
+      const access = await getOrderAccessRecordByIdempotencyKey(
+        input.idempotencyKey
+      );
+      if (
+        !access ||
+        !verifyGuestAccessToken(
+          input.guestAccessToken,
+          access.guestAccessTokenHash
+        )
+      ) {
+        return {
+          success: false,
+          error: "This checkout request is already associated with another order.",
+          errorCode: "VALIDATION_ERROR",
+        };
+      }
+      return buildExistingOrderResult(order, input.guestAccessToken);
+    }
 
     if (userId && input.saveProfile) {
-      await upsertCustomerProfile(userId, {
-        fullName: input.customerName.trim(),
-        phone: input.customerPhone.trim(),
-        shippingStreet: input.shippingStreet.trim(),
-        shippingCity: input.shippingCity.trim(),
-        shippingState: input.shippingState.trim(),
-        shippingZipCode: input.shippingZipCode.trim(),
-        shippingCountry: input.shippingCountry.trim(),
-      });
-
-      revalidatePath("/account/profile");
-      revalidatePath("/checkout");
+      try {
+        await upsertCustomerProfile(userId, {
+          fullName: input.customerName.trim(),
+          phone: input.customerPhone.trim(),
+          shippingStreet: input.shippingStreet.trim(),
+          shippingCity: input.shippingCity.trim(),
+          shippingState: input.shippingState.trim(),
+          shippingZipCode: input.shippingZipCode.trim(),
+          shippingCountry: input.shippingCountry.trim(),
+        });
+        revalidatePath("/account/profile");
+        revalidatePath("/checkout");
+      } catch (error) {
+        console.error("Failed to save checkout profile:", error);
+      }
     }
 
     if (referralContext) {
@@ -354,14 +542,34 @@ export async function createOrderAction (
         await finalizeReferralForOrder(order, referralContext);
       } catch (error) {
         console.error("Failed to finalize referral attribution:", error);
-        return {
-          success: false,
-          error:
-            "We couldn't record the referral discount. Please try again in a moment.",
-          errorCode: "UNKNOWN",
-        };
       }
     }
+
+    let paymentUrl: string | null = null;
+    let paymentRequiresReconciliation = false;
+    if (paymentMethod === "card_crypto" && attemptId) {
+      const initialization = await initializePayRamAttempt({
+        order,
+        attemptId,
+      });
+      paymentUrl = initialization.paymentUrl;
+      paymentRequiresReconciliation =
+        initialization.requiresReconciliation;
+    }
+
+    const paymentStatusUrl = buildPaymentStatusUrl(
+      order.id,
+      input.guestAccessToken
+    );
+
+    // Receipt delivery does not determine whether the atomic order succeeds.
+    sendOrderEmail(order, {
+      paymentMethod,
+      paymentStatusUrl,
+    }).catch((error) =>
+    {
+      console.error("Failed to send order email:", error);
+    });
 
     // Revalidate admin/account pages after all mutations (including referrals) succeed
     revalidatePath("/admin");
@@ -375,13 +583,17 @@ export async function createOrderAction (
       orderNumber: order.orderNumber,
       shippingCost,
       totalAmount,
+      paymentMethod,
+      paymentUrl,
+      paymentStatusUrl,
+      guestAccessToken: input.guestAccessToken,
+      paymentRequiresReconciliation,
     };
   } catch (error) {
     console.error("Error creating order:", error);
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to create order",
+      error: userFacingOrderCreationError(error),
       errorCode: "UNKNOWN",
     };
   }
@@ -415,11 +627,26 @@ export async function lookupOrderAction (input: {
       };
     }
 
+    let session = null;
+    try {
+      session = await auth();
+    } catch {
+      session = null;
+    }
+    const sessionOwnsOrder =
+      Boolean(session?.user?.id) && session?.user?.id === order.userId;
+    const isAdmin = session?.user?.role === "ADMIN";
     const suppliedEmail = input.customerEmail?.trim().toLowerCase();
-    if (suppliedEmail && order.customerEmail.toLowerCase() !== suppliedEmail) {
+
+    if (
+      !sessionOwnsOrder &&
+      !isAdmin &&
+      (!suppliedEmail ||
+        order.customerEmail.toLowerCase() !== suppliedEmail)
+    ) {
       return {
         success: false,
-        error: "That email doesn't match the order on file.",
+        error: "Enter the email used at checkout to access this order.",
       };
     }
 

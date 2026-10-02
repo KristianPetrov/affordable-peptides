@@ -87,6 +87,8 @@ export type CreateOrderInput = {
   saveProfile?: boolean;
   referralCode?: string;
   paymentMethod?: CheckoutPaymentMethod;
+  idempotencyKey: string;
+  guestAccessToken: string;
 };
 
 export type CreateOrderResult =
@@ -96,6 +98,11 @@ export type CreateOrderResult =
       orderNumber: string;
       shippingCost: number;
       totalAmount: number;
+      paymentMethod: CheckoutPaymentMethod;
+      paymentUrl: string | null;
+      paymentStatusUrl: string;
+      guestAccessToken: string;
+      paymentRequiresReconciliation: boolean;
     }
   | {
       success: false;

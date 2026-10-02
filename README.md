@@ -4,3 +4,9 @@ Affordable Peptides exists to make high-quality, research-grade peptides accessi
 ## TikTok Ads / Analytics
 
 See `TIKTOK_SETUP.md`.
+
+## PayRam card checkout
+
+Card and USDC-on-Base checkout runs through the self-hosted PayRam server at
+`pay.affordablepeptides.life`. Setup, environment variables, testing, and
+day-to-day operations are in `PAYRAM.md`.

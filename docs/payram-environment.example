@@ -1,0 +1,40 @@
+# PayRam checkout. Set these in Vercel (Production, and Preview if you test
+# there). Never commit real values. See PAYRAM.md for what each one does.
+
+# Master switch. Card checkout shows on /checkout only when this is true and
+# the three values below are valid.
+PAYRAM_CARD_CRYPTO_ENABLED=false
+
+# Your self-hosted PayRam server (Settings -> Site URL in the PayRam
+# dashboard). HTTPS, no path.
+PAYRAM_BASE_URL=https://pay.affordablepeptides.life
+
+# Project API key from the PayRam dashboard for the Affordable Holdings
+# project. Mark it Sensitive in Vercel. It also authenticates webhooks.
+PAYRAM_API_KEY=replace-in-vercel
+
+# Optional. true = only signed-in storefront admins see card checkout, so you
+# can run real test payments on the live site before customers see it.
+PAYRAM_ADMIN_ONLY=false
+
+# Optional. While PAYRAM_ADMIN_ONLY is true, these signed-in store accounts
+# (comma-separated emails) can also use card checkout, e.g. a client tester.
+PAYRAM_TESTER_EMAILS=
+
+# Optional. Your PayRam cold wallet (SmartSweep destination). Only used to
+# label SmartSweep records in the admin panel. Public address, not a key.
+PAYRAM_TREASURY_WALLET_ADDRESS=0x1A6a6Fd81Fb266c90d1A005d25Fd837672b115A1
+
+# Optional. Set to true once you have confirmed your PayRam server sends the
+# X-Payram-Signature header, to stop accepting the legacy API-Key header.
+PAYRAM_WEBHOOK_REQUIRE_SIGNATURE=false
+
+# Optional. Defaults to PAYRAM_BASE_URL. The only origin a checkout link may use.
+# PAYRAM_CHECKOUT_ORIGIN=https://pay.affordablepeptides.life
+
+# Optional. Milliseconds before a PayRam API call is abandoned. Default 10000.
+# PAYRAM_REQUEST_TIMEOUT_MS=10000
+
+# Required for the 5-minute reconciliation cron (/api/cron/payram-reconcile).
+# Vercel sends it automatically as a Bearer token. Use a long random string.
+CRON_SECRET=replace-with-a-long-random-secret

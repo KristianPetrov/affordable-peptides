@@ -169,12 +169,13 @@ export default function OrderLookupClient ({
             htmlFor="customerEmail"
             className="mb-2 block text-sm font-medium text-purple-200"
           >
-            Email Used at Checkout (optional)
+            Email Used at Checkout
           </label>
           <input
             id="customerEmail"
             name="customerEmail"
             type="email"
+            required
             value={formData.customerEmail}
             onChange={handleChange}
             placeholder="you@example.com"
