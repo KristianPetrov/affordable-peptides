@@ -62,3 +62,23 @@ test("admin-only mode works in any environment, including the old flag name", ()
     assert.equal(gate.adminOnly, true, key);
   }
 });
+
+test("admin-only mode also admits listed tester accounts, case-insensitively", async () => {
+  const { canUsePayRamCheckout } = await import("../lib/payram/feature-gate");
+  const environment = liveEnvironment({
+    PAYRAM_ADMIN_ONLY: "true",
+    PAYRAM_TESTER_EMAILS: " client@example.com , other@example.com",
+  });
+
+  assert.equal(canUsePayRamCheckout(environment, { role: "ADMIN" }), true);
+  assert.equal(
+    canUsePayRamCheckout(environment, { email: "Client@Example.com" }),
+    true
+  );
+  assert.equal(
+    canUsePayRamCheckout(environment, { email: "stranger@example.com" }),
+    false
+  );
+  assert.equal(canUsePayRamCheckout(environment, null), false);
+  assert.equal(canUsePayRamCheckout(liveEnvironment(), null), true);
+});

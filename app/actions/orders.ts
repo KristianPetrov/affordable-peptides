@@ -36,7 +36,7 @@ import
 import {
   getPayRamConfig,
   isPayRamCheckoutEnabled,
-  isPayRamAdminOnly,
+  canUsePayRamCheckout,
 } from "@/lib/payram/config";
 import {
   createOrderWithInventoryReservation,
@@ -235,9 +235,8 @@ export async function createOrderAction (
     }
 
     if (
-      isPayRamAdminOnly() &&
       input.paymentMethod === "card_crypto" &&
-      session?.user.role !== "ADMIN"
+      !canUsePayRamCheckout(session?.user)
     ) {
       return {
         success: false,
@@ -252,9 +251,8 @@ export async function createOrderAction (
     );
     if (existingAccess) {
       if (
-        isPayRamAdminOnly() &&
         existingAccess.order.paymentMethod === "card_crypto" &&
-        session?.user.role !== "ADMIN"
+        !canUsePayRamCheckout(session?.user)
       ) {
         return {
           success: false,

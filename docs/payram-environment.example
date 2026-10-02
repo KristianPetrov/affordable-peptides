@@ -17,6 +17,10 @@ PAYRAM_API_KEY=replace-in-vercel
 # can run real test payments on the live site before customers see it.
 PAYRAM_ADMIN_ONLY=false
 
+# Optional. While PAYRAM_ADMIN_ONLY is true, these signed-in store accounts
+# (comma-separated emails) can also use card checkout, e.g. a client tester.
+PAYRAM_TESTER_EMAILS=
+
 # Optional. Your PayRam cold wallet (SmartSweep destination). Only used to
 # label SmartSweep records in the admin panel. Public address, not a key.
 PAYRAM_TREASURY_WALLET_ADDRESS=0x1A6a6Fd81Fb266c90d1A005d25Fd837672b115A1

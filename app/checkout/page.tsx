@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { getCustomerProfile } from "@/lib/db";
 import {
   isPayRamCheckoutEnabled,
-  isPayRamAdminOnly,
+  canUsePayRamCheckout,
 } from "@/lib/payram/config";
 
 export default async function CheckoutPage() {
@@ -13,7 +13,7 @@ export default async function CheckoutPage() {
     : null;
   const cardCryptoEnabled =
     isPayRamCheckoutEnabled() &&
-    (!isPayRamAdminOnly() || session?.user.role === "ADMIN");
+    canUsePayRamCheckout(session?.user);
 
   return (
     <div className="min-h-screen bg-black text-zinc-100">

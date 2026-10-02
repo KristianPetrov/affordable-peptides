@@ -48,6 +48,37 @@ export function isPayRamAdminOnly(environment: Environment): boolean {
   );
 }
 
+export type PayRamCheckoutUser = {
+  role?: string | null;
+  email?: string | null;
+} | null | undefined;
+
+/**
+ * Whether this signed-in user may use PayRam checkout. Everyone may unless
+ * admin-only mode is on; then storefront admins and the accounts listed in
+ * PAYRAM_TESTER_EMAILS (comma-separated) may, so a client can run a real
+ * test order before customers see the option.
+ */
+export function canUsePayRamCheckout(
+  environment: Environment,
+  user: PayRamCheckoutUser
+): boolean {
+  if (!isPayRamAdminOnly(environment)) {
+    return true;
+  }
+  if (user?.role === "ADMIN") {
+    return true;
+  }
+  const email = user?.email?.trim().toLowerCase();
+  if (!email) {
+    return false;
+  }
+  return (environment.PAYRAM_TESTER_EMAILS ?? "")
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .includes(email);
+}
+
 export function evaluatePayRamFeatureGate(
   environment: Environment
 ): PayRamFeatureGate {

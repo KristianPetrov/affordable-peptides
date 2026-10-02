@@ -122,6 +122,7 @@ Nothing here can be done from the code. Do them in order.
 | `PAYRAM_API_KEY` | project API key from step 2, marked Sensitive |
 | `PAYRAM_CARD_CRYPTO_ENABLED` | `true` |
 | `PAYRAM_ADMIN_ONLY` | `true` for testing, then remove or `false` |
+| `PAYRAM_TESTER_EMAILS` | store account emails allowed to test while admin-only is on (optional) |
 | `PAYRAM_TREASURY_WALLET_ADDRESS` | `0x1A6a6Fd81Fb266c90d1A005d25Fd837672b115A1` (optional) |
 | `CRON_SECRET` | long random string |
 
@@ -137,10 +138,12 @@ only runs on the production deployment.
 
 ### 5. Test on the live site, then open it up
 
-With `PAYRAM_ADMIN_ONLY=true`, only signed-in storefront admins see the card
-option.
+With `PAYRAM_ADMIN_ONLY=true`, only signed-in storefront admins, plus any
+account listed in `PAYRAM_TESTER_EMAILS` (comma-separated), see the card
+option. To let a client run the test, have them create a store account and add
+its email to `PAYRAM_TESTER_EMAILS`. They must be signed in when they check out.
 
-- [ ] Signed in as an admin, place a small order with **Debit / credit card**.
+- [ ] Signed in as an admin or tester, place a small order with **Debit / credit card**.
 - [ ] On the PayRam page, confirm the **Cards** option appears. The store locks
       each payment to USDC on Base; if Cards is missing on that page, tell the
       developer, because PayRam's docs don't say whether the onramp honours that

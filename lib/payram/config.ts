@@ -6,7 +6,9 @@ import {
   normalizeAddress,
 } from "./constants";
 import {
+  canUsePayRamCheckout as canUseInEnvironment,
   evaluatePayRamFeatureGate,
+  type PayRamCheckoutUser,
   isPayRamAdminOnly as isAdminOnlyEnvironment,
   parsePayRamHttpsUrl,
 } from "./feature-gate";
@@ -32,7 +34,12 @@ export function isPayRamCheckoutEnabled(): boolean {
   return evaluatePayRamFeatureGate(process.env).enabled;
 }
 
-/** When true, only signed-in storefront admins can start PayRam checkout. */
+/** True when this user may start or view PayRam checkout (see PAYRAM_ADMIN_ONLY). */
+export function canUsePayRamCheckout(user: PayRamCheckoutUser): boolean {
+  return canUseInEnvironment(process.env, user);
+}
+
+/** When true, only admins and PAYRAM_TESTER_EMAILS can start PayRam checkout. */
 export function isPayRamAdminOnly(): boolean {
   return isAdminOnlyEnvironment(process.env);
 }
