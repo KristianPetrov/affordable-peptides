@@ -5,11 +5,13 @@ import { auth } from "@/lib/auth";
 export default auth((req) =>
 {
   const { pathname } = req.nextUrl;
-  const isLoggedIn = !!req.auth;
+  const isLoggedIn = Boolean(req.auth?.user?.id);
+  const isAdmin = isLoggedIn && req.auth?.user?.role === "ADMIN";
 
   // Protect admin routes
   if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
-    if (!isLoggedIn) {
+    if (!isAdmin) {
+      if (isLoggedIn) return NextResponse.redirect(new URL("/account", req.url));
       const loginUrl = new URL("/admin/login", req.url);
       loginUrl.searchParams.set("callbackUrl", pathname);
       return NextResponse.redirect(loginUrl);
@@ -18,7 +20,7 @@ export default auth((req) =>
 
   // Redirect logged-in users away from login page
   if (pathname === "/admin/login" && isLoggedIn) {
-    return NextResponse.redirect(new URL("/admin", req.url));
+    return NextResponse.redirect(new URL(isAdmin ? "/admin" : "/account", req.url));
   }
 
   return NextResponse.next();
@@ -37,4 +39,3 @@ export const config = {
     "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };
-

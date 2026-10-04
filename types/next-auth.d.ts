@@ -21,6 +21,7 @@ declare module "next-auth" {
     email: string;
     name?: string | null;
     role?: UserRole;
+    mfaVerifiedAt?: number;
   }
 }
 
@@ -30,6 +31,8 @@ declare module "next-auth/jwt" {
     id?: string;
     email?: string;
     role?: UserRole;
+    mfaVersion?: number;
+    mfaVerifiedAt?: number;
   }
 }
 
@@ -39,4 +42,3 @@ declare module "@auth/core/adapters" {
     role?: UserRole;
   }
 }
-

@@ -36,7 +36,7 @@ export function AccountLoginForm ({ callbackUrl }: AccountLoginFormProps)
       });
 
       if (result?.error) {
-        setError("Invalid email or password.");
+        setError("Invalid email or password. Admin accounts must use the admin login with two-factor authentication.");
         return;
       }
 
@@ -120,6 +120,9 @@ export function AccountLoginForm ({ callbackUrl }: AccountLoginFormProps)
         </button>
       </form>
       <p className="mt-6 text-center text-sm text-zinc-400">
+        <Link href="/admin/login" className="text-purple-200 underline">Admin login</Link>
+      </p>
+      <p className="mt-6 text-center text-sm text-zinc-400">
         Need an account?{" "}
         <Link
           href="/account/register"
@@ -132,4 +135,3 @@ export function AccountLoginForm ({ callbackUrl }: AccountLoginFormProps)
     </div>
   );
 }
-

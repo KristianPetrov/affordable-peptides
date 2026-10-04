@@ -46,11 +46,16 @@ export async function POST(req: Request): Promise<NextResponse> {
 
   let event: ResendWebhookEvent;
   try {
-    event = resend.webhooks.verify({
+    const verified = resend.webhooks.verify({
       payload,
       headers: { id, timestamp, signature },
       webhookSecret,
-    }) as ResendWebhookEvent;
+    });
+    event = {
+      type: verified.type,
+      created_at: verified.created_at,
+      data: "email_id" in verified.data ? { email_id: verified.data.email_id } : undefined,
+    };
   } catch (error) {
     console.error("Invalid Resend webhook signature", error);
     return NextResponse.json({ error: "Invalid signature." }, { status: 400 });

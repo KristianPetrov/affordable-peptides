@@ -8,6 +8,7 @@ import
   numeric,
   integer,
   boolean,
+  bigint,
   primaryKey,
   uniqueIndex,
   index,
@@ -25,6 +26,27 @@ export const users = pgTable("users", {
   role: varchar("role", { length: 20 }).notNull().default("CUSTOMER"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
+export const authRateLimits = pgTable("auth_rate_limits", {
+  key: text("key").primaryKey(),
+  attempts: integer("attempts").notNull().default(1),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+}, table => ({ expiresIdx: index("auth_rate_limits_expires_idx").on(table.expiresAt) }));
+
+export const adminSecondFactors = pgTable("admin_second_factors", {
+  userId: text("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  encryptedSecret: text("encrypted_secret"),
+  confirmedAt: timestamp("confirmed_at", { withTimezone: true }),
+  lastUsedStep: bigint("last_used_step", { mode: "number" }).notNull().default(-1),
+  recoveryCodeHashes: jsonb("recovery_code_hashes").$type<string[]>().notNull().default([]),
+  setupTokenHash: text("setup_token_hash"),
+  emailCodeHash: text("email_code_hash"),
+  setupExpiresAt: timestamp("setup_expires_at", { withTimezone: true }),
+  setupAttempts: integer("setup_attempts").notNull().default(0),
+  emailVerifiedAt: timestamp("email_verified_at", { withTimezone: true }),
+  enrollmentTokenHash: text("enrollment_token_hash"),
+  enrollmentTokenExpiresAt: timestamp("enrollment_token_expires_at", { withTimezone: true }),
 });
 
 export const accounts = pgTable("accounts", {
@@ -305,4 +327,3 @@ export const productInventory = pgTable(
     ).on(table.productSlug, table.variantLabel),
   })
 );
-
